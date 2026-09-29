@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Borrow Requests - BarangayConnect</title>
+  <link rel="stylesheet" href="../../Shared/css/bc-reports-list-table.css?v=20250803">
+  <link rel="stylesheet" href="../../Shared/css/bc-admin-list-page.css?v=20250803">
+  <link rel="stylesheet" href="../css/bc-admin-page-title.css?v=20250642">
+  <link rel="stylesheet" href="../css/A_borrow-inventory-style.css?v=20250819">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <script src="../../Shared/js/bc-notify.js?v=20250659"></script>
+  <script src="../../Shared/js/bc-borrow-inventory-ui.js?v=20250803"></script>
+  <style>
+    * { scrollbar-width: none !important; } *::-webkit-scrollbar { display: none !important; }
+    .empty-state { display:flex;align-items:center;gap:12px;padding:16px 20px;background:#f5f7f2;border:1px dashed #b8c4af;border-radius:10px;color:#4a5c3a;font-weight:600; }
+    .empty-icon { width:40px;height:40px;display:flex;border-radius:50%;align-items:center;justify-content:center;background:#e3eadc;color:#6c8055; }
+    .empty-subtitle { font-weight:400;font-size:0.85rem;margin:0;color:#5f6d5b; }
+    .empty-title { font-weight:700; }
+  </style>
+</head>
+<body data-bi-page="borrow-requests">
+  <div class="bi-page">
+    <div class="page-header">
+      <h1 class="page-title">Borrow Requests</h1>
+      <nav class="bi-breadcrumb" aria-label="Breadcrumb">
+        <span>Borrowed Items</span><span class="sep">›</span><span>Borrow Requests</span>
+      </nav>
+    </div>
+
+    <div class="bi-stats">
+      <div class="bi-stat-card"><div class="bi-stat-icon bi-stat-icon--blue"><i class="fas fa-clipboard-list"></i></div><div><p class="bi-stat-label">Total Requests</p><div class="bi-stat-value" id="biStatTotal">0</div></div></div>
+      <div class="bi-stat-card"><div class="bi-stat-icon bi-stat-icon--orange"><i class="fas fa-clock"></i></div><div><p class="bi-stat-label">Pending</p><div class="bi-stat-value" id="biStatPending">0</div></div></div>
+      <div class="bi-stat-card"><div class="bi-stat-icon bi-stat-icon--green"><i class="fas fa-check-circle"></i></div><div><p class="bi-stat-label">Approved</p><div class="bi-stat-value" id="biStatApproved">0</div></div></div>
+      <div class="bi-stat-card"><div class="bi-stat-icon bi-stat-icon--red"><i class="fas fa-times-circle"></i></div><div><p class="bi-stat-label">Rejected</p><div class="bi-stat-value" id="biStatRejected">0</div></div></div>
+    </div>
+
+    <div class="bi-toolbar">
+      <div class="bi-search-wrap"><i class="fas fa-search"></i><input type="search" id="brSearch" placeholder="Search by resident, item, or request ID…"></div>
+      <div class="bi-filter-group"><label for="brStatus">Status</label><select id="brStatus"><option value="all">All</option><option value="pending">Pending</option><option value="approved">Approved</option><option value="rejected">Rejected</option></select></div>
+      <div class="bi-filter-group"><label for="brCategory">Category</label><select id="brCategory"><option value="all">All</option></select></div>
+    </div>
+
+    <div class="bi-card">
+      <div class="bi-table-wrap">
+        <table class="bi-table">
+          <thead><tr><th>Request ID</th><th>Resident</th><th>Item</th><th>Qty</th><th>Date Needed</th><th>Return Date</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="biBorrowTableBody"><tr><td colspan="8">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="bi-bottom-grid">
+      <div class="bi-widget">
+        <h3>Item Availability</h3>
+        <table class="bi-widget-table"><thead><tr><th>Item</th><th>Available</th><th>Unit</th></tr></thead><tbody id="biAvailBody"></tbody></table>
+        <div class="bi-widget-footer"><a href="#" onclick="bcNavigatePage('A_Item-Inventory.html');return false;">View Inventory</a></div>
+      </div>
+      <div class="bi-widget">
+        <h3>Borrowing History</h3>
+        <p class="bi-widget-desc">View complete history of borrowed item transactions.</p>
+        <a href="#" class="bi-link" onclick="bcNavigatePage('A_Borrowing-History.html');return false;">View All History →</a>
+      </div>
+    </div>
+  </div>
+
+  <div id="borrowRequestModal" class="bi-modal" role="dialog" aria-hidden="true">
+    <div class="bi-modal-box">
+      <div class="bi-modal-header"><h2>View Borrow Request</h2><button type="button" class="bi-modal-close" data-bi-close="borrowRequestModal">&times;</button></div>
+      <div class="bi-modal-meta"></div>
+      <div class="bi-modal-body"></div>
+      <div class="bi-modal-footer">
+        <button type="button" class="bi-btn bi-btn--success" data-bi-approve><i class="fas fa-check"></i> Approve</button>
+        <button type="button" class="bi-btn bi-btn--danger" data-bi-reject><i class="fas fa-times"></i> Reject</button>
+        <button type="button" class="bi-btn bi-btn--outline" data-bi-close="borrowRequestModal">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../Shared/js/bc-borrow-inventory-api.js?v=20250803"></script>
+  <script src="../../Shared/js/bc-borrow-sync.js?v=20250821"></script>
+  <script src="../../Shared/js/bc-admin-borrow-inventory.js?v=20250821"></script>
+  <script src="../../Shared/js/bc-nav-persist.js?v=20250803"></script>
+  <script src="../../Shared/js/bc-nav-iframe-child.js"></script>
+  <script>BorrowInventoryUI.initSidebarIframe(); BorrowInventoryUI.bindModalClosers(); BorrowInventoryUI.notifyNav('borrowed-items');</script>
+</body>
+</html>

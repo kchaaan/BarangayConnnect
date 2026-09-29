@@ -1,0 +1,61 @@
+/**
+ * Admin iframe pages — title sits just below shell header (admin-main already offsets header).
+ * Load last on admin iframe HTML pages.
+ */
+:root {
+  --bc-admin-pad-top: 1.85rem;
+  --bc-admin-pad-x: 1.25rem;
+  --bc-admin-pad-bottom: 1.25rem;
+  --bc-admin-header-mb: 1.5rem;
+  --bc-admin-title-mt: 0.25rem;
+  --bc-admin-title-mb: 0.5rem;
+}
+
+body {
+  padding: var(--bc-admin-pad-top) var(--bc-admin-pad-x) var(--bc-admin-pad-bottom) !important;
+}
+
+.transparency-wrapper,
+.emergency-wrapper {
+  padding: var(--bc-admin-pad-top) var(--bc-admin-pad-x) var(--bc-admin-pad-bottom) !important;
+  min-height: 0 !important;
+}
+
+body:has(.transparency-wrapper),
+body:has(.emergency-wrapper) {
+  padding: 0 !important;
+}
+
+.page-header,
+.dashboard-header,
+.emergency-header,
+.feedback-page-header {
+  margin-top: 0 !important;
+  margin-bottom: var(--bc-admin-header-mb) !important;
+  padding: 0.5rem 0 0.75rem 0 !important;
+}
+
+.page-title,
+.dashboard-title,
+.emergency-title {
+  margin: var(--bc-admin-title-mt) 0 var(--bc-admin-title-mb) 0 !important;
+}
+
+.feedback-page-header h1 {
+  margin: var(--bc-admin-title-mt) 0 var(--bc-admin-title-mb) 0 !important;
+}
+
+.transparency-card > h2:first-of-type,
+.emergency-card > h2:first-of-type {
+  margin: var(--bc-admin-title-mt) 0 var(--bc-admin-title-mb) 0 !important;
+}
+
+.request-management-container {
+  padding-top: 0 !important;
+}
+
+.request-management-container .page-header {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+  margin-bottom: var(--bc-admin-header-mb) !important;
+}

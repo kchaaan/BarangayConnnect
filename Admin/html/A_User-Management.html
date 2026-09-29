@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>User Management - BarangayConnect</title>
+ <link rel="stylesheet" href="../css/A_user-details-style.css?v=20260930-reset-modal" />
+ <link rel="stylesheet" href="../css/bc-admin-page-title.css?v=20250642" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"/>
+</head>
+
+<body>
+  <div class="user-details-container">
+
+    <!-- Header -->
+    <div class="page-header">
+      <h1 class="page-title">User Management</h1>
+    </div>
+
+    <!-- Stats + Search -->
+    <div class="search-stats-section">
+      <div class="stats-section">
+        <div class="stat-card">
+          <div class="stat-icon"><i class="fas fa-users"></i></div>
+          <div class="stat-content">
+            <h3>Registered Users</h3>
+            <div id="totalUsersCount">0</div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon"><i class="fas fa-user-check"></i></div>
+          <div class="stat-content">
+            <h3>Active Users</h3>
+            <div id="activeUsersCount">0</div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon"><i class="fas fa-user-slash"></i></div>
+          <div class="stat-content">
+            <h3>Inactive Users</h3>
+            <div id="offlineUsersCount">0</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Search -->
+      <div class="search-group">
+        <input type="text" id="searchInput" placeholder="Search users..." class="search-input" />
+        <button class="search-btn"><i class="fas fa-search"></i></button>
+      </div>
+    </div>
+
+    <!-- User Table -->
+    <div class="user-table" style="margin-top:20px;">
+      <div class="table-header">
+        <div class="table-cell">Resident ID</div>
+        <div class="table-cell">Full Name</div>
+        <div class="table-cell">Username</div>
+        <div class="table-cell">Address</div>
+        <div class="table-cell">Phone Number</div>
+        <div class="table-cell">Registered</div>
+        <div class="table-cell">Actions</div>
+      </div>
+      <div id="approvedTableBody"></div>
+    </div>
+  </div>
+
+  <div class="user-modal-backdrop" id="editUserModal" hidden>
+    <section class="user-modal" role="dialog" aria-modal="true" aria-labelledby="editUserTitle">
+      <div class="user-modal-heading">
+        <div><h2 id="editUserTitle">Edit resident details</h2><p id="editUserIdentity"></p></div>
+        <button type="button" class="user-modal-close" data-close-modal aria-label="Close">&times;</button>
+      </div>
+      <form id="editUserForm">
+        <input type="hidden" id="editUserId">
+        <label>House / Unit number
+          <input id="editHouseUnit" maxlength="32" autocomplete="address-line1">
+        </label>
+        <label>Block / Lot
+          <input id="editBlockLot" maxlength="32">
+        </label>
+        <label>Street
+          <input id="editStreet" maxlength="120" autocomplete="address-line2">
+        </label>
+        <label>Mobile number
+          <input id="editPhone" type="tel" inputmode="numeric" maxlength="11" minlength="11" pattern="09[0-9]{9}" required autocomplete="tel" aria-describedby="editPhoneHelp">
+        </label>
+        <small id="editPhoneHelp">Use an 11-digit Philippine mobile number starting with 09.</small>
+        <div class="user-form-message" id="editUserMessage" role="status" aria-live="polite"></div>
+        <div class="user-modal-actions">
+          <button type="button" class="user-action-button secondary" data-close-modal>Cancel</button>
+          <button type="submit" class="user-action-button primary" id="saveUserButton">Save details</button>
+        </div>
+      </form>
+    </section>
+  </div>
+  <div class="user-modal-backdrop" id="resetPasswordModal" hidden>
+    <section class="user-modal user-confirm-modal" role="dialog" aria-modal="true" aria-labelledby="resetPasswordTitle" aria-describedby="resetPasswordDescription">
+      <div class="user-modal-heading">
+        <div class="user-confirm-title-row">
+          <span class="user-confirm-icon" aria-hidden="true"><i class="fas fa-key"></i></span>
+          <div>
+            <h2 id="resetPasswordTitle">Send password reset code?</h2>
+            <p id="resetPasswordIdentity"></p>
+          </div>
+        </div>
+        <button type="button" class="user-modal-close" data-close-reset aria-label="Close">&times;</button>
+      </div>
+      <div class="user-confirm-message" id="resetPasswordDescription">
+        <p>After verifying this resident in person, send a six-digit recovery code to:</p>
+        <strong id="resetPasswordEmail"></strong>
+      </div>
+      <div class="user-form-message" id="resetPasswordMessage" role="status" aria-live="polite"></div>
+      <div class="user-modal-actions">
+        <button type="button" class="user-action-button secondary" data-close-reset>Cancel</button>
+        <button type="button" class="user-action-button primary" id="sendResetCodeButton"><i class="fas fa-paper-plane" aria-hidden="true"></i> Send recovery code</button>
+      </div>
+    </section>
+  </div>
+  <div class="user-toast" id="userToast" role="status" aria-live="polite"></div>
+
+  <script>
+    // User Management reads the Supabase-backed PHP endpoint, matching resident signup/auth.
+    const phpAdminUrl = (action) => {
+      const u = new URL("../../FrontPage/php/admin_users.php", window.location.href);
+      u.searchParams.set("action", action);
+      return u.href;
+    };
+
+    let approvedList = [];
+    let resetTargetUser = null;
+    let resetDialogTrigger = null;
+
+    function escapeHtml(str) {
+      return str ? String(str).replace(/[&<>"']/g, m => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      }[m])) : '';
+    }
+
+    function formatResidentId(val) {
+      const s = val != null ? String(val).trim() : "";
+      if (!s) return "—";
+      if (/^BRGY-\d{4}-[A-Z0-9]+$/i.test(s)) return s.toUpperCase();
+      if (!/^(?:RES-?)?\d+$/i.test(s)) return s;
+
+      // If it includes RES prefix, normalize to RES-XXX where XXX is always 3 digits.
+      const hasResPrefix = /res-/i.test(s) || /^res/i.test(s);
+
+      const m = s.match(/(\d+)/);
+      if (!m) return s;
+      const n = parseInt(m[1], 10);
+      if (Number.isNaN(n)) return s;
+      const padded = String(n).padStart(3, "0");
+      return hasResPrefix ? `RES-${padded}` : padded;
+    }
+
+    function renderTable(list) {
+      const tbody = document.getElementById("approvedTableBody");
+      tbody.innerHTML = "";
+
+      if (!list || list.length === 0) {
+        tbody.innerHTML = `
+          <div class="table-row">
+            <div class="table-cell" style="grid-column:1/-1;padding:2rem;color:#777;text-align:center;">
+              No registered users found
+            </div>
+          </div>`;
+        return;
+      }
+
+      list.forEach(u => {
+        const date = u.approvedDateTime ? new Date(u.approvedDateTime).toLocaleString() : "-";
+        const residentId = formatResidentId(u.residentId || u.resident_id || "");
+        const firstName = (u.firstname || "").trim();
+        const lastName = (u.lastname || "").trim();
+        const fullName = (lastName || firstName) ? `${lastName}${lastName && firstName ? ", " : ""}${firstName}` : "—";
+        const username = (u.username || "").trim() || "—";
+        const address = (u.addressInfo || "").trim() || "—";
+        const row = document.createElement("div");
+        row.className = "table-row";
+        row.innerHTML = `
+          <div class="table-cell">${escapeHtml(residentId)}</div>
+          <div class="table-cell">${escapeHtml(fullName)}</div>
+          <div class="table-cell">${escapeHtml(username)}</div>
+          <div class="table-cell">${escapeHtml(address)}</div>
+          <div class="table-cell">${escapeHtml(u.phoneNum || "—")}</div>
+          <div class="table-cell">${escapeHtml(date)}</div>
+          <div class="table-cell user-actions-cell">
+            <button type="button" class="user-action-button small primary" data-edit-user="${escapeHtml(u.id)}" ${u.hasResidentRecord === false ? "disabled title=\"Resident details are not linked yet\"" : ""}><i class="fas fa-pen"></i> Edit</button>
+            <button type="button" class="user-action-button small secondary" data-reset-user="${escapeHtml(u.id)}" ${u.email ? "" : "disabled"}><i class="fas fa-key"></i> Reset password</button>
+          </div>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    function showToast(message, isError = false) {
+      const toast = document.getElementById("userToast");
+      toast.textContent = message;
+      toast.classList.toggle("error", isError);
+      toast.classList.add("visible");
+      window.setTimeout(() => toast.classList.remove("visible"), 4500);
+    }
+
+    function closeEditModal() {
+      document.getElementById("editUserModal").hidden = true;
+    }
+
+    function openResetModal(user, trigger) {
+      resetTargetUser = user;
+      resetDialogTrigger = trigger;
+      document.getElementById("resetPasswordIdentity").textContent = `${user.lastname || ""}${user.lastname && user.firstname ? ", " : ""}${user.firstname || "Resident"}`;
+      document.getElementById("resetPasswordEmail").textContent = user.email || "No email address on file";
+      document.getElementById("resetPasswordMessage").textContent = "";
+      document.getElementById("resetPasswordMessage").classList.remove("error");
+      document.getElementById("resetPasswordModal").hidden = false;
+      document.getElementById("sendResetCodeButton").focus();
+    }
+
+    function closeResetModal() {
+      document.getElementById("resetPasswordModal").hidden = true;
+      resetTargetUser = null;
+      if (resetDialogTrigger?.isConnected) resetDialogTrigger.focus();
+      resetDialogTrigger = null;
+    }
+
+    function openEditModal(user) {
+      document.getElementById("editUserId").value = user.id;
+      document.getElementById("editUserIdentity").textContent = `${user.lastname || ""}${user.lastname && user.firstname ? ", " : ""}${user.firstname || ""} · ${user.residentId || "Resident"}`;
+      document.getElementById("editHouseUnit").value = user.houseUnit || "";
+      document.getElementById("editBlockLot").value = user.blockLot || "";
+      document.getElementById("editStreet").value = user.street || "";
+      document.getElementById("editPhone").value = user.phoneNum || "";
+      document.getElementById("editUserMessage").textContent = "";
+      document.getElementById("editUserModal").hidden = false;
+      document.getElementById("editHouseUnit").focus();
+    }
+
+    async function postAdminAction(payload) {
+      const response = await fetch(phpAdminUrl(""), {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || data.success === false) throw new Error(data.error || "Request failed. Please try again.");
+      return data;
+    }
+
+    document.getElementById("approvedTableBody").addEventListener("click", async (event) => {
+      const editButton = event.target.closest("[data-edit-user]");
+      if (editButton) {
+        const user = approvedList.find(item => String(item.id) === editButton.dataset.editUser);
+        if (user) openEditModal(user);
+        return;
+      }
+      const resetButton = event.target.closest("[data-reset-user]");
+      if (!resetButton) return;
+      const user = approvedList.find(item => String(item.id) === resetButton.dataset.resetUser);
+      if (!user?.email) return;
+      openResetModal(user, resetButton);
+    });
+
+    document.querySelectorAll("[data-close-modal]").forEach(button => button.addEventListener("click", closeEditModal));
+    document.querySelectorAll("[data-close-reset]").forEach(button => button.addEventListener("click", closeResetModal));
+    document.getElementById("editUserModal").addEventListener("click", event => {
+      if (event.target.id === "editUserModal") closeEditModal();
+    });
+    document.getElementById("resetPasswordModal").addEventListener("click", event => {
+      if (event.target.id === "resetPasswordModal") closeResetModal();
+    });
+    document.getElementById("sendResetCodeButton").addEventListener("click", async event => {
+      if (!resetTargetUser?.email) return;
+      const button = event.currentTarget;
+      const message = document.getElementById("resetPasswordMessage");
+      button.disabled = true;
+      message.textContent = "Sending recovery code…";
+      message.classList.remove("error");
+      try {
+        const result = await postAdminAction({ action: "reset-password", id: resetTargetUser.id });
+        closeResetModal();
+        showToast(result.message || "Password reset email sent.");
+      } catch (error) {
+        message.textContent = error.message || "Could not send the recovery code. Try again.";
+        message.classList.add("error");
+      } finally {
+        button.disabled = false;
+      }
+    });
+    document.addEventListener("keydown", event => {
+      if (event.key === "Escape" && !document.getElementById("resetPasswordModal").hidden) closeResetModal();
+    });
+    document.getElementById("editUserForm").addEventListener("submit", async event => {
+      event.preventDefault();
+      const button = document.getElementById("saveUserButton");
+      const message = document.getElementById("editUserMessage");
+      const payload = {
+        action: "update",
+        id: document.getElementById("editUserId").value,
+        houseUnit: document.getElementById("editHouseUnit").value.trim(),
+        blockLot: document.getElementById("editBlockLot").value.trim(),
+        street: document.getElementById("editStreet").value.trim(),
+        phoneNum: document.getElementById("editPhone").value.trim()
+      };
+      button.disabled = true;
+      message.textContent = "Saving…";
+      message.classList.remove("error");
+      try {
+        const result = await postAdminAction(payload);
+        closeEditModal();
+        showToast(result.message || "Resident details updated.");
+        await reloadAllData();
+      } catch (error) {
+        message.textContent = error.message;
+        message.classList.add("error");
+      } finally {
+        button.disabled = false;
+      }
+    });
+
+    function applyCounts(data) {
+      document.getElementById("totalUsersCount").innerText = data.totalUsers ?? 0;
+      document.getElementById("activeUsersCount").innerText = data.activeUsers ?? 0;
+      document.getElementById("offlineUsersCount").innerText = data.offlineUsers ?? 0;
+    }
+
+    async function loadCounts() {
+      try {
+        const res = await fetch(phpAdminUrl("counts"));
+        if (res.status === 401 || res.status === 403) {
+          applyCounts({ totalUsers: "—", activeUsers: "—", offlineUsers: "—" });
+          return;
+        }
+        if (!res.ok) throw new Error("Supabase resident counts unavailable.");
+        const data = await res.json();
+        if (data && typeof data.totalUsers === "number") {
+          applyCounts(data);
+          return;
+        }
+        throw new Error("Supabase returned invalid resident counts.");
+      } catch (e) {
+        console.warn("Supabase resident counts unavailable:", e);
+        applyCounts({ totalUsers: "—", activeUsers: "—", offlineUsers: "—" });
+      }
+    }
+
+    async function reloadAllData() {
+      try {
+        const res = await fetch(phpAdminUrl("approved"));
+        if (res.status === 401 || res.status === 403) {
+          approvedList = [];
+          document.getElementById("approvedTableBody").innerHTML = `<div class="table-row"><div class="table-cell" style="grid-column:1/-1;padding:2rem;color:#777;text-align:center;">Admin sign-in required to view resident records.</div></div>`;
+          applyCounts({ totalUsers: "—", activeUsers: "—", offlineUsers: "—" });
+          return;
+        }
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          throw new Error(data.error || "Could not load resident accounts from Supabase.");
+        }
+        const data = await res.json();
+        if (!Array.isArray(data)) throw new Error("Supabase returned an invalid resident list.");
+        approvedList = data;
+        renderTable(approvedList);
+        await loadCounts();
+        document.getElementById("totalUsersCount").innerText = approvedList.length;
+        return;
+      } catch (err) {
+        console.warn("Supabase resident list unavailable:", err);
+        approvedList = [];
+        document.getElementById("approvedTableBody").innerHTML = `<div class="table-row"><div class="table-cell" style="grid-column:1/-1;padding:2rem;color:#777;text-align:center;">Could not load resident accounts from Supabase. ${escapeHtml(err.message || "Try refreshing the page.")}</div></div>`;
+        applyCounts({ totalUsers: "—", activeUsers: "—", offlineUsers: "—" });
+      }
+    }
+
+    const POLL_MS = 15000;
+    let pollTimer = null;
+
+    document.addEventListener("DOMContentLoaded", () => {
+      reloadAllData();
+      pollTimer = setInterval(reloadAllData, POLL_MS);
+
+      const searchInput = document.getElementById("searchInput");
+      if (searchInput) {
+        searchInput.addEventListener("input", function() {
+          const term = this.value.toLowerCase().trim();
+          const rows = document.querySelectorAll("#approvedTableBody .table-row");
+          rows.forEach(row => {
+            const text = row.textContent.toLowerCase();
+            row.style.display = text.includes(term) ? "grid" : "none";
+          });
+        });
+      }
+    });
+
+    window.addEventListener("beforeunload", () => {
+      if (pollTimer) clearInterval(pollTimer);
+    });
+  </script>
+</body>
+</html>

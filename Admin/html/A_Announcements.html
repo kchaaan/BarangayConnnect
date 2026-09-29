@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Announcements - BarangayConnect</title>
+  <link rel="stylesheet" href="../css/A_announcements-style.css">
+  <link rel="stylesheet" href="../css/bc-admin-page-title.css?v=20250642">
+  <style>
+    * {
+      scrollbar-width: none !important;
+      -ms-overflow-style: none !important;
+    }
+    *::-webkit-scrollbar {
+      display: none !important;
+    }
+  </style>
+  <script src="https://kit.fontawesome.com/a2e0f1f0c1.js" crossorigin="anonymous"></script>
+  <script src="../../Shared/js/bc-notify.js?v=20250659"></script>
+  <script src="../../Shared/js/bc-announcements-api.js?v=20250710"></script>
+</head>
+
+<body>
+  <main class="emergency-wrapper">
+    <div class="emergency-card">
+      <h2>Announcements</h2>
+
+      <!-- Filters -->
+      <div class="filters-section">
+        <div class="filter-group">
+          <label for="announcement-status">Status:</label>
+          <select id="announcement-status" class="filter-select">
+            <option value="all">All Announcements</option>
+            <option value="published">Published</option>
+            <option value="draft">Draft</option>
+            <option value="scheduled">Scheduled</option>
+            <option value="archived">Archived</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label for="announcement-type">Type:</label>
+          <select id="announcement-type" class="filter-select">
+            <option value="all">All Types</option>
+            <option value="general">General</option>
+            <option value="emergency">Emergency</option>
+            <option value="event">Event</option>
+            <option value="maintenance">Maintenance</option>
+          </select>
+        </div>
+
+        <div class="search-group">
+          <input type="text" placeholder="Search announcements..." class="search-input" id="searchInput">
+          <button class="search-btn"><i class="fas fa-search"></i></button>
+        </div>
+      </div>
+
+      <!-- Announcements -->
+      <section class="announcements-section">
+        <div class="announcements-header">
+          <h2><i class="fas fa-bullhorn"></i> Announcements</h2>
+          <button class="create-announcement-btn" id="addNewBtn">
+            <i class="fas fa-plus"></i> Create New Announcement
+          </button>
+        </div>
+
+        <div class="items-container" id="announcementsGrid"></div>
+      </section>
+
+    </div>
+  </main>
+
+
+
+
+  <!-- Modal -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal-wrapper">
+      <div class="modal-header">
+        <h3 id="modalTitle">Add New Announcement</h3>
+        <button class="modal-close" id="modalClose"><i class="fas fa-times"></i></button>
+      </div>
+
+      <form id="announcementForm" class="modal-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Title <span class="required">*</span></label>
+            <input type="text" id="announcementTitle" required>
+          </div>
+          <div class="form-group">
+            <label>Type <span class="required">*</span></label>
+            <select id="announcementType" required>
+              <option value="general">General</option>
+              <option value="emergency">Emergency</option>
+              <option value="event">Event</option>
+              <option value="maintenance">Maintenance</option>
+              <option value="important">Important</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Status <span class="required">*</span></label>
+            <select id="announcementStatus" required>
+              <option value="published">Published</option>
+              <option value="draft">Draft</option>
+              <option value="scheduled">Scheduled</option>
+              <option value="archived">Archived</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Author</label>
+            <input type="text" id="announcementAuthor" placeholder="e.g., Barangay Captain">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Date</label>
+            <input type="date" id="announcementDate">
+          </div>
+          <div class="form-group checkbox-group">
+            <label class="checkbox-label">
+              <input type="checkbox" id="announcementFeatured">
+              <span>Mark as featured</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group" style="width: 100%;">
+            <label>Description <span class="required">*</span></label>
+            <textarea id="announcementDescription" rows="4" required></textarea>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="secondary-btn" id="cancelBtn">Cancel</button>
+          <button type="submit" class="primary-btn">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+
+
+  <!-- UPDATED SCRIPT WITH BACKEND CALLS -->
+  <script>
+    (function() {
+      const qs = s => document.querySelector(s);
+      const qsa = s => Array.from(document.querySelectorAll(s));
+
+      let announcements = [];
+      let editingId = null;
+
+      /* ------------------------------
+         LOAD FROM BACKEND (NEW)
+      ------------------------------- */
+      const AnnApi = window.BarangayConnectAnnouncementsApi;
+
+      async function loadAnnouncementsFromServer() {
+        if (!AnnApi) {
+          console.error('Announcements API is not configured.');
+          return;
+        }
+        try {
+          announcements = await AnnApi.fetchAll();
+          renderAnnouncements();
+        } catch (err) {
+          console.error('Error loading announcements:', err);
+          if (window.bcNotify) {
+            window.bcNotify.error('Could not load announcements from the database.', 'Load failed');
+          }
+        }
+      }
+
+      function formatDate(dateString) {
+        if (!dateString) return '';
+        const date = new Date(dateString + 'T00:00:00');
+        return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+      }
+
+      function renderAnnouncements() {
+        const statusFilter = qs('#announcement-status').value;
+        const typeFilter = qs('#announcement-type').value;
+        const searchTerm = qs('#searchInput').value.toLowerCase();
+
+        let filtered = announcements.filter(announcement => {
+          const matchStatus = statusFilter === 'all' || announcement.status === statusFilter;
+          const matchType = typeFilter === 'all' || announcement.type === typeFilter;
+          const matchSearch = !searchTerm ||
+            announcement.title.toLowerCase().includes(searchTerm) ||
+            announcement.description.toLowerCase().includes(searchTerm) ||
+            (announcement.author && announcement.author.toLowerCase().includes(searchTerm));
+
+          return matchStatus && matchType && matchSearch;
+        });
+
+        const container = qs('#announcementsGrid');
+        if (filtered.length === 0) {
+          container.innerHTML = '<div class="empty-state"><i class="fas fa-inbox"></i><p>No announcements found</p></div>';
+          return;
+        }
+
+        container.innerHTML = filtered.map(announcement => {
+          const dateStr = formatDate(announcement.announcementDate);
+          const featuredClass = announcement.featured ? 'featured' : '';
+          const importantClass = announcement.type.toLowerCase() === 'important' ? 'important' : '';
+          const typeClass = announcement.type.toLowerCase();
+          const statusClass = announcement.status.toLowerCase();
+
+          return `
+            <div class="item-card ${featuredClass} ${importantClass}" data-id="${announcement.id}">
+              <div class="item-header">
+                <div class="item-title">
+                  <h4>${announcement.title}</h4>
+                  <span class="item-type-badge ${typeClass}">
+                    ${announcement.type.charAt(0).toUpperCase() + announcement.type.slice(1)}
+                  </span>
+                </div>
+                <span class="status-badge ${statusClass}">
+                  ${announcement.status.charAt(0).toUpperCase() + announcement.status.slice(1)}
+                </span>
+              </div>
+
+              <div class="item-body">
+                ${announcement.description ? `<p class="item-description">${announcement.description}</p>` : ''}
+                ${(dateStr || announcement.author) ? `
+                  <p class="item-description" style="margin-top:0.5rem; color:#64748b; font-size:0.85rem;">
+                    ${dateStr ? `<i class="fas fa-calendar"></i> ${dateStr}` : ''}
+                    ${dateStr && announcement.author ? ' • ' : ''}
+                    ${announcement.author ? `<i class="fas fa-user"></i> ${announcement.author}` : ''}
+                  </p>` : ''}
+              </div>
+
+              <div class="item-actions">
+                <button class="action-icon edit" data-id="${announcement.id}" title="Edit">
+                  <i class="fas fa-edit"></i>
+                </button>
+                <button class="action-icon delete" data-id="${announcement.id}" title="Delete">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
+            </div>`;
+        }).join('');
+
+        // Edit action
+        qsa('.action-icon.edit').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const id = parseInt(btn.getAttribute('data-id'));
+            const announcement = announcements.find(a => a.id === id);
+            if (announcement) openModal(announcement);
+          });
+        });
+
+        // DELETE ANNOUNCEMENT (NEW)
+        qsa('.action-icon.delete').forEach(btn => {
+          btn.addEventListener('click', async () => {
+            const id = parseInt(btn.getAttribute('data-id'));
+            const announcement = announcements.find(a => a.id === id);
+            if (!announcement) return;
+            const ok = window.bcConfirm
+              ? await window.bcConfirm(`Delete "${announcement.title}"?`, { title: "Confirm deletion" })
+              : window.confirm(`Delete "${announcement.title}"?`);
+            if (!ok) return;
+            try {
+              await AnnApi.remove(id);
+              if (window.bcNotify) {
+                window.bcNotify.success('Announcement deleted.', 'Deleted');
+              }
+              await loadAnnouncementsFromServer();
+            } catch (err) {
+              console.error(err);
+              if (window.bcNotify) {
+                window.bcNotify.error('Could not delete announcement.', 'Delete failed');
+              }
+            }
+          });
+        });
+      }
+
+
+
+      function openModal(announcement = null) {
+        editingId = announcement ? announcement.id : null;
+        const modal = qs('#modalOverlay');
+        const form = qs('#announcementForm');
+        const title = qs('#modalTitle');
+
+        if (announcement) {
+          title.innerHTML = '<i class="fas fa-edit"></i> Edit Announcement';
+          qs('#announcementTitle').value = announcement.title;
+          qs('#announcementType').value = announcement.type;
+          qs('#announcementStatus').value = announcement.status;
+          qs('#announcementDescription').value = announcement.description || '';
+          qs('#announcementAuthor').value = announcement.author || '';
+          qs('#announcementDate').value = announcement.announcementDate || '';
+          qs('#announcementFeatured').checked = announcement.featured || false;
+        } else {
+          title.innerHTML = '<i class="fas fa-plus"></i> Add New Announcement';
+          form.reset();
+          qs('#announcementDate').value = new Date().toISOString().split('T')[0];
+        }
+
+        modal.style.display = 'flex';
+      }
+
+      function closeModal() {
+        qs('#modalOverlay').style.display = 'none';
+        editingId = null;
+        qs('#announcementForm').reset();
+      }
+
+
+      // --- EVENT LISTENERS ---
+      qs('#addNewBtn').addEventListener('click', () => openModal());
+      qs('#modalClose').addEventListener('click', closeModal);
+      qs('#cancelBtn').addEventListener('click', closeModal);
+
+      // Prevent accidental close inside modal
+      const itemOverlay = qs('#modalOverlay');
+      const itemModalBox = itemOverlay.querySelector('.modal-wrapper');
+      let itemOverlayMouseDown = false;
+
+      itemOverlay.addEventListener('mousedown', (e) => { itemOverlayMouseDown = (e.target === itemOverlay); });
+      itemOverlay.addEventListener('mouseup', (e) => {
+        if (itemOverlayMouseDown && e.target === itemOverlay) closeModal();
+        itemOverlayMouseDown = false;
+      });
+      ['mousedown','mouseup','click'].forEach(evt =>
+        itemModalBox.addEventListener(evt, (e) => e.stopPropagation())
+      );
+
+
+      /* ------------------------------
+         SAVE ANNOUNCEMENT (NEW)
+      ------------------------------- */
+      qs('#announcementForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const formData = {
+          title: qs('#announcementTitle').value.trim(),
+          type: qs('#announcementType').value,
+          status: qs('#announcementStatus').value,
+          description: qs('#announcementDescription').value.trim(),
+          author: qs('#announcementAuthor').value.trim(),
+          announcementDate: qs('#announcementDate').value || null,
+          featured: qs('#announcementFeatured').checked
+        };
+
+        try {
+          if (!AnnApi) throw new Error('API not configured');
+          if (editingId) {
+            await AnnApi.update(editingId, formData);
+            if (window.bcNotify) window.bcNotify.success('Announcement updated.', 'Saved');
+          } else {
+            await AnnApi.create(formData);
+            if (window.bcNotify) window.bcNotify.success('Announcement created.', 'Saved');
+          }
+          await loadAnnouncementsFromServer();
+          closeModal();
+        } catch (err) {
+          console.error(err);
+          if (window.bcNotify) {
+            window.bcNotify.error('Could not save announcement.', 'Save failed');
+          }
+        }
+      });
+
+
+      ['announcement-status', 'announcement-type'].forEach(id => {
+        qs('#' + id).addEventListener('change', renderAnnouncements);
+      });
+
+      qs('#searchInput').addEventListener('input', renderAnnouncements);
+
+
+      /* ------------------------------
+         INITIAL LOAD (NEW)
+      ------------------------------- */
+      loadAnnouncementsFromServer();
+      setInterval(loadAnnouncementsFromServer, 15000);
+
+    })();
+  </script>
+
+</body>
+</html>

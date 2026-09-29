@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <title>Request Management - BarangayConnect</title>
+  <link rel="stylesheet" href="../css/R_Request-management-style.css?v=20250650">
+  <link rel="stylesheet" href="../../Shared/css/bc-request-details-table.css?v=20250630">
+  <link rel="stylesheet" href="../../Shared/css/bc-section-divider.css?v=20250635">
+  <link rel="stylesheet" href="../../Shared/css/bc-notify.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <script src="https://kit.fontawesome.com/a2e0f1f0c1.js" crossorigin="anonymous"></script>
+  <script src="../../Shared/js/bc-notify.js?v=20250659"></script>
+  <link rel="stylesheet" href="../css/bc-resident-page-title.css?v=20250620">
+</head>
+<body>
+  <div class="req-mgmt-page">
+    <header class="page-header">
+      <h1 class="page-title">Request Management</h1>
+    </header>
+
+    <!-- New request categories -->
+    <section class="req-categories card-surface">
+      <div class="req-categories__head">
+        <h2 class="section-title">
+          <i class="fas fa-folder-plus" aria-hidden="true"></i>
+          Start a new request
+        </h2>
+        <p class="req-categories__hint">Choose a category to open the request form.</p>
+      </div>
+      <div class="cards-container">
+        <a href="#" class="management-card" onclick="bcNavigatePage('R_Personal-Identification.html'); return false;">
+          <div class="card-icon"><i class="fas fa-id-card" aria-hidden="true"></i></div>
+          <div class="card-content">
+            <h3>Personal Identification &amp; Residency</h3>
+            <p>Certificates and ID documents</p>
+            <span class="card-cta">Open form <i class="fas fa-arrow-right" aria-hidden="true"></i></span>
+          </div>
+        </a>
+        <a href="#" class="management-card" onclick="bcNavigatePage('R_Property-Construction-Business.html'); return false;">
+          <div class="card-icon"><i class="fas fa-building" aria-hidden="true"></i></div>
+          <div class="card-content">
+            <h3>Property, Construction &amp; Business</h3>
+            <p>Property and business permits</p>
+            <span class="card-cta">Open form <i class="fas fa-arrow-right" aria-hidden="true"></i></span>
+          </div>
+        </a>
+        <a href="#" class="management-card" onclick="bcNavigatePage('R_Family-Social-Welfare.html'); return false;">
+          <div class="card-icon"><i class="fas fa-users" aria-hidden="true"></i></div>
+          <div class="card-content">
+            <h3>Family, Social &amp; Welfare</h3>
+            <p>Family and welfare services</p>
+            <span class="card-cta">Open form <i class="fas fa-arrow-right" aria-hidden="true"></i></span>
+          </div>
+        </a>
+        <a href="#" class="management-card" onclick="bcNavigatePage('R_Legal-Complaint-Settlement.html'); return false;">
+          <div class="card-icon"><i class="fas fa-gavel" aria-hidden="true"></i></div>
+          <div class="card-content">
+            <h3>Legal, Complaint &amp; Settlement</h3>
+            <p>Complaints and legal matters</p>
+            <span class="card-cta">Open form <i class="fas fa-arrow-right" aria-hidden="true"></i></span>
+          </div>
+        </a>
+        <a href="#" class="management-card" onclick="bcNavigatePage('R_Community-Other-Requests.html'); return false;">
+          <div class="card-icon"><i class="fas fa-handshake" aria-hidden="true"></i></div>
+          <div class="card-content">
+            <h3>Community &amp; Other</h3>
+            <p>Community and misc. requests</p>
+            <span class="card-cta">Open form <i class="fas fa-arrow-right" aria-hidden="true"></i></span>
+          </div>
+        </a>
+      </div>
+    </section>
+
+    <div class="bc-section-divider" aria-hidden="true">
+      <span class="bc-section-divider__accent"></span>
+    </div>
+
+    <section class="req-stats-toolbar" aria-label="Request summary and filter">
+      <!-- Quick stats -->
+      <div class="req-stats">
+        <div class="req-stat-card">
+          <div class="req-stat-icon">
+            <i class="fas fa-file-alt" aria-hidden="true"></i>
+          </div>
+          <div class="req-stat-content">
+            <h3>Requests</h3>
+            <div class="req-stat-number" id="reqStatPending">0</div>
+          </div>
+        </div>
+        <div class="req-stat-card req-stat-card--progress">
+          <div class="req-stat-icon">
+            <i class="fas fa-hourglass-half" aria-hidden="true"></i>
+          </div>
+          <div class="req-stat-content">
+            <h3>In Progress</h3>
+            <div class="req-stat-number" id="reqStatProgress">0</div>
+          </div>
+        </div>
+        <div class="req-stat-card req-stat-card--done">
+          <div class="req-stat-icon">
+            <i class="fas fa-check-circle" aria-hidden="true"></i>
+          </div>
+          <div class="req-stat-content">
+            <h3>Completed</h3>
+            <div class="req-stat-number" id="reqStatCompleted">0</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="req-filter-group">
+        <label for="reqStatusFilter">Filter</label>
+        <select id="reqStatusFilter" class="req-status-filter">
+          <option value="all">All requests</option>
+          <option value="pending">Pending</option>
+          <option value="in_progress">In Progress</option>
+          <option value="completed">Completed</option>
+          <option value="rejected">Rejected</option>
+        </select>
+      </div>
+    </section>
+
+    <!-- My requests / admin updates -->
+    <section class="req-tracking card-surface">
+      <div class="req-tracking__head">
+        <h2 class="section-title">
+          <i class="fas fa-clipboard-list" aria-hidden="true"></i>
+          My requests &amp; updates
+        </h2>
+        <button type="button" class="btn-ghost" id="refreshMyRequests" title="Refresh list">
+          <i class="fas fa-arrows-rotate" aria-hidden="true"></i>
+          Refresh
+        </button>
+      </div>
+      <p class="req-tracking__lead">See when barangay staff change your request status or leave a message for you.</p>
+
+      <div id="myRequestLoading" class="req-state req-state--loading" hidden>
+        <i class="fas fa-spinner fa-spin" aria-hidden="true"></i>
+        <span>Loading your requests…</span>
+      </div>
+      <div id="myRequestGuest" class="req-state" hidden>
+        <i class="fas fa-user-lock" aria-hidden="true"></i>
+        <p>Sign in to track requests</p>
+        <span>Log in from the resident portal home page to see your submitted requests.</span>
+      </div>
+      <div id="myRequestEmpty" class="req-state" hidden>
+        <i class="fas fa-inbox" aria-hidden="true"></i>
+        <p>No requests yet</p>
+        <span>After you submit a request, it will appear here with status updates from the barangay.</span>
+      </div>
+      <div id="myRequestError" class="req-state req-state--error" hidden>
+        <i class="fas fa-triangle-exclamation" aria-hidden="true"></i>
+        <p>Could not load requests</p>
+        <span>Make sure Apache and MySQL are running in XAMPP, then refresh.</span>
+      </div>
+      <div id="myRequestList" class="req-track-list"></div>
+    </section>
+  </div>
+
+  <!-- Request details modal -->
+  <div class="modal request-details-modal" id="requestDetailsModal" role="dialog" aria-modal="true" aria-labelledby="residentReqDetailTitle" aria-hidden="true">
+    <div class="modal-content modal-content--wide">
+      <div class="modal-header">
+        <h2 id="residentReqDetailTitle">Request details</h2>
+        <button type="button" class="close-btn" id="requestDetailsClose" aria-label="Close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="req-detail-remarks" id="rdRemarksWrap">
+          <h3 class="req-detail-remarks__title"><i class="fas fa-message" aria-hidden="true"></i> Message from barangay</h3>
+          <p id="rdRemarks" class="req-detail-remarks__body">—</p>
+        </div>
+
+        <table class="bc-details-table" aria-label="Request summary">
+          <tbody>
+            <tr><th scope="row">Reference ID</th><td id="rdReqId">—</td></tr>
+            <tr><th scope="row">Document / service</th><td id="rdDocType">—</td></tr>
+            <tr><th scope="row">Category</th><td id="rdCategory">—</td></tr>
+            <tr><th scope="row">Status</th><td id="rdStatus">—</td></tr>
+            <tr><th scope="row">Submitted</th><td id="rdSubmitted">—</td></tr>
+            <tr><th scope="row">Last updated</th><td id="rdUpdated">—</td></tr>
+            <tr><th scope="row">Your notes</th><td id="rdNotes">—</td></tr>
+          </tbody>
+        </table>
+
+        <h3 class="bc-req-detail-group__title">Applicant</h3>
+        <table class="bc-details-table" aria-label="Applicant information">
+          <tbody>
+            <tr><th scope="row">Name</th><td id="rdName">—</td></tr>
+            <tr><th scope="row">Email</th><td id="rdEmail">—</td></tr>
+            <tr><th scope="row">Mobile</th><td id="rdMobile">—</td></tr>
+            <tr><th scope="row">Address</th><td id="rdAddress">—</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../Shared/js/bc-nav-persist.js?v=20250605"></script>
+  <script src="../../Shared/js/bc-nav-iframe-child.js?v=20250605"></script>
+  <script src="../../Shared/js/bc-session.js?v=20250654"></script>
+  <script src="../../Shared/js/bc-requests-api.js?v=20250654"></script>
+  <script src="../../Shared/js/bc-resident-my-requests.js?v=20250654"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      if (window.BarangayConnectResidentMyRequests) {
+        window.BarangayConnectResidentMyRequests.init();
+      }
+    });
+  </script>
+</body>
+</html>

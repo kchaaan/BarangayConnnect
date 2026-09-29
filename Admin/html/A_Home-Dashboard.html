@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Home Dashboard - BarangayConnect</title>
+  <link rel="stylesheet" href="../css/A_home-dashboard-style.css?v=20250727">
+  <link rel="stylesheet" href="../css/bc-admin-page-title.css?v=20250642">
+  <script src="https://kit.fontawesome.com/a2e0f1f0c1.js" crossorigin="anonymous"></script>
+  <script src="../../Shared/js/bc-reports-api.js?v=20250688"></script>
+  <script src="../../Shared/js/bc-announcements-api.js?v=20250710"></script>
+  <style>
+    /* Force hide all scrollbars */
+    * {
+      scrollbar-width: none !important;
+      -ms-overflow-style: none !important;
+    }
+    *::-webkit-scrollbar {
+      display: none !important;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Dashboard Header -->
+  <div class="dashboard-header">
+    <div class="welcome-section">
+      <h1 class="dashboard-title">Dashboard</h1>
+      <p class="dashboard-subtitle">Here's what's happening in your barangay today</p>
+    </div>
+  </div>
+
+  <section class="dashboard-greeting-banner" aria-label="Welcome">
+    <div class="dashboard-greeting-banner__text">
+      <h2 class="dashboard-greeting-banner__title" id="dashboardGreetingTitle">Good morning, Admin User!</h2>
+      <p class="dashboard-greeting-banner__subtitle">Welcome back to BarangayConnect Admin Panel.</p>
+    </div>
+    <div class="dashboard-greeting-banner__art" aria-hidden="true">
+      <img
+        src="../../Shared/images/bc-dashboard-greeting-illustration.png?v=20250681"
+        alt=""
+        width="560"
+        height="92"
+        decoding="async"
+      />
+    </div>
+  </section>
+
+  <!-- Summary Cards -->
+  <div class="summary-cards">
+
+    <button type="button" class="summary-card summary-card--residents" id="summaryCardResidents" aria-label="Go to User Management — Total Residents">
+      <div class="summary-card__icon" aria-hidden="true">
+        <i class="fas fa-users"></i>
+      </div>
+      <div class="summary-card__body">
+        <h3 class="summary-card__label">Total Residents</h3>
+        <p class="summary-card__value" id="totalResidentsNumber">0</p>
+        <p class="summary-card__hint">Active community members</p>
+      </div>
+    </button>
+
+    <button type="button" class="summary-card summary-card--reports" id="summaryCardReports" aria-label="Go to Reports — Reports Generated">
+      <div class="summary-card__icon" aria-hidden="true">
+        <i class="fas fa-chart-line"></i>
+      </div>
+      <div class="summary-card__body">
+        <h3 class="summary-card__label">Reports Generated</h3>
+        <p class="summary-card__value" id="reportsGeneratedNumber">0</p>
+        <p class="summary-card__hint">This month</p>
+      </div>
+    </button>
+
+    <button type="button" class="summary-card summary-card--requests" id="summaryCardRequests" aria-label="Go to Pending Requests">
+      <div class="summary-card__icon" aria-hidden="true">
+        <i class="fas fa-clipboard-check"></i>
+      </div>
+      <div class="summary-card__body">
+        <h3 class="summary-card__label">Pending Requests</h3>
+        <p class="summary-card__value" id="pendingRequestsNumber">0</p>
+        <p class="summary-card__hint">Awaiting approval</p>
+      </div>
+    </button>
+
+  </div>
+
+  <!-- Overview Charts -->
+  <section class="dashboard-overview" aria-label="Requests and reports overview">
+    <article class="overview-card">
+      <h3 class="overview-card__title">Requests Overview</h3>
+      <div class="overview-card__body">
+        <div class="overview-chart-wrap">
+          <canvas id="requestsOverviewChart" aria-hidden="true"></canvas>
+          <div class="overview-chart-center">
+            <span class="overview-chart-total" id="requestsOverviewTotal">0</span>
+            <span class="overview-chart-label">Total</span>
+          </div>
+        </div>
+        <ul class="overview-legend" id="requestsOverviewLegend"></ul>
+      </div>
+      <button type="button" class="overview-link" id="goToRequests">
+        Go to Requests <i class="fas fa-arrow-right" aria-hidden="true"></i>
+      </button>
+    </article>
+
+    <article class="overview-card">
+      <h3 class="overview-card__title">Reports Overview</h3>
+      <div class="overview-card__body">
+        <div class="overview-chart-wrap">
+          <canvas id="reportsOverviewChart" aria-hidden="true"></canvas>
+          <div class="overview-chart-center">
+            <span class="overview-chart-total" id="reportsOverviewTotal">0</span>
+            <span class="overview-chart-label">Total</span>
+          </div>
+        </div>
+        <ul class="overview-legend" id="reportsOverviewLegend"></ul>
+      </div>
+      <button type="button" class="overview-link" id="goToReports">
+        Go to Reports <i class="fas fa-arrow-right" aria-hidden="true"></i>
+      </button>
+    </article>
+
+    <article class="overview-card overview-card--activity">
+      <h3 class="overview-card__title">Recent Activity</h3>
+      <div class="overview-activity-list" id="recentActivityList"></div>
+      <button type="button" class="overview-link" id="viewAllActivity">
+        View All Activity <i class="fas fa-arrow-right" aria-hidden="true"></i>
+      </button>
+    </article>
+
+    <article class="overview-card overview-card--activity overview-card--announcements">
+      <h3 class="overview-card__title">Latest Announcements</h3>
+      <div class="overview-activity-list" id="adminAnnouncementsList"></div>
+      <button type="button" class="overview-link" id="viewAllAnnouncements">
+        Go to Announcements <i class="fas fa-arrow-right" aria-hidden="true"></i>
+      </button>
+    </article>
+  </section>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="../../Shared/js/resident-store.js"></script>
+  <script>
+    function phpAdminUsersUrl(action) {
+      const u = new URL("../../FrontPage/php/admin_users.php", window.location.href);
+      u.searchParams.set("action", action);
+      return u.href;
+    }
+
+    async function fetchTotalResidentsCount() {
+      try {
+        const res = await fetch(phpAdminUsersUrl("counts"));
+        if (res.ok) {
+          const data = await res.json();
+          if (data && typeof data.totalUsers === "number") {
+            return data.totalUsers;
+          }
+        }
+      } catch (e) {
+        console.warn("MySQL resident counts unavailable:", e);
+      }
+
+      try {
+        const res = await fetch(phpAdminUsersUrl("registered"));
+        if (res.ok) {
+          const list = await res.json();
+          if (Array.isArray(list)) return list.length;
+        }
+      } catch (e) {
+        console.warn("MySQL resident list unavailable:", e);
+      }
+
+      if (window.BarangayConnectResidents) {
+        return window.BarangayConnectResidents.counts().totalUsers ?? 0;
+      }
+
+      return null;
+    }
+
+    function setSummaryCardValue(elementId, count) {
+      var el = document.getElementById(elementId);
+      if (!el) return;
+      el.textContent = formatNumber(count ?? 0);
+    }
+
+    function setTotalResidentsCount(count) {
+      setSummaryCardValue('totalResidentsNumber', count);
+    }
+
+    async function fetchAllReports() {
+      const ReportsApi = window.BarangayConnectReportsApi;
+      if (!ReportsApi) return null;
+
+      try {
+        const [activeRes, archivedRes] = await Promise.all([
+          fetch(ReportsApi.apiUrl("all")),
+          fetch(ReportsApi.apiUrl("archived")),
+        ]);
+
+        let active = [];
+        let archived = [];
+
+        if (activeRes.ok) {
+          const data = await activeRes.json();
+          if (Array.isArray(data)) active = data;
+        }
+        if (archivedRes.ok) {
+          const data = await archivedRes.json();
+          if (Array.isArray(data)) archived = data;
+        }
+
+        return active.concat(archived);
+      } catch (e) {
+        console.warn("Reports KPI unavailable:", e);
+        return null;
+      }
+    }
+
+    function countReportsThisMonth(reports) {
+      const now = new Date();
+      return reports.filter(function (report) {
+        const d = new Date(report.dateSubmitted);
+        if (Number.isNaN(d.getTime())) return false;
+        return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+      }).length;
+    }
+
+    async function fetchReportsGeneratedThisMonth() {
+      const reports = await fetchAllReports();
+      if (reports === null) return null;
+      return countReportsThisMonth(reports);
+    }
+
+    function setReportsGeneratedCount(count) {
+      setSummaryCardValue('reportsGeneratedNumber', count);
+    }
+
+    async function fetchPendingRequestsCount() {
+      try {
+        const u = new URL("../../FrontPage/php/requests_api.php", window.location.href);
+        u.searchParams.set("action", "list");
+        const res = await fetch(u.href);
+        if (!res.ok) return null;
+        const list = await res.json();
+        if (!Array.isArray(list)) return null;
+        return list.filter(function (req) {
+          return String(req.status || "").trim().toLowerCase() === "pending";
+        }).length;
+      } catch (e) {
+        console.warn("Pending requests KPI unavailable:", e);
+        return null;
+      }
+    }
+
+    function setPendingRequestsCount(count) {
+      setSummaryCardValue('pendingRequestsNumber', count);
+    }
+    function formatNumber(num) {
+      try {
+        return Number(num || 0).toLocaleString('en-US');
+      } catch (e) {
+        return String(num || 0);
+      }
+    }
+
+    async function loadAdminDashboardKpis() {
+      const [residentCount, reportsThisMonth, pendingRequests] = await Promise.all([
+        fetchTotalResidentsCount(),
+        fetchReportsGeneratedThisMonth(),
+        fetchPendingRequestsCount(),
+      ]);
+
+      if (residentCount !== null) {
+        setTotalResidentsCount(residentCount);
+      }
+      if (reportsThisMonth !== null) {
+        setReportsGeneratedCount(reportsThisMonth);
+      }
+      if (pendingRequests !== null) {
+        setPendingRequestsCount(pendingRequests);
+      }
+
+      fetch("http://localhost:8080/api/admin/dashboard")
+        .then(function (response) { return response.json(); })
+        .then(function (data) {
+          if (residentCount === null) {
+            setTotalResidentsCount(data.totalResidents);
+          }
+          if (reportsThisMonth === null) {
+            setReportsGeneratedCount(data.reportsGenerated);
+          }
+          if (pendingRequests === null) {
+            setPendingRequestsCount(data.pendingRequests);
+          }
+        })
+        .catch(function (error) {
+          console.error("Admin KPI Error:", error);
+
+          if (residentCount === null) {
+            setTotalResidentsCount(0);
+          }
+          if (reportsThisMonth === null) {
+            setReportsGeneratedCount(0);
+          }
+          if (pendingRequests === null) {
+            setPendingRequestsCount(0);
+          }
+        });
+    }
+
+    function truncateText(text, maxLen) {
+      var s = String(text || '').trim();
+      if (s.length <= maxLen) return s;
+      return s.slice(0, maxLen).trim() + '…';
+    }
+
+    function announcementTypeTone(type) {
+      var t = String(type || 'general').toLowerCase();
+      if (t === 'emergency') return 'rose';
+      if (t === 'event') return 'blue';
+      if (t === 'maintenance') return 'amber';
+      return 'green';
+    }
+
+    async function loadAdminAnnouncements() {
+      var AnnApi = window.BarangayConnectAnnouncementsApi;
+      var list = document.getElementById('adminAnnouncementsList');
+      if (!list) return;
+      if (!AnnApi) return;
+
+      try {
+        var data = await AnnApi.fetchLatest(4);
+        list.innerHTML = '';
+
+        if (!data || data.length === 0) {
+          list.innerHTML = '<p class="overview-activity-empty">No announcements yet.</p>';
+          return;
+        }
+
+        list.innerHTML = data.map(function (announcement) {
+          var dt = parseActivityDate(announcement.announcementDate);
+          var tone = announcement.featured ? 'amber' : announcementTypeTone(announcement.type);
+          var subtitle = truncateText(announcement.description, 48);
+          if (announcement.featured) {
+            subtitle = 'Important · ' + subtitle;
+          } else if (announcement.author) {
+            subtitle = subtitle + ' · ' + String(announcement.author).trim();
+          }
+
+          return (
+            '<div class="overview-activity-item">' +
+              '<div class="overview-activity-icon overview-activity-icon--' + tone + '">' +
+                '<i class="fas fa-bullhorn" aria-hidden="true"></i>' +
+              '</div>' +
+              '<div class="overview-activity-content">' +
+                '<div class="overview-activity-title">' + escapeHtml(announcement.title) + '</div>' +
+                '<div class="overview-activity-subtitle">' + escapeHtml(subtitle) + '</div>' +
+              '</div>' +
+              '<div class="overview-activity-time">' +
+                '<span class="overview-activity-date">' + escapeHtml(dt.date) + '</span>' +
+              '</div>' +
+            '</div>'
+          );
+        }).join('');
+      } catch (error) {
+        console.error('Admin Announcement Error:', error);
+        list.innerHTML = '<p class="overview-activity-empty">Could not load announcements.</p>';
+      }
+    }
+
+    /* Recent activity (overview row) */
+    function escapeHtml(value) {
+      return String(value || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function parseActivityDate(iso) {
+      if (!iso) return { date: '—', time: '', ts: 0 };
+      var raw = String(iso);
+      if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) raw += 'T12:00:00';
+      var d = new Date(raw);
+      if (Number.isNaN(d.getTime())) return { date: '—', time: '', ts: 0 };
+      return {
+        date: d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
+        time: d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }),
+        ts: d.getTime(),
+      };
+    }
+
+    function requestResidentName(req) {
+      var parts = [req.firstName, req.middleName, req.lastName]
+        .map(function (part) { return String(part || '').trim(); })
+        .filter(Boolean);
+      if (parts.length) return parts.join(' ');
+      if (req.lastName || req.firstName) {
+        return [req.firstName, req.lastName].filter(Boolean).join(' ').trim();
+      }
+      return req.residentId || 'Resident';
+    }
+
+    function requestServiceLabel(req) {
+      return req.documentType || req.requestType || 'Service Request';
+    }
+
+    async function fetchRegisteredUsersList() {
+      try {
+        var res = await fetch(phpAdminUsersUrl('registered'));
+        if (!res.ok) return [];
+        var data = await res.json();
+        return Array.isArray(data) ? data : [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    async function fetchLatestAnnouncements() {
+      var AnnApi = window.BarangayConnectAnnouncementsApi;
+      if (!AnnApi) return [];
+      try {
+        var data = await AnnApi.fetchLatest(10);
+        return Array.isArray(data) ? data : [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    var ADMIN_ACTIVITY_CACHE_KEY = 'bc_admin_recent_activity_v1';
+
+    function readAdminActivityCache() {
+      try {
+        var raw = sessionStorage.getItem(ADMIN_ACTIVITY_CACHE_KEY);
+        if (!raw) return null;
+        var parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : null;
+      } catch (e) {
+        return null;
+      }
+    }
+
+    function writeAdminActivityCache(items) {
+      try {
+        sessionStorage.setItem(ADMIN_ACTIVITY_CACHE_KEY, JSON.stringify(items || []));
+      } catch (e) {
+        /* ignore quota errors */
+      }
+    }
+
+    function renderRecentActivity(items) {
+      var list = document.getElementById('recentActivityList');
+      if (!list) return;
+
+      if (!items.length) {
+        list.innerHTML = '<p class="overview-activity-empty">No recent activity.</p>';
+        return;
+      }
+
+      var iconMap = {
+        request: 'fa-file-alt',
+        announcement: 'fa-bullhorn',
+        reportResolved: 'fa-bullseye',
+        user: 'fa-user',
+      };
+
+      var toneMap = {
+        request: 'orange',
+        announcement: 'amber',
+        reportResolved: 'green',
+        user: 'blue',
+      };
+
+      list.innerHTML = items.map(function (item) {
+        var dt = parseActivityDate(item.at);
+        var tone = toneMap[item.type] || 'blue';
+        var icon = iconMap[item.type] || 'fa-info-circle';
+
+        return (
+          '<div class="overview-activity-item">' +
+            '<div class="overview-activity-icon overview-activity-icon--' + tone + '">' +
+              '<i class="fas ' + icon + '" aria-hidden="true"></i>' +
+            '</div>' +
+            '<div class="overview-activity-content">' +
+              '<div class="overview-activity-title">' + escapeHtml(item.title) + '</div>' +
+              '<div class="overview-activity-subtitle">' + escapeHtml(item.subtitle) + '</div>' +
+            '</div>' +
+            '<div class="overview-activity-time">' +
+              '<span class="overview-activity-date">' + escapeHtml(dt.date) + '</span>' +
+              '<span class="overview-activity-clock">' + escapeHtml(dt.time) + '</span>' +
+            '</div>' +
+          '</div>'
+        );
+      }).join('');
+    }
+
+    function buildAdminActivityItems(requests, reports, users, announcements) {
+      var activities = [];
+
+      (requests || []).forEach(function (req) {
+        activities.push({
+          type: 'request',
+          title: 'New request submitted',
+          subtitle: requestServiceLabel(req) + ' - ' + requestResidentName(req),
+          at: req.submissionDate || req.updatedAt,
+        });
+      });
+
+      (reports || []).forEach(function (report) {
+        var status = normalizeStatusKey(report.status);
+        if (status.indexOf('resolve') === -1 && status.indexOf('complete') === -1) return;
+        activities.push({
+          type: 'reportResolved',
+          title: 'Report resolved',
+          subtitle: report.title || report.category || 'Community report',
+          at: report.dateResolved || report.dateUpdated || report.dateSubmitted,
+        });
+      });
+
+      (users || []).forEach(function (user) {
+        var name = [user.firstname, user.lastname].filter(Boolean).join(' ').trim() || user.username || 'Resident';
+        activities.push({
+          type: 'user',
+          title: 'New user registered',
+          subtitle: 'Resident - ' + name,
+          at: user.approvedDateTime,
+        });
+      });
+
+      (announcements || []).forEach(function (announcement) {
+        if (announcement.status && String(announcement.status).toLowerCase() !== 'published') return;
+        activities.push({
+          type: 'announcement',
+          title: 'New announcement posted',
+          subtitle: announcement.title || announcement.description || 'Barangay announcement',
+          at: announcement.announcementDate || announcement.datePosted || announcement.createdAt,
+        });
+      });
+
+      activities.sort(function (a, b) {
+        return parseActivityDate(b.at).ts - parseActivityDate(a.at).ts;
+      });
+
+      return activities.slice(0, 4);
+    }
+
+    function restoreAdminRecentActivityFromCache() {
+      var cached = readAdminActivityCache();
+      if (!cached) return false;
+      renderRecentActivity(cached);
+      return true;
+    }
+
+    async function fetchAdminRecentActivityItems() {
+      var results = await Promise.all([
+        fetchAllRequestsList(),
+        fetchAllReports(),
+        fetchRegisteredUsersList(),
+        fetchLatestAnnouncements(),
+      ]);
+
+      return buildAdminActivityItems(results[0], results[1] || [], results[2], results[3]);
+    }
+
+    async function loadAdminRecentActivity(forceRefresh) {
+      var list = document.getElementById('recentActivityList');
+      if (!list) return;
+
+      if (!forceRefresh && restoreAdminRecentActivityFromCache()) {
+        return;
+      }
+
+      list.innerHTML = '<p class="overview-activity-empty">Loading recent activity...</p>';
+
+      try {
+        var items = await fetchAdminRecentActivityItems();
+        writeAdminActivityCache(items);
+        renderRecentActivity(items);
+      } catch (err) {
+        console.error('Recent Activity Error:', err);
+        list.innerHTML = '<p class="overview-activity-empty">Failed to load recent activity.</p>';
+      }
+    }
+
+    function getTimeGreeting() {
+      var hour = new Date().getHours();
+      if (hour < 12) return 'Good morning';
+      if (hour < 17) return 'Good afternoon';
+      return 'Good evening';
+    }
+
+    function getAdminDisplayName() {
+      var full = localStorage.getItem('adminFullName');
+      if (full && String(full).trim()) return String(full).trim();
+      var user = localStorage.getItem('adminUsername');
+      if (user && String(user).trim()) return String(user).trim();
+      try {
+        var adminUsers = JSON.parse(localStorage.getItem('adminUsers') || '[]');
+        var admins = JSON.parse(localStorage.getItem('admins') || '[]');
+        var current =
+          adminUsers.find(function (a) { return a.isLoggedIn; }) ||
+          admins.find(function (a) { return a.isLoggedIn; });
+        if (current) {
+          return String(current.name || current.username || 'Admin User').trim();
+        }
+      } catch (e) { /* ignore */ }
+      return 'Admin User';
+    }
+
+    function initDashboardGreeting() {
+      var el = document.getElementById('dashboardGreetingTitle');
+      if (!el) return;
+      el.textContent = getTimeGreeting() + ', ' + getAdminDisplayName() + '!';
+    }
+
+    restoreAdminRecentActivityFromCache();
+
+    window.addEventListener('load', function() {
+      initDashboardGreeting();
+      loadAdminDashboardKpis();
+      loadOverviewCharts();
+      loadAdminAnnouncements();
+      loadAdminRecentActivity(false);
+      setInterval(loadAdminAnnouncements, 15000);
+    });
+
+    var overviewCharts = { requests: null, reports: null };
+
+    var OVERVIEW_COLORS = {
+      pending: '#f59e0b',
+      inProgress: '#3b82f6',
+      completed: '#22c55e',
+      newReport: '#3b82f6',
+      reportProgress: '#f59e0b',
+      resolved: '#22c55e',
+      empty: '#e5e7eb',
+    };
+
+    function normalizeStatusKey(status) {
+      return String(status || '').trim().toLowerCase().replace(/_/g, ' ');
+    }
+
+    function navigateAdminSection(section, iframePage) {
+      try {
+        if (window.parent !== window && window.parent.BarangayConnectNavPersist) {
+          window.parent.BarangayConnectNavPersist.activatePortalSection('admin', section, iframePage || null);
+          return;
+        }
+      } catch (e) {
+        console.warn('Navigation unavailable:', e);
+      }
+      var pageMap = {
+        users: 'A_User-Management.html',
+        reports: 'A_Reports.html',
+        requests: 'A_Request-Management.html',
+        announcements: 'A_Announcements.html',
+        transparency: 'A_Transparency.html',
+        emergency: 'A_Emergency.html',
+        feedback: 'A_Feedback.html',
+        dashboard: 'A_Home-Dashboard.html',
+      };
+      var page = iframePage || pageMap[section] || 'A_Home-Dashboard.html';
+      var hash = 'section=' + encodeURIComponent(section);
+      if (iframePage) {
+        hash += '&page=' + encodeURIComponent(iframePage);
+      }
+      window.location.href = page + '#' + hash;
+    }
+
+    document.getElementById('summaryCardResidents')?.addEventListener('click', function () {
+      navigateAdminSection('users');
+    });
+    document.getElementById('summaryCardReports')?.addEventListener('click', function () {
+      navigateAdminSection('reports');
+    });
+    document.getElementById('summaryCardRequests')?.addEventListener('click', function () {
+      navigateAdminSection('requests', 'A_Request.html');
+    });
+    document.getElementById('goToRequests')?.addEventListener('click', function () {
+      navigateAdminSection('requests');
+    });
+    document.getElementById('goToReports')?.addEventListener('click', function () {
+      navigateAdminSection('reports');
+    });
+    document.getElementById('viewAllAnnouncements')?.addEventListener('click', function () {
+      navigateAdminSection('announcements');
+    });
+    document.getElementById('viewAllActivity')?.addEventListener('click', function () {
+      navigateAdminSection('announcements');
+    });
+
+    async function fetchActiveReportsList() {
+      var ReportsApi = window.BarangayConnectReportsApi;
+      if (!ReportsApi) return [];
+      try {
+        var res = await fetch(ReportsApi.apiUrl('all'));
+        if (!res.ok) return [];
+        var data = await res.json();
+        return Array.isArray(data) ? data : [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    async function fetchAllRequestsList() {
+      try {
+        var u = new URL('../../FrontPage/php/requests_api.php', window.location.href);
+        u.searchParams.set('action', 'list');
+        var res = await fetch(u.href);
+        if (!res.ok) return [];
+        var data = await res.json();
+        return Array.isArray(data) ? data : [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function bucketRequests(requests) {
+      var counts = { pending: 0, inProgress: 0, completed: 0 };
+      requests.forEach(function (req) {
+        var k = normalizeStatusKey(req.status);
+        if (k === 'pending') counts.pending += 1;
+        else if (k.indexOf('progress') !== -1) counts.inProgress += 1;
+        else if (k.indexOf('complete') !== -1 || k.indexOf('resolved') !== -1 || k === 'approved') counts.completed += 1;
+      });
+      return counts;
+    }
+
+    function bucketReports(reports) {
+      var counts = { newReport: 0, inProgress: 0, resolved: 0 };
+      reports.forEach(function (report) {
+        var k = normalizeStatusKey(report.status);
+        if (k === 'pending') counts.newReport += 1;
+        else if (k.indexOf('progress') !== -1) counts.inProgress += 1;
+        else if (k.indexOf('resolve') !== -1 || k.indexOf('complete') !== -1) counts.resolved += 1;
+      });
+      return counts;
+    }
+
+    function renderOverviewLegend(containerId, items, total) {
+      var el = document.getElementById(containerId);
+      if (!el) return;
+      el.innerHTML = items.map(function (item) {
+        var pct = total ? ((item.count / total) * 100).toFixed(2) : '0.00';
+        return (
+          '<li class="overview-legend__item">' +
+            '<span class="overview-legend__dot" style="background:' + item.color + '"></span>' +
+            '<span class="overview-legend__text">' + item.label + ' ' + item.count + ' (' + pct + '%)</span>' +
+          '</li>'
+        );
+      }).join('');
+    }
+
+    function buildOverviewChart(canvasId, chartKey, labels, values, colors) {
+      var canvas = document.getElementById(canvasId);
+      if (!canvas || typeof Chart === 'undefined') return;
+
+      var total = values.reduce(function (sum, n) { return sum + n; }, 0);
+      var data = total > 0 ? values : [1];
+      var bg = total > 0 ? colors : [OVERVIEW_COLORS.empty];
+
+      if (overviewCharts[chartKey]) {
+        overviewCharts[chartKey].destroy();
+      }
+
+      overviewCharts[chartKey] = new Chart(canvas, {
+        type: 'doughnut',
+        data: {
+          labels: labels,
+          datasets: [{
+            data: data,
+            backgroundColor: bg,
+            borderWidth: 0,
+            hoverOffset: 4,
+          }],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: '72%',
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              enabled: total > 0,
+              callbacks: {
+                label: function (ctx) {
+                  var val = ctx.raw || 0;
+                  var pct = total ? ((val / total) * 100).toFixed(1) : 0;
+                  return ctx.label + ': ' + val + ' (' + pct + '%)';
+                },
+              },
+            },
+          },
+        },
+      });
+    }
+
+    async function loadOverviewCharts() {
+      var requests = await fetchAllRequestsList();
+      var reports = await fetchActiveReportsList();
+
+      var reqCounts = bucketRequests(requests);
+      var reqValues = [reqCounts.pending, reqCounts.inProgress, reqCounts.completed];
+      var reqTotal = reqValues.reduce(function (a, b) { return a + b; }, 0);
+
+      document.getElementById('requestsOverviewTotal').textContent = String(reqTotal);
+      renderOverviewLegend('requestsOverviewLegend', [
+        { label: 'Pending', count: reqCounts.pending, color: OVERVIEW_COLORS.pending },
+        { label: 'In Progress', count: reqCounts.inProgress, color: OVERVIEW_COLORS.inProgress },
+        { label: 'Completed', count: reqCounts.completed, color: OVERVIEW_COLORS.completed },
+      ], reqTotal);
+      buildOverviewChart(
+        'requestsOverviewChart',
+        'requests',
+        ['Pending', 'In Progress', 'Completed'],
+        reqValues,
+        [OVERVIEW_COLORS.pending, OVERVIEW_COLORS.inProgress, OVERVIEW_COLORS.completed]
+      );
+
+      var repCounts = bucketReports(reports);
+      var repValues = [repCounts.newReport, repCounts.inProgress, repCounts.resolved];
+      var repTotal = repValues.reduce(function (a, b) { return a + b; }, 0);
+
+      document.getElementById('reportsOverviewTotal').textContent = String(repTotal);
+      renderOverviewLegend('reportsOverviewLegend', [
+        { label: 'New', count: repCounts.newReport, color: OVERVIEW_COLORS.newReport },
+        { label: 'In Progress', count: repCounts.inProgress, color: OVERVIEW_COLORS.reportProgress },
+        { label: 'Resolved', count: repCounts.resolved, color: OVERVIEW_COLORS.resolved },
+      ], repTotal);
+      buildOverviewChart(
+        'reportsOverviewChart',
+        'reports',
+        ['New', 'In Progress', 'Resolved'],
+        repValues,
+        [OVERVIEW_COLORS.newReport, OVERVIEW_COLORS.reportProgress, OVERVIEW_COLORS.resolved]
+      );
+    }
+  </script>
+
+</body>
+</html>

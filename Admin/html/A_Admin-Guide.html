@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Guide - BarangayConnect</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    :root{--green:#5f7f58;--green-dark:#35543a;--green-soft:#e8f2e5;--page:#f4f8f4;--ink:#2c3e50;--muted:#66756a;--line:#dce8dc}
+    *{box-sizing:border-box}
+    body{margin:0;padding:1rem 1.25rem 2rem;background:var(--page);color:var(--ink);font:400 15px/1.6 Poppins,Arial,sans-serif}
+    .guide{max-width:1450px;margin:auto}
+    .guide-header{margin:.25rem 0 1.4rem}
+    .guide-header h1{margin:0;color:var(--green-dark);font-size:clamp(1.8rem,3vw,2.5rem);line-height:1.2}
+    .guide-header p{margin:.5rem 0 0;color:var(--muted)}
+    .guide-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,270px),1fr));gap:1rem}
+    .guide-card{display:flex;gap:1rem;min-height:170px;padding:1.2rem;border:1px solid var(--line);border-radius:14px;background:#fff;box-shadow:0 5px 18px rgba(25,65,40,.06)}
+    .guide-icon{display:grid;place-items:center;flex:0 0 42px;width:42px;height:42px;border-radius:12px;background:var(--green-soft);color:var(--green);font-size:1.05rem}
+    .guide-card h2{margin:0 0 .4rem;color:var(--green-dark);font-size:1rem;line-height:1.35}
+    .guide-card p{margin:0;color:var(--muted);font-size:.9rem}
+    .guide-note{margin-top:1.2rem;padding:1rem 1.1rem;border-left:4px solid var(--green);border-radius:8px;background:#e8f2e5;color:#405542;font-size:.9rem}
+    @media(max-width:600px){body{padding:.8rem}.guide-card{min-height:0}}
+  </style>
+</head>
+<body>
+  <main class="guide">
+    <header class="guide-header">
+      <h1><i class="fas fa-book-open" aria-hidden="true"></i> Administrator Guide</h1>
+      <p>Quick guidance for authorized BarangayConnect staff.</p>
+    </header>
+    <section class="guide-grid" aria-label="Administrator instructions">
+      <article class="guide-card"><span class="guide-icon"><i class="fas fa-lock" aria-hidden="true"></i></span><div><h2>Sign in securely</h2><p>Use your assigned administrator account. Keep your password private and sign out when finished on a shared device.</p></div></article>
+      <article class="guide-card"><span class="guide-icon"><i class="fas fa-gauge-high" aria-hidden="true"></i></span><div><h2>Review the dashboard</h2><p>Check summary cards and recent activity, then use the sidebar to open the module you need.</p></div></article>
+      <article class="guide-card"><span class="guide-icon"><i class="fas fa-users" aria-hidden="true"></i></span><div><h2>Manage resident accounts</h2><p>Use User Management to search resident accounts, update contact details, and start password recovery after verifying identity in person.</p></div></article>
+      <article class="guide-card"><span class="guide-icon"><i class="fas fa-file-circle-check" aria-hidden="true"></i></span><div><h2>Process requests and reports</h2><p>Review the submitted details, add clear remarks, and update each record to reflect the action taken.</p></div></article>
+      <article class="guide-card"><span class="guide-icon"><i class="fas fa-box-open" aria-hidden="true"></i></span><div><h2>Track borrowing and inventory</h2><p>Review borrowing requests, keep quantities accurate, and record item release and return promptly.</p></div></article>
+      <article class="guide-card"><span class="guide-icon"><i class="fas fa-scale-balanced" aria-hidden="true"></i></span><div><h2>Keep transparency records current</h2><p>Publish accurate project and budget information. Upload only documents approved for public viewing.</p></div></article>
+      <article class="guide-card"><span class="guide-icon"><i class="fas fa-bullhorn" aria-hidden="true"></i></span><div><h2>Publish announcements</h2><p>Check dates, wording, and category before publishing so residents receive useful, accurate updates.</p></div></article>
+      <article class="guide-card"><span class="guide-icon"><i class="fas fa-phone-volume" aria-hidden="true"></i></span><div><h2>Maintain emergency information</h2><p>Verify phone numbers and procedures before making them visible to residents.</p></div></article>
+      <article class="guide-card"><span class="guide-icon"><i class="fas fa-user-shield" aria-hidden="true"></i></span><div><h2>Protect resident information</h2><p>Access personal records only for official barangay work. Share the minimum information needed to handle a case.</p></div></article>
+    </section>
+    <p class="guide-note">Admin functions and resident information are available only to staff with the appropriate account permissions.</p>
+  </main>
+</body>
+</html>

@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Resident Feedback</title>
+
+  <link rel="stylesheet" href="../css/A_Feedback.css">
+  <link rel="stylesheet" href="../css/bc-admin-page-title.css?v=20250642">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <script src="../../Shared/js/bc-feedback-api.js?v=20250712"></script>
+</head>
+<body>
+
+  <!-- Page Header -->
+  <div class="feedback-page-header">
+    <h1><i class="fas fa-comments"></i> Resident Feedback</h1>
+    <p>View feedback submitted by residents (read-only)</p>
+  </div>
+
+  <!-- Filters Box -->
+  <div class="filters-section">
+    <div class="filter-group">
+      <label>Status</label>
+      <select id="feedback-status" class="filter-select">
+        <option value="all">All</option>
+        <option value="Satisfied">Satisfied</option>
+        <option value="Not Satisfied">Not Satisfied</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label>Date</label>
+      <select id="feedback-date" class="filter-select">
+        <option value="all">All Time</option>
+        <option value="7weeks">Last 7 Weeks</option>
+        <option value="1month">Last Month</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label>Inbox</label>
+      <select id="feedback-inbox" class="filter-select">
+        <option value="unread">Unread only</option>
+        <option value="all">All feedback</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Feedback List -->
+  <div class="feedback-container">
+    <div id="feedbackList" class="feedback-list"></div>
+  </div>
+
+  <!-- Feedback Modal -->
+  <div id="feedbackModal" class="feedback-modal">
+    <div class="feedback-modal-content">
+      <div class="feedback-modal-header">
+        <div id="modalStatus" class="feedback-modal-status">
+          <i class="fas fa-comment"></i>
+          <span id="modalStatusText"></span>
+        </div>
+      </div>
+      <div id="modalSubmitter" class="feedback-modal-submitter"></div>
+      <div id="modalMessage" class="feedback-modal-message"></div>
+      <div id="modalDate" class="feedback-modal-date"></div>
+      <div class="feedback-modal-actions">
+        <button class="done-btn" onclick="closeFeedbackModal()">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const feedbackList = document.getElementById('feedbackList');
+    const statusFilter = document.getElementById('feedback-status');
+    const dateFilter = document.getElementById('feedback-date');
+    const inboxFilter = document.getElementById('feedback-inbox');
+    const FB = window.BarangayConnectFeedbackApi;
+    const POLL_MS = 15000;
+
+    let feedbacks = [];
+    let pollTimer = null;
+
+    function normalizeFeedback(fb) {
+      const dateRaw = fb.date || fb.createdAt || '';
+      return {
+        id: fb.id,
+        status: fb.status,
+        message: fb.message,
+        submitterName: fb.submitterName || '',
+        source: fb.source || 'resident',
+        date: dateRaw ? new Date(dateRaw).toLocaleString() : '',
+        dateObj: dateRaw ? new Date(dateRaw) : null,
+        read: fb.readStatus === true,
+      };
+    }
+
+    async function loadFeedbacksFromDB() {
+      if (!FB) {
+        feedbackList.innerHTML = `
+          <div class="no-feedback">
+            <i class="fas fa-triangle-exclamation"></i>
+            <p>Feedback API helper failed to load.</p>
+          </div>`;
+        return;
+      }
+
+      try {
+        const data = await FB.fetchAll();
+        feedbacks = (Array.isArray(data) ? data : []).map(normalizeFeedback);
+        renderFeedbacks();
+      } catch (error) {
+        console.error(error);
+        feedbackList.innerHTML = `
+          <div class="no-feedback">
+            <i class="fas fa-triangle-exclamation"></i>
+            <p>Error loading feedback. Check your database connection.</p>
+          </div>`;
+      }
+    }
+
+    function renderFeedbacks() {
+      feedbackList.innerHTML = '';
+
+      let filtered = feedbacks.slice();
+      const now = new Date();
+
+      if (inboxFilter.value === 'unread') {
+        filtered = filtered.filter(function (fb) { return !fb.read; });
+      }
+
+      if (statusFilter.value !== 'all') {
+        filtered = filtered.filter(function (fb) { return fb.status === statusFilter.value; });
+      }
+
+      if (dateFilter.value !== 'all') {
+        filtered = filtered.filter(function (fb) {
+          if (!fb.dateObj) return true;
+          if (dateFilter.value === '7weeks') {
+            const d = new Date();
+            d.setDate(now.getDate() - 49);
+            return fb.dateObj >= d;
+          }
+          if (dateFilter.value === '1month') {
+            const d = new Date();
+            d.setMonth(now.getMonth() - 1);
+            return fb.dateObj >= d;
+          }
+          return true;
+        });
+      }
+
+      if (!filtered.length) {
+        feedbackList.innerHTML = `
+          <div class="no-feedback">
+            <i class="fas fa-inbox"></i>
+            <p>No feedback found.</p>
+          </div>`;
+        return;
+      }
+
+      filtered.forEach(function (fb) {
+        const fbId = fb.id != null ? fb.id.toString() : '';
+        const submitter = fb.submitterName
+          ? '<div class="feedback-submitter"><i class="fas fa-user"></i> ' + escapeHtml(fb.submitterName) + '</div>'
+          : '<div class="feedback-submitter"><i class="fas fa-user"></i> Anonymous visitor</div>';
+
+        const card = document.createElement('div');
+        card.className = 'feedback-card';
+        card.innerHTML = `
+          <div class="feedback-status ${fb.status === 'Satisfied' ? 'happy' : 'sad'}">
+            <i class="fas ${fb.status === 'Satisfied' ? 'fa-face-smile' : 'fa-face-frown'}"></i>
+            ${escapeHtml(fb.status)}
+          </div>
+          ${submitter}
+          <div class="feedback-message" title="${escapeAttr(fb.message)}">
+            "${escapeHtml(fb.message)}"
+          </div>
+          <div class="feedback-footer">
+            <div class="feedback-date">${escapeHtml(fb.date)}</div>
+            <div class="feedback-buttons">
+              <button class="read-btn" data-id="${fbId}" ${fb.read ? 'disabled' : ''}>
+                ${fb.read ? 'Read ✓' : 'View details'}
+              </button>
+            </div>
+          </div>`;
+        feedbackList.appendChild(card);
+      });
+    }
+
+    function escapeHtml(text) {
+      return String(text || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function escapeAttr(text) {
+      return escapeHtml(text).replace(/'/g, '&#39;');
+    }
+
+    async function markFeedbackAsReadInDB(id) {
+      try {
+        await FB.markRead(id);
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
+    document.addEventListener('click', async function (e) {
+      if (e.target.classList.contains('read-btn') && !e.target.disabled) {
+        const id = e.target.dataset.id;
+        const feedback = feedbacks.find(function (fb) {
+          return String(fb.id) === id;
+        });
+
+        if (feedback) {
+          showFeedbackModal(feedback);
+          await markFeedbackAsReadInDB(id);
+          feedbacks = feedbacks.map(function (fb) {
+            return String(fb.id) === id ? Object.assign({}, fb, { read: true }) : fb;
+          });
+          renderFeedbacks();
+        }
+      }
+    });
+
+    function showFeedbackModal(feedback) {
+      const modal = document.getElementById('feedbackModal');
+      const modalStatus = document.getElementById('modalStatus');
+      const modalStatusText = document.getElementById('modalStatusText');
+      const modalSubmitter = document.getElementById('modalSubmitter');
+      const modalMessage = document.getElementById('modalMessage');
+      const modalDate = document.getElementById('modalDate');
+
+      modalStatusText.textContent = feedback.status;
+      modalStatus.className = 'feedback-modal-status ' + (feedback.status === 'Satisfied' ? 'happy' : 'sad');
+      modalStatus.querySelector('i').className = 'fas ' + (feedback.status === 'Satisfied' ? 'fa-face-smile' : 'fa-face-frown');
+
+      const name = feedback.submitterName || 'Anonymous visitor';
+      const sourceLabel = feedback.source === 'front' ? ' (Front page)' : ' (Resident portal)';
+      modalSubmitter.textContent = 'From: ' + name + sourceLabel;
+      modalMessage.textContent = feedback.message;
+      modalDate.textContent = feedback.date;
+
+      modal.classList.add('show');
+    }
+
+    function closeFeedbackModal() {
+      document.getElementById('feedbackModal').classList.remove('show');
+    }
+
+    document.getElementById('feedbackModal').addEventListener('click', function (e) {
+      if (e.target === this) closeFeedbackModal();
+    });
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') closeFeedbackModal();
+    });
+
+    statusFilter.addEventListener('change', renderFeedbacks);
+    dateFilter.addEventListener('change', renderFeedbacks);
+    inboxFilter.addEventListener('change', renderFeedbacks);
+
+    loadFeedbacksFromDB();
+    pollTimer = setInterval(loadFeedbacksFromDB, POLL_MS);
+
+    window.addEventListener('beforeunload', function () {
+      if (pollTimer) clearInterval(pollTimer);
+    });
+  </script>
+
+</body>
+</html>

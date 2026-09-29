@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Borrowed Items (Monitoring) - BarangayConnect</title>
+  <link rel="stylesheet" href="../../Shared/css/bc-reports-list-table.css?v=20250803">
+  <link rel="stylesheet" href="../../Shared/css/bc-admin-list-page.css?v=20250803">
+  <link rel="stylesheet" href="../css/bc-admin-page-title.css?v=20250642">
+  <link rel="stylesheet" href="../css/A_borrow-inventory-style.css?v=20250803">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <script src="../../Shared/js/bc-notify.js?v=20250659"></script>
+  <script src="../../Shared/js/bc-borrow-inventory-ui.js?v=20250803"></script>
+  <style>* { scrollbar-width: none !important; } *::-webkit-scrollbar { display: none !important; }</style>
+</head>
+<body data-bi-page="monitoring">
+  <div class="bi-page">
+    <div class="page-header"><h1 class="page-title">Borrowed Items (Monitoring)</h1></div>
+    <div class="bi-stats">
+      <div class="bi-stat-card"><div class="bi-stat-icon bi-stat-icon--blue"><i class="fas fa-box"></i></div><div><p class="bi-stat-label">Total Active</p><div class="bi-stat-value" id="biMonTotal">0</div></div></div>
+      <div class="bi-stat-card"><div class="bi-stat-icon bi-stat-icon--green"><i class="fas fa-check"></i></div><div><p class="bi-stat-label">Released</p><div class="bi-stat-value" id="biMonReleased">0</div></div></div>
+      <div class="bi-stat-card"><div class="bi-stat-icon bi-stat-icon--blue"><i class="fas fa-undo"></i></div><div><p class="bi-stat-label">Returned</p><div class="bi-stat-value" id="biMonReturned">0</div></div></div>
+      <div class="bi-stat-card"><div class="bi-stat-icon bi-stat-icon--orange"><i class="fas fa-clock"></i></div><div><p class="bi-stat-label">Overdue</p><div class="bi-stat-value" id="biMonOverdue">0</div></div></div>
+      <div class="bi-stat-card"><div class="bi-stat-icon bi-stat-icon--red"><i class="fas fa-exclamation-triangle"></i></div><div><p class="bi-stat-label">Damaged / Lost</p><div class="bi-stat-value" id="biMonDamaged">0</div></div></div>
+    </div>
+    <div class="bi-toolbar">
+      <div class="bi-search-wrap"><i class="fas fa-search"></i><input type="search" id="monSearch" placeholder="Search…"></div>
+      <div class="bi-filter-group"><label>Status</label><select id="monStatus"><option value="all">All</option><option value="released">Released</option><option value="returned">Returned</option><option value="overdue">Overdue</option><option value="damaged_lost">Damaged / Lost</option></select></div>
+    </div>
+    <div class="bi-card">
+      <div class="bi-table-wrap">
+        <table class="bi-table">
+          <thead><tr><th>Request ID</th><th>Resident</th><th>Item</th><th>Qty</th><th>Borrow Date</th><th>Expected Return</th><th>Actual Return</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="biMonitorTableBody"><tr><td colspan="9">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div id="monitorDetailModal" class="bi-modal" role="dialog" aria-hidden="true">
+    <div class="bi-modal-box">
+      <div class="bi-modal-header"><h2>Borrowed Item Details</h2><button type="button" class="bi-modal-close" data-bi-close="monitorDetailModal">&times;</button></div>
+      <div class="bi-modal-meta"></div>
+      <div class="bi-modal-footer">
+        <button type="button" class="bi-btn bi-btn--success" data-bi-release>Mark Released</button>
+        <button type="button" class="bi-btn bi-btn--info" data-bi-returned>Mark Returned</button>
+        <button type="button" class="bi-btn bi-btn--warning" data-bi-damaged>Report Damaged / Lost</button>
+        <button type="button" class="bi-btn bi-btn--outline" data-bi-close="monitorDetailModal">Close</button>
+      </div>
+    </div>
+  </div>
+  <script src="../../Shared/js/bc-borrow-inventory-api.js?v=20250803"></script>
+  <script src="../../Shared/js/bc-borrow-sync.js?v=20250821"></script>
+  <script src="../../Shared/js/bc-admin-borrow-inventory.js?v=20250821"></script>
+  <script src="../../Shared/js/bc-nav-persist.js?v=20250803"></script>
+  <script src="../../Shared/js/bc-nav-iframe-child.js"></script>
+  <script>BorrowInventoryUI.initSidebarIframe(); BorrowInventoryUI.bindModalClosers(); BorrowInventoryUI.notifyNav('borrowed-items');</script>
+</body>
+</html>

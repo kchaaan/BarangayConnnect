@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <title>BarangayConnect - Admin Dashboard</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+  <link rel="stylesheet" href="../css/admin-style.css?v=20250816" />
+  <link rel="stylesheet" href="../../Shared/css/bc-portal-mobile-nav.css?v=20250818" />
+  <link rel="stylesheet" href="../../Shared/css/bc-section-divider.css?v=20250635" />
+  <link rel="stylesheet" href="../../Shared/css/bc-brand-logo.css?v=20260930" />
+  <style>
+    /* Global scrollbar hiding for all elements */
+    * {
+      scrollbar-width: none !important; /* Firefox */
+      -ms-overflow-style: none !important; /* Internet Explorer 10+ */
+    }
+    
+    *::-webkit-scrollbar {
+      display: none !important; /* WebKit */
+    }
+    
+    /* Ensure iframes don't show scrollbars */
+    iframe {
+      scrollbar-width: none !important;
+      -ms-overflow-style: none !important;
+    }
+    
+    iframe::-webkit-scrollbar {
+      display: none !important;
+    }
+  </style>
+  <script src="../../Shared/js/bc-session.js"></script>
+  <script>
+    (function(){
+      if(location.protocol==='file:') return;
+      const S=window.BarangayConnectSession, front=S?S.frontPageUrl():'../../FrontPage/html/Front.html';
+      document.documentElement.style.visibility='hidden';
+      fetch('../../FrontPage/php/supabase_session.php',{credentials:'same-origin',cache:'no-store'}).then(r=>r.ok?r.json():null).then(s=>{
+        if(!s||!s.authenticated||!['admin','superadmin'].includes(s.role)) throw new Error('Administrator session required');
+        if(S) S.setAdminSession({username:s.username||'',fullName:s.fullName||'Admin'});
+        const roleLabel=document.querySelector('.user-details p');
+        if(roleLabel) roleLabel.textContent=s.role==='superadmin'?'Super Admin':'Administrator';
+        document.documentElement.style.visibility='visible';
+      }).catch(()=>{if(S)S.clearAdminSession();localStorage.removeItem('adminLoggedIn');window.location.replace(front);});
+    })();
+  </script>
+</head>
+<body class="admin-body">
+
+  <div id="bcAdminLocalhostBanner" class="bc-admin-localhost-banner" role="status" aria-live="polite">
+    <strong>Admin + MySQL need this page opened through Apache (not as a file).</strong>
+    Use this link with XAMPP Apache running:
+    <a href="http://localhost/BarangayConnect-ITG6-main/BarangayConnec-G6-Main/Admin/html/AdminPage.html">http://localhost/BarangayConnect-ITG6-main/BarangayConnec-G6-Main/Admin/html/AdminPage.html</a>
+  </div>
+  <script>
+    (function () {
+      if (window.location.protocol === "file:") {
+        var b = document.getElementById("bcAdminLocalhostBanner");
+        if (b) b.classList.add("is-visible");
+      }
+    })();
+  </script>
+
+  <!-- Admin Header -->
+  <header class="admin-header">
+    <div class="header-left">
+      <button type="button" class="header-mobile-menu" id="headerMobileMenu" aria-label="Open menu" aria-expanded="false" onclick="toggleSidebar()">
+        <i class="fas fa-bars" aria-hidden="true"></i>
+      </button>
+      <h1>
+        <span class="brand-logo">
+          <img src="../../Shared/images/barangay-tambo-seal.jpg" alt="Barangay Tambo official seal" width="180" height="180" />
+        </span>
+        BarangayConnect
+      </h1>
+    </div>
+    <div class="header-right">
+      <p class="admin-header-date" id="current-date" aria-live="polite"></p>
+      <div class="admin-header-weather" id="adminHeaderWeather" aria-live="polite" title="Loading weather…">
+        <i class="fas fa-cloud-sun admin-header-weather__icon is-partly" id="adminWeatherIcon" aria-hidden="true"></i>
+        <span class="admin-header-weather__temp" id="adminWeatherTemp">--°C</span>
+      </div>
+      <div class="settings-dropdown">
+        <button class="header-btn" title="Settings" onclick="toggleSettings()"><i class="fas fa-cog"></i></button>
+        <div class="settings-menu" id="settingsMenu">
+          <a href="#" class="settings-item" onclick="openActivityLog()">
+            <i class="fas fa-history"></i>
+            <span>Activity Log</span>
+          </a>
+          <a href="#" class="settings-item" onclick="logout()">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>Log out</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <button type="button" id="bcSidebarBackdrop" class="bc-sidebar-backdrop" aria-label="Close menu" aria-hidden="true" onclick="closeMobileSidebar()"></button>
+
+  <!-- Admin Container -->
+  <div class="admin-container">
+    <!-- Modern Sidebar -->
+    <aside class="modern-sidebar collapsed" aria-label="Primary">
+      <div class="sidebar-toggle" onclick="toggleSidebar()" role="button" tabindex="0" aria-label="Toggle sidebar" aria-expanded="false" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleSidebar();}">
+        <div class="hamburger">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+      </div>
+      
+      <div class="sidebar-content">
+      <div class="sidebar-header">
+          <div class="user-info">
+            <div class="user-details">
+          <h3>Hello, Secretary!</h3>
+              <p>Administrator</p>
+            </div>
+          </div>
+        </div>
+        
+        <nav class="sidebar-nav">
+          <ul class="nav-list">
+            <li class="nav-item active">
+              <a href="#" class="nav-link" data-section="dashboard">
+                <i class="fas fa-home"></i>
+                <span>Home</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="#" class="nav-link" data-section="reports">
+                <i class="fas fa-file-invoice"></i>
+                <span>Reports</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="#" class="nav-link" data-section="requests">
+                <i class="fas fa-file-alt"></i>
+                <span>Requests</span>
+              </a>
+            </li>
+
+            <li class="nav-group is-expanded" data-nav-group="borrowed-items">
+              <button type="button" class="nav-group-toggle" aria-expanded="true" aria-controls="nav-submenu-borrowed">
+                <i class="fas fa-box-open"></i>
+                <span>Borrowed Items</span>
+                <i class="fas fa-chevron-down nav-group-chevron" aria-hidden="true"></i>
+              </button>
+              <ul class="nav-submenu" id="nav-submenu-borrowed">
+                <li>
+                  <a href="#" class="nav-sublink" data-section="borrowed-items" data-page="A_Borrow-Requests.html">Borrow Requests</a>
+                </li>
+                <li>
+                  <a href="#" class="nav-sublink" data-section="borrowed-items" data-page="A_Borrowed-Items-Monitoring.html">Borrowed Items (Monitoring)</a>
+                </li>
+                <li>
+                  <a href="#" class="nav-sublink" data-section="borrowed-items" data-page="A_Borrowing-History.html">Borrowing History</a>
+                </li>
+              </ul>
+            </li>
+
+            <li class="nav-group is-expanded" data-nav-group="inventory">
+              <button type="button" class="nav-group-toggle" aria-expanded="true" aria-controls="nav-submenu-inventory">
+                <i class="fas fa-warehouse"></i>
+                <span>Inventory</span>
+                <i class="fas fa-chevron-down nav-group-chevron" aria-hidden="true"></i>
+              </button>
+              <ul class="nav-submenu" id="nav-submenu-inventory">
+                <li>
+                  <a href="#" class="nav-sublink" data-section="inventory" data-page="A_Item-Inventory.html">Item Inventory</a>
+                </li>
+                <li>
+                  <a href="#" class="nav-sublink" data-section="inventory" data-page="A_Item-Categories.html">Item Categories</a>
+                </li>
+              </ul>
+            </li>
+
+            <li class="nav-item">
+              <a href="#" class="nav-link" data-section="transparency">
+                <i class="fas fa-balance-scale"></i>
+                <span>Transparency</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="#" class="nav-link" data-section="announcements">
+                <i class="fas fa-bullhorn"></i>
+                <span>Announcements</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="#" class="nav-link" data-section="users">
+                <i class="fas fa-users"></i>
+                <span>User Management</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="#" class="nav-link" data-section="emergency">
+                <i class="fas fa-phone"></i>
+                <span>Emergency</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="#" class="nav-link" data-section="feedback">
+                <i class="fas fa-star"></i>
+                <span>Feedback</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="#" class="nav-link" data-section="admin-guide">
+                <i class="fas fa-book-open"></i>
+                <span>Admin Guide</span>
+              </a>
+            </li>
+
+          </ul>
+        </nav>
+        
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="admin-main">
+      <div class="main-content">
+        <!-- Content sections will be loaded dynamically -->
+        <div id="dashboard-section" class="content-section active">
+          <iframe src="A_Home-Dashboard.html?v=20250728" data-bc-default-src="A_Home-Dashboard.html" frameborder="0" title="Home"></iframe>
+        </div>
+
+        <div id="reports-section" class="content-section">
+          <iframe src="A_Reports.html?v=20250687" data-bc-default-src="A_Reports.html" frameborder="0" title="Reports"></iframe>
+        </div>
+
+        <div id="requests-section" class="content-section">
+          <iframe src="A_Request-Management.html?v=20250629" data-bc-default-src="A_Request-Management.html" frameborder="0" title="Requests"></iframe>
+        </div>
+
+        <div id="borrowed-items-section" class="content-section">
+          <iframe src="A_Borrow-Requests.html?v=20250801" data-bc-default-src="A_Borrow-Requests.html" frameborder="0" title="Borrowed Items"></iframe>
+        </div>
+
+        <div id="inventory-section" class="content-section">
+          <iframe src="A_Item-Inventory.html?v=20250826" data-bc-default-src="A_Item-Inventory.html" frameborder="0" title="Inventory"></iframe>
+        </div>
+
+        <div id="transparency-section" class="content-section">
+          <iframe src="A_Transparency.html?v=20250722" data-bc-default-src="A_Transparency.html" frameborder="0" title="Transparency"></iframe>
+        </div>
+
+        <div id="announcements-section" class="content-section">
+          <iframe src="A_Announcements.html?v=20250723" data-bc-default-src="A_Announcements.html" frameborder="0" title="Announcements"></iframe>
+        </div>
+
+        <div id="users-section" class="content-section">
+          <iframe src="A_User-Management.html?v=20260930-reset-modal" data-bc-default-src="A_User-Management.html" frameborder="0" title="User Management"></iframe>
+        </div>
+
+        <div id="emergency-section" class="content-section">
+          <iframe src="A_Emergency.html?v=20250723" data-bc-default-src="A_Emergency.html" frameborder="0" title="Emergency"></iframe>
+        </div>
+        <div id="feedback-section" class="content-section">
+          <iframe src="A_Feedback.html?v=20250712" data-bc-default-src="A_Feedback.html" frameborder="0" title="Feedback"></iframe>
+        </div>
+        <div id="admin-guide-section" class="content-section">
+          <iframe src="A_Admin-Guide.html?v=20260930" data-bc-default-src="A_Admin-Guide.html" frameborder="0" title="Admin Guide"></iframe>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- Activity Log Modal -->
+  <div id="activityLogModal" class="modal">
+    <div class="modal-content activity-log-modal">
+      <span class="close" data-close="activityLogModal">&times;</span>
+      <h2><i class="fas fa-history"></i> Activity Log</h2>
+      
+      <div class="activity-log-filters">
+        <select id="activityLogFilter" onchange="filterActivityLog()">
+          <option value="ALL">All Activities</option>
+          <option value="LOGIN">Login</option>
+          <option value="LOGOUT">Logout</option>
+          <option value="FAILED_LOGIN">Failed Login</option>
+          <option value="PASSWORD_CHANGE">Password Change</option>
+          <option value="PROFILE_UPDATE">Profile Update</option>
+        </select>
+        <div class="activity-log-search">
+          <input type="text" id="activityLogSearch" placeholder="Search activities..." onkeyup="searchActivityLog()" />
+          <button type="button" onclick="searchActivityLog()" class="search-btn" title="Search">
+            <i class="fas fa-search"></i>
+          </button>
+        </div>
+      </div>
+      
+      <div class="activity-log-container" id="activityLogContainer">
+        <!-- Activity log entries will be inserted here -->
+      </div>
+      
+      <div class="activity-log-empty" id="activityLogEmpty" style="display: none;">
+        <i class="fas fa-inbox"></i>
+        <p>No activity logs found</p>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" crossorigin="anonymous"></script>
+  <script src="../../Shared/js/bc-notify.js?v=20250659"></script>
+  <script src="../../Shared/js/bc-nav-persist.js?v=20260930"></script>
+  <script src="../../Shared/js/bc-admin-sidebar-gsap.js?v=20250817"></script>
+  <script src="../../Shared/js/activity-log.js"></script>
+  <script>
+    // Restore sidebar section + iframe page after refresh
+    if (window.BarangayConnectNavPersist) {
+      window.BarangayConnectNavPersist.initPortal({
+        role: 'admin',
+        defaultSection: 'dashboard',
+        sectionDefaults: {
+          dashboard: 'A_Home-Dashboard.html',
+          reports: 'A_Reports.html',
+          requests: 'A_Request-Management.html',
+          'borrowed-items': 'A_Borrow-Requests.html',
+          inventory: 'A_Item-Inventory.html',
+          transparency: 'A_Transparency.html',
+          announcements: 'A_Announcements.html',
+          users: 'A_User-Management.html',
+          emergency: 'A_Emergency.html',
+          feedback: 'A_Feedback.html',
+          'admin-guide': 'A_Admin-Guide.html',
+        },
+      });
+    }
+
+    // Settings dropdown functionality
+    function toggleSettings() {
+      const settingsMenu = document.getElementById('settingsMenu');
+      settingsMenu.classList.toggle('show');
+    }
+
+    // Close settings menu when clicking outside
+    document.addEventListener('click', function(event) {
+      const settingsDropdown = document.querySelector('.settings-dropdown');
+      const settingsMenu = document.getElementById('settingsMenu');
+      
+      if (!settingsDropdown.contains(event.target)) {
+        settingsMenu.classList.remove('show');
+      }
+    });
+
+    // Activity Log functionality
+    function openActivityLog() {
+      document.getElementById('settingsMenu').classList.remove('show');
+      const modal = document.getElementById('activityLogModal');
+      if (modal) {
+        modal.style.display = 'block';
+        // Clear search input when opening
+        const searchInput = document.getElementById('activityLogSearch');
+        if (searchInput) searchInput.value = '';
+        // Small delay to ensure modal is visible before loading
+        setTimeout(() => {
+          loadActivityLog();
+        }, 100);
+      } else {
+        console.error('Activity log modal not found');
+      }
+    }
+
+    function closeActivityLog() {
+      document.getElementById('activityLogModal').style.display = 'none';
+    }
+
+    function loadActivityLog(filterType = 'ALL', searchTerm = '') {
+      const container = document.getElementById('activityLogContainer');
+      const emptyState = document.getElementById('activityLogEmpty');
+      
+      // Check if functions are available
+      if (typeof getAllActivityLog === 'undefined' || typeof getActivityLogByType === 'undefined') {
+        console.error('Activity log functions not loaded. Please ensure activity-log.js is loaded.');
+        if (container) container.innerHTML = '<div style="padding: 2rem; text-align: center; color: #e74c3c;">Error: Activity log functions not available. Please refresh the page.</div>';
+        if (emptyState) emptyState.style.display = 'none';
+        return;
+      }
+      
+      let activities;
+      if (filterType === 'ALL') {
+        activities = getAllActivityLog(100);
+      } else {
+        activities = getActivityLogByType(filterType, 100);
+      }
+      
+      // Apply search filter if search term is provided
+      if (searchTerm) {
+        const searchLower = searchTerm.toLowerCase();
+        activities = activities.filter(activity => {
+          const userName = (activity.userName || '').toLowerCase();
+          const userId = (activity.userId || '').toLowerCase();
+          const activityType = (activity.activityType || '').toLowerCase();
+          const userType = (activity.userType || '').toLowerCase();
+          const typeInfo = getActivityTypeInfo(activity.activityType);
+          const activityName = (typeInfo.name || '').toLowerCase();
+          
+          return userName.includes(searchLower) ||
+                 userId.includes(searchLower) ||
+                 activityType.includes(searchLower) ||
+                 userType.includes(searchLower) ||
+                 activityName.includes(searchLower);
+        });
+      }
+      
+      if (!container || !emptyState) {
+        console.error('Activity log container elements not found');
+        return;
+      }
+      
+      if (activities.length === 0) {
+        container.innerHTML = '';
+        emptyState.style.display = 'block';
+        return;
+      }
+      
+      emptyState.style.display = 'none';
+      
+      // Check if helper functions are available
+      if (typeof getActivityTypeInfo === 'undefined' || typeof formatActivityTimestamp === 'undefined' || typeof formatFullTimestamp === 'undefined') {
+        console.error('Activity log helper functions not loaded.');
+        container.innerHTML = '<div style="padding: 2rem; text-align: center; color: #e74c3c;">Error: Activity log helper functions not available. Please refresh the page.</div>';
+        return;
+      }
+      
+      container.innerHTML = activities.map(activity => {
+        const typeInfo = getActivityTypeInfo(activity.activityType);
+        const relativeTime = formatActivityTimestamp(activity.timestamp);
+        const fullTimestamp = formatFullTimestamp(activity.timestamp);
+        const userInfo = activity.userName || activity.userId || 'Unknown User';
+        
+        return `
+          <div class="activity-log-entry">
+            <div class="activity-icon" style="background-color: ${typeInfo.color}20; color: ${typeInfo.color};">
+              <i class="fas ${typeInfo.icon}"></i>
+            </div>
+            <div class="activity-content">
+              <div class="activity-header">
+                <span class="activity-type" style="color: ${typeInfo.color};">${typeInfo.name}</span>
+                <span class="activity-time" title="${fullTimestamp}">${fullTimestamp}</span>
+              </div>
+              <div class="activity-meta">
+                <span class="activity-user">${userInfo} (${activity.userType})</span>
+                <span class="activity-relative-time">${relativeTime}</span>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function filterActivityLog() {
+      const filterType = document.getElementById('activityLogFilter').value;
+      const searchTerm = document.getElementById('activityLogSearch')?.value.trim() || '';
+      loadActivityLog(filterType, searchTerm);
+    }
+
+    function searchActivityLog() {
+      const filterType = document.getElementById('activityLogFilter').value;
+      const searchTerm = document.getElementById('activityLogSearch')?.value.trim() || '';
+      loadActivityLog(filterType, searchTerm);
+    }
+
+    // Logout functionality
+    async function logout() {
+      const ok = window.bcConfirm
+        ? await window.bcConfirm('Are you sure you want to logout?', { title: 'Confirm logout' })
+        : window.confirm('Are you sure you want to logout?');
+      if (ok) {
+        // Get current admin user info before logout
+        const admins = JSON.parse(localStorage.getItem('admins')) || [];
+        const adminUsers = JSON.parse(localStorage.getItem('adminUsers')) || [];
+        const currentAdmin = adminUsers.find(a => a.isLoggedIn) || admins.find(a => a.isLoggedIn);
+        
+        if (currentAdmin) {
+          recordActivity(
+            'LOGOUT',
+            'ADMIN',
+            currentAdmin.email || currentAdmin.username || 'admin',
+            currentAdmin.name || currentAdmin.username || 'Administrator'
+          );
+        }
+        
+        alert('You have been logged out.');
+        window.location.href = '../../FrontPage/html/Front.html';
+      }
+      document.getElementById('settingsMenu').classList.remove('show');
+    }
+
+    // Notify embedded admin pages (iframes) when sidebar width changes
+    function broadcastAdminSidebarState() {
+      var sidebar = document.querySelector('.modern-sidebar');
+      if (!sidebar) return;
+      var collapsed = sidebar.classList.contains('collapsed');
+      document.querySelectorAll('.content-section iframe').forEach(function (iframe) {
+        try {
+          if (iframe.contentWindow) {
+            iframe.contentWindow.postMessage({ type: 'bc-admin-sidebar', collapsed: collapsed }, '*');
+          }
+        } catch (err) { /* cross-origin guard */ }
+      });
+    }
+
+    // Modern sidebar toggle (GSAP)
+    function toggleSidebar() {
+      if (window.BarangayConnectAdminSidebar) {
+        window.BarangayConnectAdminSidebar.toggle();
+        return;
+      }
+      document.querySelector('.modern-sidebar').classList.toggle('collapsed');
+      broadcastAdminSidebarState();
+    }
+
+    window.addEventListener('message', function (event) {
+      if (event.data && event.data.type === 'bc-admin-sidebar-request') {
+        broadcastAdminSidebarState();
+      }
+      if (event.data && event.data.type === 'bc-borrow-changed') {
+        document.querySelectorAll('iframe').forEach(function (iframe) {
+          try {
+            if (iframe.contentWindow) iframe.contentWindow.postMessage(event.data, '*');
+          } catch (err) { /* ignore */ }
+        });
+      }
+    });
+    
+    // Add click event to hamburger menu icon
+    document.addEventListener('DOMContentLoaded', function() {
+      if (window.BarangayConnectAdminSidebar) {
+        window.BarangayConnectAdminSidebar.init();
+      }
+
+      const hamburgerIcon = document.querySelector('.sidebar-toprow i.fa-bars');
+      if (hamburgerIcon) {
+        hamburgerIcon.addEventListener('click', toggleSidebar);
+        hamburgerIcon.style.cursor = 'pointer';
+      }
+
+      document.querySelectorAll('.content-section iframe').forEach(function (iframe) {
+        iframe.addEventListener('load', broadcastAdminSidebarState);
+      });
+      broadcastAdminSidebarState();
+    });
+
+    // Compute header height and update CSS variable so sidebar/content align with no gap
+    function setHeaderOffset() {
+      var header = document.querySelector('.admin-header');
+      if (!header) return;
+      var borderBottom = 3; // matches CSS border-bottom thickness
+      var offset = header.offsetHeight + borderBottom;
+      document.documentElement.style.setProperty('--header-offset', offset + 'px');
+    }
+    function setCurrentDate() {
+      var dateElement = document.getElementById('current-date');
+      if (!dateElement) return;
+      var today = new Date();
+      var datePart = today.toLocaleDateString('en-US', {
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric'
+      });
+      var weekday = today.toLocaleDateString('en-US', { weekday: 'long' });
+      dateElement.textContent = datePart + ' | ' + weekday;
+    }
+    
+    window.addEventListener('load', function() {
+      setHeaderOffset();
+      setCurrentDate();
+      
+      // Record admin login on page load
+      const admins = JSON.parse(localStorage.getItem('admins')) || [];
+      const adminUsers = JSON.parse(localStorage.getItem('adminUsers')) || [];
+      const currentAdmin = adminUsers.find(a => a.isLoggedIn) || admins.find(a => a.isLoggedIn);
+      
+      if (currentAdmin && !sessionStorage.getItem('adminLoginRecorded')) {
+        recordActivity(
+          'LOGIN',
+          'ADMIN',
+          currentAdmin.email || currentAdmin.username || 'admin',
+          currentAdmin.name || currentAdmin.username || 'Administrator'
+        );
+        sessionStorage.setItem('adminLoginRecorded', 'true');
+      }
+    });
+    window.addEventListener('resize', setHeaderOffset);
+
+    // Drag-safe overlay handling for Activity Log modal
+    (function() {
+      const modal = document.getElementById('activityLogModal');
+      const box = modal ? modal.querySelector('.modal-content') : null;
+      if (!modal) return;
+      let overlayMouseDown = false;
+      modal.addEventListener('mousedown', (e) => { overlayMouseDown = (e.target === modal); });
+      modal.addEventListener('mouseup', (e) => {
+        if (overlayMouseDown && e.target === modal) closeActivityLog();
+        overlayMouseDown = false;
+      });
+      if (box) ['mousedown','mouseup','click'].forEach(evt => box.addEventListener(evt, (e) => e.stopPropagation()));
+      const closer = document.querySelector('[data-close="activityLogModal"]');
+      if (closer) closer.addEventListener('click', closeActivityLog);
+    })();
+  </script>
+  <script src="https://kit.fontawesome.com/a2e0f1f0c1.js" crossorigin="anonymous" defer></script>
+  <script src="../../Shared/js/bc-admin-header-weather.js?v=20250670"></script>
+</body>
+</html>

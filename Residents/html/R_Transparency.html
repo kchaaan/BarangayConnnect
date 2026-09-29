@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Transparency - BarangayConnect</title>
+  <link rel="stylesheet" href="../css/R_transparency-style.css">
+  <style>
+    * { scrollbar-width: none !important; -ms-overflow-style: none !important; }
+    *::-webkit-scrollbar { display: none !important; }
+  </style>
+  <link rel="stylesheet" href="../css/bc-resident-page-title.css?v=20250620">
+  <script src="https://kit.fontawesome.com/a2e0f1f0c1.js" crossorigin="anonymous"></script>
+  <script src="../../Shared/js/bc-transparency-api.js?v=20250663"></script>
+</head>
+<body>
+
+<main class="transparency-wrapper">
+  <div class="transparency-card">
+
+    <h2>Transparency</h2>
+
+    <div class="budget-section">
+      <div class="budget-head">
+        <p class="budget-title">Annual Budget</p>
+      </div>
+
+      <h3 id="annualBudget">₱ 0</h3>
+
+      <div class="progress-bar">
+        <div class="progress-fill" id="budgetProgress" style="width: 0%"></div>
+      </div>
+
+      <p class="spent-line">
+        Spent: <span id="spentAmount">₱ 0</span>
+        <span id="remainingFunds">Remaining Funds: ₱ 0</span>
+      </p>
+    </div>
+
+    <section class="management-section">
+      <div class="management-header">
+        <h2><i class="fas fa-briefcase"></i> Projects & Programs</h2>
+
+        <div class="management-controls">
+          <div class="filter-group">
+            <select id="statusFilter" class="filter-select">
+              <option value="all">All Status</option>
+              <option value="Ongoing">Ongoing</option>
+              <option value="Completed">Completed</option>
+              <option value="Pending">Pending</option>
+            </select>
+
+            <select id="typeFilter" class="filter-select">
+              <option value="all">All Types</option>
+              <option value="Project">Projects</option>
+              <option value="Program">Programs</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="items-container" id="itemsContainer"></div>
+    </section>
+
+  </div>
+</main>
+<script>
+(function () {
+  const TransparencyApi = window.BarangayConnectTransparencyApi;
+  const peso = n => "₱ " + Number(n || 0).toLocaleString("en-PH");
+
+  let items = [];
+  let currentBudget = 0;
+
+  function fileUrl(relativePath) {
+    if (!relativePath || !TransparencyApi) return "#";
+    return new URL(relativePath, TransparencyApi.uploadBase()).href;
+  }
+
+  function updateBudget() {
+    const totalSpent = items.reduce((sum, item) => sum + (Number(item.spent) || 0), 0);
+    const remaining = currentBudget - totalSpent;
+    const percent = currentBudget > 0 ? Math.min(100, Math.round((totalSpent / currentBudget) * 100)) : 0;
+
+    document.getElementById("annualBudget").textContent = peso(currentBudget);
+    document.getElementById("spentAmount").textContent = peso(totalSpent);
+    document.getElementById("remainingFunds").textContent = "Remaining Funds: " + peso(remaining);
+    document.getElementById("budgetProgress").style.width = percent + "%";
+  }
+
+  function renderItems() {
+    const statusFilter = document.getElementById("statusFilter").value;
+    const typeFilter = document.getElementById("typeFilter").value;
+    const container = document.getElementById("itemsContainer");
+
+    const filtered = items.filter(item =>
+      (statusFilter === "all" || item.status === statusFilter) &&
+      (typeFilter === "all" || item.type === typeFilter)
+    );
+
+    if (filtered.length === 0) {
+      container.innerHTML = `
+        <div class="empty-state">
+          <i class="fas fa-inbox"></i>
+          <p>No projects or programs yet</p>
+        </div>`;
+      return;
+    }
+
+    container.innerHTML = filtered.map(item => {
+      const budget = Number(item.budget) || 0;
+      const spent = Number(item.spent) || 0;
+      const percent = budget > 0 ? Math.min(100, Math.round((spent / budget) * 100)) : 0;
+
+      let documentButtons = "";
+      if (item.documents && item.documents.length > 0) {
+        documentButtons = item.documents.map(doc => `
+          <a href="${fileUrl(doc.filePath)}"
+             target="_blank"
+             rel="noopener"
+             class="action-icon view"
+             title="View document">
+             <i class="fas fa-file-pdf"></i>
+          </a>
+        `).join("");
+      } else {
+        documentButtons = `<span class="no-files">No documents</span>`;
+      }
+
+      const description = item.description
+        ? `<p class="item-description">${escapeHtml(item.description)}</p>`
+        : "";
+
+      return `
+        <div class="item-card">
+          <div class="item-header">
+            <div class="item-title">
+              <h4>${escapeHtml(item.name)}</h4>
+              <span class="item-type-badge">${escapeHtml(item.type)}</span>
+            </div>
+            <span class="status-badge ${String(item.status || "").toLowerCase()}">${escapeHtml(item.status)}</span>
+          </div>
+
+          <div class="item-body">
+            <div class="item-metrics">
+              <div class="metric">
+                <label>Budget</label>
+                <span class="value">${peso(budget)}</span>
+              </div>
+              <div class="metric">
+                <label>Spent</label>
+                <span class="value">${peso(spent)}</span>
+              </div>
+              <div class="metric">
+                <label>Progress</label>
+                <span class="value">${percent}%</span>
+              </div>
+            </div>
+
+            <div class="progress-track">
+              <div class="progress-bar-item" style="width:${percent}%"></div>
+            </div>
+
+            ${description}
+          </div>
+
+          <div class="item-actions">
+            ${documentButtons}
+          </div>
+        </div>
+      `;
+    }).join("");
+  }
+
+  function escapeHtml(str) {
+    return String(str || "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  async function loadBudget() {
+    if (!TransparencyApi) return;
+    try {
+      const res = await fetch(TransparencyApi.apiUrl("budget"));
+      if (res.status === 204) {
+        currentBudget = 0;
+      } else if (res.ok) {
+        const data = await res.json();
+        currentBudget = Number(data.amount || 0);
+      }
+      updateBudget();
+    } catch (err) {
+      console.error("Error loading budget:", err);
+    }
+  }
+
+  async function loadItems() {
+    if (!TransparencyApi) return;
+    try {
+      const res = await fetch(TransparencyApi.apiUrl("items"));
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      items = await res.json();
+      updateBudget();
+      renderItems();
+    } catch (err) {
+      console.error("Error fetching transparency items:", err);
+      document.getElementById("itemsContainer").innerHTML = `
+        <div class="empty-state">
+          <i class="fas fa-triangle-exclamation"></i>
+          <p>Could not load transparency data</p>
+        </div>`;
+    }
+  }
+
+  async function init() {
+    if (!TransparencyApi) return;
+    await loadBudget();
+    await loadItems();
+  }
+
+  document.getElementById("statusFilter").addEventListener("change", renderItems);
+  document.getElementById("typeFilter").addEventListener("change", renderItems);
+
+  init();
+})();
+</script>
+</body>
+</html>

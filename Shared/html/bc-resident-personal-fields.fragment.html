@@ -1,0 +1,151 @@
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label"><i class="fas fa-user"></i> First Name <span class="required">*</span></label>
+                <input type="text" id="firstName" name="firstName" class="form-input" required>
+              </div>
+              <div class="form-group">
+                <div class="label-row">
+                  <label class="form-label"><i class="fas fa-user"></i> Middle Name</label>
+                  <label class="checkbox-label"><input type="checkbox" id="middleNameNA"> <span>N/A</span></label>
+                </div>
+                <input type="text" id="middleName" name="middleName" class="form-input">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label"><i class="fas fa-user"></i> Last Name <span class="required">*</span></label>
+                <input type="text" id="lastName" name="lastName" class="form-input" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label"><i class="fas fa-signature"></i> Suffix</label>
+                <select id="suffix" name="suffix" class="form-select">
+                  <option value="">Select suffix...</option>
+                  <option value="Jr.">Jr.</option>
+                  <option value="Sr.">Sr.</option>
+                  <option value="III">III</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label"><i class="fas fa-venus-mars"></i> Gender <span class="required">*</span></label>
+                <select id="gender" name="gender" class="form-select" required>
+                  <option value="">Select gender...</option>
+                  <option value="male">Male</option>
+                  <option value="female">Female</option>
+                  <option value="prefer-not-to-say">Prefer not to say</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label"><i class="fas fa-calendar"></i> Date of Birth <span class="required">*</span></label>
+                <input type="date" id="birthdate" name="birthdate" class="form-input" required>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label"><i class="fas fa-hourglass-half"></i> Age</label>
+                <input type="number" id="age" name="age" class="form-input" readonly placeholder="Auto-computed">
+              </div>
+              <div class="form-group">
+                <label class="form-label"><i class="fas fa-map-pin"></i> Place of Birth <span class="required">*</span></label>
+                <input type="text" id="placeOfBirth" name="placeOfBirth" class="form-input" required>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label"><i class="fas fa-ring"></i> Civil Status <span class="required">*</span></label>
+                <select id="civilStatus" name="civilStatus" class="form-select" required>
+                  <option value="">Select civil status...</option>
+                  <option value="single">Single</option>
+                  <option value="married">Married</option>
+                  <option value="widowed">Widowed</option>
+                  <option value="separated">Separated</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label"><i class="fas fa-flag"></i> Citizenship <span class="required">*</span></label>
+                <input type="text" id="citizenship" name="citizenship" class="form-input" required>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group form-group--full">
+                <label class="form-label" for="religionSelect"><i class="fas fa-praying-hands"></i> Religion <span class="required">*</span></label>
+                <select id="religionSelect" name="religionSelect" class="form-select" required>
+                  <option value="">Select religion...</option>
+                  <option value="Roman Catholic">Roman Catholic</option>
+                  <option value="Islam">Islam</option>
+                  <option value="Iglesia ni Cristo">Iglesia ni Cristo</option>
+                  <option value="Philippine Independent Church (Aglipayan)">Philippine Independent Church (Aglipayan)</option>
+                  <option value="Seventh-day Adventist">Seventh-day Adventist</option>
+                  <option value="Bible Baptist">Bible Baptist</option>
+                  <option value="United Church of Christ in the Philippines">United Church of Christ in the Philippines</option>
+                  <option value="Jehovah's Witnesses">Jehovah's Witnesses</option>
+                  <option value="Church of Jesus Christ of Latter-day Saints">Church of Jesus Christ of Latter-day Saints</option>
+                  <option value="Members Church of God International">Members Church of God International</option>
+                  <option value="Evangelical / Born Again">Evangelical / Born Again</option>
+                  <option value="Buddhism">Buddhism</option>
+                  <option value="Indigenous / Ancestral">Indigenous / Ancestral</option>
+                  <option value="None / Not religious">None / Not religious</option>
+                  <option value="__other__">Other — specify below</option>
+                </select>
+                <div id="religionOtherWrap" class="religion-other-wrap" hidden>
+                  <label class="form-label religion-other-label" for="religionOther">Specify religion</label>
+                  <input type="text" id="religionOther" name="religionOther" class="form-input" placeholder="Enter denomination or affiliation" autocomplete="off">
+                </div>
+              </div>
+            </div>
+            <h3 class="form-subsection-title"><i class="fas fa-map-marker-alt"></i> Address Information</h3>
+            <div class="form-group form-group--full">
+              <label class="form-label" for="streetSelect"><i class="fas fa-road"></i> Street <span class="required">*</span></label>
+              <select id="streetSelect" name="street" class="form-select" required>
+                <option value="" disabled selected>Select street...</option>
+              </select>
+              <div id="streetOtherWrap" class="street-other-wrap religion-other-wrap" hidden>
+                <label class="form-label religion-other-label" for="streetOther">Specify street name</label>
+                <input type="text" id="streetOther" name="streetOther" class="form-input" placeholder="Enter street name" autocomplete="off">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="blockLot"><i class="fas fa-th"></i> Block / Lot</label>
+                <input type="text" id="blockLot" name="blockLot" class="form-input" placeholder="Blk / Lot">
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="houseUnit"><i class="fas fa-home"></i> House No. / Unit</label>
+                <input type="text" id="houseUnit" name="houseUnit" class="form-input" placeholder="No. or unit">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="barangay"><i class="fas fa-building"></i> Barangay <span class="required">*</span></label>
+                <input type="text" id="barangay" name="barangay" class="form-input" value="Tambo" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="city"><i class="fas fa-city"></i> City / Municipality <span class="required">*</span></label>
+                <input type="text" id="city" name="city" class="form-input" value="Parañaque City" required>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="province"><i class="fas fa-flag"></i> Province <span class="required">*</span></label>
+                <input type="text" id="province" name="province" class="form-input" value="Metro Manila" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="region"><i class="fas fa-globe-asia"></i> Region <span class="required">*</span></label>
+                <input type="text" id="region" name="region" class="form-input" value="NCR" required>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label"><i class="fas fa-phone"></i> Contact Number <span class="required">*</span></label>
+                <input type="tel" id="contactNumber" name="contactNumber" class="form-input"
+                  inputmode="numeric" maxlength="11" pattern="[0-9]{11}"
+                  placeholder="09XXXXXXXXX (11 digits)"
+                  title="Enter exactly 11 digits, numbers only (e.g. 09171234567)" required>
+                <p class="field-hint">11-digit Philippine mobile number only (numbers, no letters).</p>
+              </div>
+              <div class="form-group">
+                <label class="form-label"><i class="fas fa-envelope"></i> Email Address</label>
+                <input type="email" id="email" name="email" class="form-input">
+              </div>
+            </div>

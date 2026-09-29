@@ -1,0 +1,727 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css');
+
+/* Minimal styles needed for the simplified Transparency page */
+
+/* Palette tuned for a softer, modern sage look */
+:root {
+  --primary: #5f7f58;        /* deep sage */
+  --primary-2: #7faa70;      /* lighter sage */
+  --border: #dfe9da;         /* soft border green */
+  --page-bg: #f4f8f4;        /* page background */
+  --card-bg: #f8fff8;        /* card background tint */
+  --text: #2f3a2f;           /* dark text */
+  --muted: #5f6d5b;          /* muted text */
+}
+
+body {
+  font-family: 'Poppins', sans-serif;
+  background-color: var(--page-bg);
+  margin: 0;
+}
+
+.transparency-wrapper {
+  display: flex;
+  justify-content: stretch;
+  align-items: flex-start;
+  background-color: #f6f8f6;
+  min-height: 100vh;
+  padding: 0.75rem 24px 24px 24px;
+}
+
+.transparency-card {
+  background: transparent;
+  padding: 0 8px;
+  width: 100%;
+  margin: 0;
+}
+
+.transparency-card h2 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin: 1rem 0 1.25rem 0; /* add more space before overview */
+  background: linear-gradient(135deg, #35543a, #4a6741);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.budget-section {
+  border: none;
+  border-radius: 16px;
+  padding: 1.5rem 1.75rem; /* slightly roomier overview card */
+  background-color: #ffffff; /* white card like reference */
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.budget-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.budget-controls { display: flex; gap: 0.5rem; }
+
+.edit-budget-btn {
+  background: rgba(95, 127, 88, 0.1);
+  color: var(--primary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.edit-budget-btn:hover {
+  background: #f2f7f0;
+  border-color: var(--primary-2);
+}
+
+.budget-title { font-weight: 500; color: var(--muted); margin: 0; }
+.budget-section h3 { font-size: 1.6rem; color: var(--text); margin: 0.4rem 0; }
+
+.progress-bar {
+  width: 100%;
+  height: 10px;
+  background-color: #e2e8e2;
+  border-radius: 6px;
+  overflow: hidden;
+  margin-bottom: 0.5rem;
+}
+
+.progress-fill {
+  height: 100%;
+  background-color: var(--primary);
+  border-radius: 6px 0 0 6px;
+}
+
+.spent-line { color: var(--muted); margin: 0.5rem 0 0 0; }
+.spent-line span:first-of-type { margin-left: 0; }
+.spent-line span:last-of-type { margin-left: 1rem; }
+
+/* Management Section */
+.management-section {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  margin-top: 2rem;
+}
+
+.management-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #e8f2e5;
+}
+
+.management-header h2 {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.management-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.filter-group {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.filter-select {
+  padding: 0.625rem 1rem;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: #ffffff;
+  color: var(--text);
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.filter-select:hover {
+  border-color: var(--primary-2);
+}
+
+.filter-select:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(95, 127, 88, 0.12);
+}
+
+.primary-btn {
+  padding: 0.75rem 1.5rem;
+  border-radius: 10px;
+  border: none;
+  background: linear-gradient(135deg, var(--primary), var(--primary-2));
+  color: white;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.primary-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.items-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.5rem;
+}
+
+.item-card {
+  background: white;
+  border: 2px solid var(--border);
+  border-radius: 14px;
+  padding: 1.25rem;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.item-card:hover {
+  border-color: var(--primary-2);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.item-card.over-budget {
+  border-color: #ef4444;
+  background: linear-gradient(135deg, #fff5f5, #ffffff);
+}
+
+.item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start; /* align to first line/top */
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+/* Ensure the status badge sits with the first title line */
+.item-header .status-badge {
+  align-self: flex-start;
+  margin-top: 0.15rem;
+}
+
+.item-title h4 {
+  margin: 0;
+  line-height: 1.25;
+}
+
+.item-title h4 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 0.5rem;
+}
+
+.item-type-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border: 1px solid var(--border);
+}
+
+.item-type-badge.project,
+.item-type-badge.program {
+  background: rgba(95, 127, 88, 0.12);
+  color: #5f7f58;
+  border-color: rgba(95, 127, 88, 0.25);
+}
+
+.status-badge {
+  padding: 0.375rem 0.875rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status-badge.ongoing {
+  background: rgba(139, 127, 88, 0.15);
+  color: #8b7f58;
+}
+
+.status-badge.completed {
+  background: rgba(95, 127, 88, 0.15);
+  color: #5f7f58;
+}
+
+.status-badge.pending {
+  background: rgba(88, 127, 115, 0.15);
+  color: #587f73;
+}
+
+.item-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.metric {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.metric label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.metric .value {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.metric .value.over {
+  color: #ef4444;
+}
+
+.progress-track {
+  height: 8px;
+  background: var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 1rem;
+}
+
+.progress-bar-item {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary), var(--primary-2));
+  border-radius: 10px;
+  transition: width 0.5s ease;
+}
+
+.item-description {
+  font-size: 0.875rem;
+  color: var(--muted);
+  margin-bottom: 1rem;
+  line-height: 1.5;
+}
+
+.item-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+
+.action-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: white;
+  color: var(--muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+/* Ensure anchor and label buttons look identical */
+.item-actions a.action-icon,
+.item-actions label.action-icon {
+  text-decoration: none;
+}
+
+.action-icon:hover {
+  transform: scale(1.1);
+}
+
+.action-icon.edit:hover {
+  background: #f2f7f0;
+  border-color: var(--primary-2);
+  color: var(--primary);
+}
+
+.action-icon.delete:hover {
+  background: #fee2e2;
+  border-color: #fecaca;
+  color: #ef4444;
+}
+
+.action-icon.upload:hover {
+  background: #e6f0ff;
+  border-color: #cfe0ff;
+  color: #1d4ed8;
+}
+
+.action-icon.view:hover {
+  background: #fdecea;
+  border-color: #f9c7c0;
+  color: #b91c1c;
+}
+
+/* Modal */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  overflow-y: auto;
+  pointer-events: none;
+}
+
+.modal-overlay[style*="flex"] {
+  pointer-events: auto;
+}
+
+.modal-wrapper {
+  background: white;
+  border-radius: 12px;
+  width: 70%;
+  max-width: 1100px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  animation: slideUp 0.3s ease;
+  margin: auto;
+  border: 1px solid #e1e5e9;
+  pointer-events: auto;
+  position: relative;
+  z-index: 1;
+}
+
+/* Smaller modal for budget edit */
+.budget-modal {
+  width: 95%;
+  max-width: 480px;
+}
+
+/* Wider modal for budget history table */
+#budgetHistoryOverlay .budget-modal {
+  width: 90%;
+  max-width: 1200px;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 1.5rem; /* slightly reduce to avoid vertical crop */
+  background-color: var(--primary); /* match User Details modal header */
+  color: #ffffff;
+  border-radius: 12px 12px 0 0;
+  border-bottom: 3px solid var(--primary-2);
+}
+
+.modal-header h3 {
+  font-size: 1.5rem;
+  font-weight: 600; /* match User Details modal title weight */
+  color: #ffffff; /* white title like User Details */
+  margin: 0; /* ensure it's vertically centered */
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.modal-header h3 i {
+  color: #ffffff;
+}
+
+.modal-close {
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.modal-close:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.modal-form {
+  padding: 1.5rem;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-group label {
+  font-size: 0.9rem; /* align with User Details */
+  font-weight: 500; /* semi-bold */
+  color: #0f172a;
+}
+
+.required {
+  color: #ef4444;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  padding: 0.75rem;
+  border-radius: 10px;
+  border: 2px solid #e2e8f0;
+  font-size: 1rem; /* match form field text size */
+  font-weight: 500;
+  transition: all 0.3s ease;
+  font-family: inherit;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #6b8f5e;
+  box-shadow: 0 0 0 3px rgba(107, 143, 94, 0.1);
+}
+
+.form-group textarea {
+  resize: vertical;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 2px solid #e8f2e5;
+}
+
+.secondary-btn {
+  padding: 0.75rem 1.5rem;
+  border-radius: 10px;
+  border: 2px solid #e2e8f0;
+  background: white;
+  color: #0f172a;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.secondary-btn:hover {
+  background: #f2f7f0;
+  border-color: #b3d4a3;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: #64748b;
+}
+
+.empty-state i {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+.empty-state p {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+/* Budget History Table */
+.history-table-container {
+  overflow-x: auto;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.history-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 1.1rem;
+  table-layout: auto;
+  min-width: 800px;
+}
+
+.history-table thead {
+  background-color: var(--primary);
+  color: white;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.history-table th {
+  padding: 1.25rem 1.5rem;
+  text-align: left;
+  font-weight: 600;
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.history-table tbody tr {
+  border-bottom: 1px solid var(--border);
+  transition: background-color 0.2s ease;
+}
+
+.history-table tbody tr:hover {
+  background-color: #f8f9fa;
+}
+
+.history-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.history-table td {
+  padding: 1.25rem 1.5rem;
+  color: var(--text);
+  vertical-align: middle;
+  font-size: 1.05rem;
+  line-height: 1.6;
+}
+
+.history-table td:first-child {
+  color: var(--muted);
+  font-weight: 500;
+  font-size: 1rem;
+}
+
+.history-table td:nth-child(2),
+.history-table td:nth-child(3) {
+  font-weight: 600;
+  color: var(--text);
+  font-size: 1.1rem;
+}
+
+.history-table td.increase {
+  color: #10b981;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.history-table td.decrease {
+  color: #ef4444;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.history-table td.neutral {
+  color: var(--muted);
+  font-weight: 500;
+  font-size: 1.05rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .management-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+
+  .management-controls {
+    flex-direction: column;
+  }
+
+  .filter-group {
+    width: 100%;
+  }
+
+  .filter-select {
+    flex: 1;
+  }
+
+  .items-container {
+    grid-template-columns: 1fr;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .history-table {
+    font-size: 0.95rem;
+  }
+
+  .history-table th {
+    padding: 1rem 1.25rem;
+    font-size: 0.9rem;
+  }
+
+  .history-table td {
+    padding: 1rem 1.25rem;
+    font-size: 0.95rem;
+  }
+
+  .history-table td:nth-child(2),
+  .history-table td:nth-child(3),
+  .history-table td.increase,
+  .history-table td.decrease {
+    font-size: 1rem;
+  }
+
+  /* Budget history modal responsive */
+  #budgetHistoryOverlay .budget-modal {
+    width: 95%;
+    max-width: 100%;
+    margin: 1rem;
+  }
+
+  .history-table {
+    min-width: 600px;
+    font-size: 0.95rem;
+  }
+}

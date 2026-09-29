@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Home Dashboard - BarangayConnect</title>
+  <link rel="stylesheet" href="../css/R_home-dashboard-style.css?v=20250731">
+  <link rel="stylesheet" href="../css/bc-resident-page-title.css?v=20250696">
+  <script src="../../Shared/js/bc-reports-api.js?v=20250688"></script>
+  <script src="../../Shared/js/bc-session.js?v=20250654"></script>
+  <script src="../../Shared/js/bc-requests-api.js?v=20250654"></script>
+  <script src="../../Shared/js/bc-notifications-api.js?v=20250703"></script>
+  <script src="../../Shared/js/bc-announcements-api.js?v=20250710"></script>
+  <script src="../../Shared/js/bc-transparency-api.js?v=20260929"></script>
+  <script src="https://kit.fontawesome.com/a2e0f1f0c1.js" crossorigin="anonymous"></script>
+  <style>
+    .dashboard-transparency{margin:1.5rem 0 2rem;padding:1.25rem;border:1px solid #dce8dc;border-radius:16px;background:#fff;box-shadow:0 8px 24px rgba(25,65,40,.06)}.dashboard-transparency__heading{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap}.dashboard-transparency__eyebrow{margin:0 0 .2rem;color:#267247;text-transform:uppercase;letter-spacing:.08em;font-size:.75rem;font-weight:700}.dashboard-transparency h2{margin:0;color:#173d2a}.dashboard-transparency__hint{color:#58665d}.dashboard-transparency__link{border:0;border-radius:8px;padding:.7rem 1rem;color:#fff;background:#21643d;font-weight:700;cursor:pointer}.dashboard-transparency__frame{display:block;width:100%;min-height:580px;border:0;border-radius:10px;background:#f8faf8}@media(max-width:640px){.dashboard-transparency{padding:.9rem}.dashboard-transparency__frame{min-height:720px}}
+    * {
+      scrollbar-width: none !important;
+      -ms-overflow-style: none !important;
+    }
+    *::-webkit-scrollbar {
+      display: none !important;
+    }
+  </style>
+</head>
+<body>
+  <!-- Dashboard Header -->
+  <div class="dashboard-header">
+    <div class="welcome-section">
+      <h1 class="dashboard-title">Dashboard</h1>
+      <p class="dashboard-subtitle">Here's what's happening in your barangay today</p>
+    </div>
+  </div>
+
+  <section class="dashboard-greeting-banner" aria-label="Welcome">
+    <div class="dashboard-greeting-banner__text">
+      <h2 class="dashboard-greeting-banner__title" id="dashboardGreetingTitle">Good morning, Resident!</h2>
+      <p class="dashboard-greeting-banner__subtitle">Welcome back to BarangayConnect Resident Portal.</p>
+    </div>
+    <div class="dashboard-greeting-banner__art" aria-hidden="true">
+      <img
+        src="../../Shared/images/bc-dashboard-greeting-illustration.png?v=20250681"
+        alt=""
+        width="560"
+        height="92"
+        decoding="async"
+      />
+    </div>
+  </section>
+
+  <!-- Summary Cards -->
+  <div class="summary-cards">
+    <button type="button" class="summary-card summary-card--reports" id="summaryCardReports" aria-label="Go to Reports — My Reports">
+      <div class="summary-card__icon" aria-hidden="true">
+        <i class="fas fa-chart-line"></i>
+      </div>
+      <div class="summary-card__body">
+        <h3 class="summary-card__label">My Reports</h3>
+        <p class="summary-card__value" id="reportsValue">0</p>
+        <p class="summary-card__hint">This month</p>
+      </div>
+    </button>
+
+    <button type="button" class="summary-card summary-card--requests" id="summaryCardRequests" aria-label="Go to Requests — My Requests">
+      <div class="summary-card__icon" aria-hidden="true">
+        <i class="fas fa-clipboard-check"></i>
+      </div>
+      <div class="summary-card__body">
+        <h3 class="summary-card__label">My Requests</h3>
+        <p class="summary-card__value" id="requestsValue">0</p>
+        <p class="summary-card__hint">Pending &amp; in progress</p>
+      </div>
+    </button>
+
+    <button type="button" class="summary-card summary-card--notifications" id="notifSummaryCard" aria-label="View notifications">
+      <div class="summary-card__icon" aria-hidden="true">
+        <i class="fas fa-bell"></i>
+        <span class="summary-card__badge" id="notifBadge" hidden></span>
+      </div>
+      <div class="summary-card__body">
+        <h3 class="summary-card__label">Notifications</h3>
+        <p class="summary-card__value" id="notifValue">0</p>
+        <div class="summary-card__status-bar">
+          <span class="summary-card__hint" id="notifHint">All caught up</span>
+          <span class="summary-card__view-all" id="notifViewAllCard" aria-hidden="true">
+            View all <i class="fas fa-chevron-right"></i>
+          </span>
+        </div>
+      </div>
+    </button>
+  </div>
+
+  <!-- Latest Announcements -->
+  <section class="dashboard-overview" aria-label="Latest announcements">
+    <article class="overview-card overview-card--activity overview-card--announcements">
+      <h3 class="overview-card__title">Latest Announcements</h3>
+      <div class="overview-activity-list" id="announcementsList"></div>
+      <button type="button" class="overview-link" id="viewAllAnnouncements">
+        Go to Announcements <i class="fas fa-arrow-right" aria-hidden="true"></i>
+      </button>
+    </article>
+  </section>
+
+
+  <section class="dashboard-transparency" aria-labelledby="dashboardTransparencyTitle"><div class="dashboard-transparency__heading"><div><p class="dashboard-transparency__eyebrow">Public records</p><h2 id="dashboardTransparencyTitle">Barangay Transparency</h2></div><button type="button" class="dashboard-transparency__link" onclick="navigateToPortalSection('transparency','R_Transparency.html')">View all records <span aria-hidden="true">→</span></button></div><p class="dashboard-transparency__hint">Current projects, programs, and budget information</p><iframe class="dashboard-transparency__frame" src="R_Transparency.html?embed=dashboard" title="Transparency records" loading="lazy"></iframe></section>
+  <!-- Notifications floating popup -->
+  <div class="notif-popup" id="notifPopup" hidden aria-hidden="true">
+    <div class="notif-popup__backdrop" id="notifPopupBackdrop"></div>
+    <div class="notif-popup__panel" role="dialog" aria-modal="true" aria-labelledby="notifPopupTitle">
+      <div class="notif-popup__header">
+        <div class="notif-popup__title-wrap">
+          <i class="fas fa-bell" aria-hidden="true"></i>
+          <h2 id="notifPopupTitle">All Notifications</h2>
+        </div>
+        <div class="notif-popup__actions">
+          <button type="button" class="notif-popup__mark-read" id="markAllNotifPopupBtn" hidden>Mark all read</button>
+          <button type="button" class="notif-popup__close" id="notifPopupClose" aria-label="Close notifications">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+      </div>
+      <div class="notif-popup__body activity-list" id="notifPopupList">
+        <p class="notifications-empty">Loading notifications…</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function setSummaryCardValue(elementId, value) {
+      var el = document.getElementById(elementId);
+      if (!el) return;
+      el.textContent = value != null ? String(value) : '0';
+    }
+
+    function getTimeGreeting() {
+      var hour = new Date().getHours();
+      if (hour < 12) return 'Good morning';
+      if (hour < 17) return 'Good afternoon';
+      return 'Good evening';
+    }
+
+    function getResidentDisplayName() {
+      var first = localStorage.getItem('residentFirstname');
+      if (first && String(first).trim()) return String(first).trim();
+      return 'Resident';
+    }
+
+    function initDashboardGreeting() {
+      var el = document.getElementById('dashboardGreetingTitle');
+      if (!el) return;
+      el.textContent = getTimeGreeting() + ', ' + getResidentDisplayName() + '!';
+    }
+
+    function requestStatusKey(status) {
+      var s = String(status || 'pending').toLowerCase();
+      if (s === 'completed') return 'completed';
+      if (s === 'rejected') return 'rejected';
+      if (s === 'in_progress' || s.indexOf('progress') !== -1) return 'in_progress';
+      return 'pending';
+    }
+
+    function getResidentId() {
+      var S = window.BarangayConnectSession;
+      return S ? S.getResidentId() : localStorage.getItem('residentId');
+    }
+
+    function requestBelongsToResident(req, tokens) {
+      if (!req || !tokens || tokens.size === 0) return false;
+      var pk = getResidentId();
+      var rowPk = req.residentUserId != null ? parseInt(String(req.residentUserId), 10) : 0;
+      if (rowPk > 0) {
+        return pk && String(rowPk) === String(pk);
+      }
+      var code = String(localStorage.getItem('residentCode') || '').trim();
+      var payloadId = req.residentId != null ? String(req.residentId).trim() : '';
+      var localId = req.residentIdLocal != null ? String(req.residentIdLocal).trim() : '';
+      if (code) {
+        return localId === code || payloadId === code;
+      }
+      return (payloadId && tokens.has(payloadId)) || (localId && tokens.has(localId));
+    }
+
+    function countPendingAndInProgressRequests(requests) {
+      return (requests || []).filter(function (req) {
+        var key = requestStatusKey(req.status);
+        return key === 'pending' || key === 'in_progress';
+      }).length;
+    }
+
+    async function fetchActiveRequestsCount() {
+      var Api = window.BarangayConnectRequestsApi;
+      var rid = getResidentId();
+      if (!Api || !rid) return 0;
+
+      try {
+        var tokens = new Set();
+        if (rid) tokens.add(String(rid).trim());
+        var code = localStorage.getItem('residentCode');
+        if (code) tokens.add(String(code).trim());
+
+        var data = await Api.fetchMyRequests(rid);
+        var mine = Array.isArray(data)
+          ? data.filter(function (req) { return requestBelongsToResident(req, tokens); })
+          : [];
+        return countPendingAndInProgressRequests(mine);
+      } catch (e) {
+        console.warn('Requests KPI unavailable:', e);
+        return 0;
+      }
+    }
+
+    function escapeHtml(text) {
+      return String(text == null ? '' : text)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function formatTimeAgo(iso) {
+      if (!iso) return '';
+      var d = new Date(iso);
+      if (Number.isNaN(d.getTime())) return '';
+      var sec = Math.floor((Date.now() - d.getTime()) / 1000);
+      if (sec < 60) return 'Just now';
+      if (sec < 3600) return Math.floor(sec / 60) + ' min ago';
+      if (sec < 86400) return Math.floor(sec / 3600) + ' hr ago';
+      if (sec < 604800) return Math.floor(sec / 86400) + ' day ago';
+      return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    }
+
+    function updateNotifHint(counts) {
+      var hint = document.getElementById('notifHint');
+      var badge = document.getElementById('notifBadge');
+      var card = document.getElementById('notifSummaryCard');
+      if (!counts) return;
+      var total = counts.totalUnread || 0;
+      var urgent = counts.urgentUnread || 0;
+      var normal = counts.normalUnread || 0;
+      if (hint) {
+        if (total === 0) {
+          hint.textContent = 'All caught up';
+        } else if (urgent > 0 && normal > 0) {
+          hint.textContent = urgent + ' urgent · ' + normal + ' updates';
+        } else if (urgent > 0) {
+          hint.textContent = urgent + ' urgent';
+        } else {
+          hint.textContent = normal + ' unread';
+        }
+      }
+      if (badge) {
+        badge.hidden = total <= 0;
+        badge.textContent = total > 99 ? '99+' : String(total);
+      }
+      if (card) {
+        card.classList.toggle('summary-card--has-unread', total > 0);
+      }
+    }
+
+    function notificationIcon(type) {
+      if (type === 'report_update') return 'fa-flag';
+      if (type === 'admin_alert') return 'fa-envelope';
+      return 'fa-clipboard-check';
+    }
+
+    function navigateToPortalSection(section, iframePage) {
+      if (!section) return;
+      try {
+        if (window.parent !== window && window.parent.BarangayConnectNavPersist) {
+          window.parent.BarangayConnectNavPersist.activatePortalSection('resident', section, iframePage || null);
+          return;
+        }
+      } catch (e) {
+        console.warn('Navigation unavailable:', e);
+      }
+      var pageMap = {
+        dashboard: 'R_Home-Dashboard.html',
+        reports: 'R_Reports.html',
+        requests: 'R_Request-management.html',
+        transparency: 'R_Transparency.html',
+        announcements: 'R_Announcements.html',
+        emergency: 'R_Emergency.html',
+        faq: "R_FAQ's.html",
+      };
+      var page = iframePage || pageMap[section] || 'R_Home-Dashboard.html';
+      var hash = 'section=' + encodeURIComponent(section);
+      if (iframePage) {
+        hash += '&page=' + encodeURIComponent(iframePage);
+      }
+      window.location.href = page + '#' + hash;
+    }
+
+    function maybeShowUrgentToast(residentId, urgentCount) {
+      if (!urgentCount || urgentCount <= 0) return;
+      var key = 'bcNotifToast_' + residentId;
+      if (sessionStorage.getItem(key)) return;
+      sessionStorage.setItem(key, '1');
+      var notify = (window.parent && window.parent.bcNotify) || window.bcNotify;
+      if (notify && notify.warning) {
+        notify.warning(
+          'You have ' + urgentCount + ' urgent notification' + (urgentCount === 1 ? '' : 's') + '.',
+          { title: 'Notifications' }
+        );
+      }
+    }
+
+    async function loadNotificationCounts(residentId) {
+      var NotifApi = window.BarangayConnectNotificationsApi;
+      if (!NotifApi || !residentId) {
+        setSummaryCardValue('notifValue', 0);
+        updateNotifHint({ totalUnread: 0, urgentUnread: 0, normalUnread: 0 });
+        return null;
+      }
+      try {
+        var counts = await NotifApi.fetchCounts(residentId);
+        setSummaryCardValue('notifValue', counts.totalUnread || 0);
+        updateNotifHint(counts);
+        maybeShowUrgentToast(residentId, counts.urgentUnread || 0);
+        return counts;
+      } catch (e) {
+        console.warn('Notification counts unavailable:', e);
+        setSummaryCardValue('notifValue', 0);
+        updateNotifHint({ totalUnread: 0, urgentUnread: 0, normalUnread: 0 });
+        return null;
+      }
+    }
+
+    var cachedNotifications = [];
+
+    function buildNotificationItemHtml(n) {
+        var unreadClass = n.isRead ? '' : ' activity-item--unread';
+        var urgentClass = n.priority === 'urgent' && !n.isRead ? ' activity-item--urgent' : '';
+        var statusHtml = !n.isRead
+          ? (n.priority === 'urgent'
+            ? '<div class="activity-status urgent">Urgent</div>'
+            : '<div class="activity-status new">New</div>')
+          : '';
+      return (
+        '<button type="button" class="activity-item notification-item' + unreadClass + urgentClass + '" ' +
+          'data-id="' + n.notificationId + '" data-section="' + escapeHtml(n.linkSection || '') + '">' +
+          '<div class="activity-avatar"><i class="fas ' + notificationIcon(n.type) + '"></i></div>' +
+          '<div class="activity-content">' +
+            '<div class="activity-title">' + escapeHtml(n.title) + '</div>' +
+            '<div class="activity-subtitle">' + escapeHtml(n.message) + '</div>' +
+            '<div class="activity-time">' + escapeHtml(formatTimeAgo(n.createdAt)) + '</div>' +
+          '</div>' +
+          statusHtml +
+        '</button>'
+      );
+    }
+
+    function bindNotificationItems(container, closePopupOnNavigate) {
+      if (!container) return;
+      container.querySelectorAll('.notification-item').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          handleNotificationClick(btn, closePopupOnNavigate);
+        });
+      });
+    }
+
+    function renderNotificationsList(items, targetId, options) {
+      options = options || {};
+      var list = document.getElementById(targetId || 'notifPopupList');
+      if (!list) return;
+
+      var allItems = Array.isArray(items) ? items : [];
+      var displayItems = options.limit ? allItems.slice(0, options.limit) : allItems;
+      var emptyMessage = options.emptyMessage ||
+        'No notifications yet. Updates on your requests and reports will appear here.';
+
+      if (!displayItems.length) {
+        list.innerHTML = '<p class="notifications-empty">' + emptyMessage + '</p>';
+        return;
+      }
+
+      list.innerHTML = displayItems.map(buildNotificationItemHtml).join('');
+      bindNotificationItems(list, !!options.closePopupOnNavigate);
+    }
+
+    function updateNotifViewAllVisibility(itemCount) {
+      var cardHint = document.getElementById('notifViewAllCard');
+      if (cardHint) cardHint.hidden = !(itemCount > 0);
+    }
+
+    function updateMarkAllButtons(hasUnread) {
+      var markAllPopupBtn = document.getElementById('markAllNotifPopupBtn');
+      if (markAllPopupBtn) markAllPopupBtn.hidden = !hasUnread;
+    }
+
+    function cacheNotifications(items) {
+      cachedNotifications = Array.isArray(items) ? items : [];
+      var hasUnread = cachedNotifications.some(function (n) { return !n.isRead; });
+      updateMarkAllButtons(hasUnread);
+      updateNotifViewAllVisibility(cachedNotifications.length);
+    }
+
+    async function handleNotificationClick(btn, closePopupOnNavigate) {
+      var NotifApi = window.BarangayConnectNotificationsApi;
+      var residentId = getResidentId();
+      if (!NotifApi || !residentId) return;
+
+      var id = parseInt(btn.getAttribute('data-id') || '0', 10);
+      var section = btn.getAttribute('data-section') || '';
+
+      try {
+        if (id > 0) {
+          await NotifApi.markRead(residentId, id);
+        }
+        await loadNotificationCounts(residentId);
+        await loadNotificationsList(residentId);
+        if (closePopupOnNavigate) closeNotifPopup();
+        navigateToPortalSection(section);
+      } catch (e) {
+        console.warn('Could not mark notification read:', e);
+        if (closePopupOnNavigate) closeNotifPopup();
+        navigateToPortalSection(section);
+      }
+    }
+
+    async function loadNotificationsList(residentId) {
+      var NotifApi = window.BarangayConnectNotificationsApi;
+      if (!NotifApi || !residentId) {
+        cacheNotifications([]);
+        return;
+      }
+
+      try {
+        var items = await NotifApi.fetchList(residentId, 50);
+        cacheNotifications(Array.isArray(items) ? items : []);
+        if (isNotifPopupOpen()) {
+          renderNotificationsList(cachedNotifications, 'notifPopupList', { closePopupOnNavigate: true });
+        }
+      } catch (e) {
+        console.warn('Notifications list unavailable:', e);
+        cacheNotifications([]);
+      }
+    }
+
+    function isNotifPopupOpen() {
+      var popup = document.getElementById('notifPopup');
+      return popup && !popup.hidden;
+    }
+
+    function openNotifPopup() {
+      var popup = document.getElementById('notifPopup');
+      if (!popup) return;
+      popup.hidden = false;
+      popup.setAttribute('aria-hidden', 'false');
+      document.body.classList.add('notif-popup-open');
+      renderNotificationsList(cachedNotifications, 'notifPopupList', {
+        closePopupOnNavigate: true,
+        emptyMessage: 'No notifications yet.',
+      });
+      var hasUnread = cachedNotifications.some(function (n) { return !n.isRead; });
+      updateMarkAllButtons(hasUnread);
+      document.getElementById('notifPopupClose')?.focus();
+    }
+
+    function closeNotifPopup() {
+      var popup = document.getElementById('notifPopup');
+      if (!popup) return;
+      popup.hidden = true;
+      popup.setAttribute('aria-hidden', 'true');
+      document.body.classList.remove('notif-popup-open');
+    }
+
+    async function markAllNotificationsRead() {
+      var NotifApi = window.BarangayConnectNotificationsApi;
+      var residentId = getResidentId();
+      if (!NotifApi || !residentId) return;
+      await NotifApi.markAllRead(residentId);
+      await loadNotificationCounts(residentId);
+      await loadNotificationsList(residentId);
+    }
+
+    function loadDashboardData() {
+      var residentId = getResidentId() || '';
+
+      fetchMyReportsThisMonth().then(function (count) {
+        setSummaryCardValue('reportsValue', count);
+      });
+
+      fetchActiveRequestsCount().then(function (count) {
+        setSummaryCardValue('requestsValue', count);
+      });
+
+      loadNotificationCounts(residentId);
+      loadNotificationsList(residentId);
+    }
+
+    async function fetchMyReportsThisMonth() {
+      var ReportsApi = window.BarangayConnectReportsApi;
+      if (!ReportsApi) return 0;
+
+      try {
+        var results = await Promise.all([
+          fetch(ReportsApi.apiUrl('all')),
+          fetch(ReportsApi.apiUrl('archived')),
+        ]);
+
+        var active = results[0].ok ? await results[0].json() : [];
+        var archived = results[1].ok ? await results[1].json() : [];
+        var reports = (Array.isArray(active) ? active : []).concat(Array.isArray(archived) ? archived : []);
+        var now = new Date();
+
+        return reports.filter(function (report) {
+          var d = new Date(report.dateSubmitted);
+          if (Number.isNaN(d.getTime())) return false;
+          return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+        }).length;
+      } catch (e) {
+        console.warn('Reports KPI unavailable:', e);
+        return 0;
+      }
+    }
+
+    function truncateText(text, maxLen) {
+      var s = String(text || '').trim();
+      if (s.length <= maxLen) return s;
+      return s.slice(0, maxLen).trim() + '…';
+    }
+
+    function announcementTypeTone(type) {
+      var t = String(type || 'general').toLowerCase();
+      if (t === 'emergency') return 'rose';
+      if (t === 'event') return 'blue';
+      if (t === 'maintenance') return 'amber';
+      return 'green';
+    }
+
+    function parseActivityDate(iso) {
+      if (!iso) return { date: '—', time: '', ts: 0 };
+      var raw = String(iso);
+      if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) raw += 'T12:00:00';
+      var d = new Date(raw);
+      if (Number.isNaN(d.getTime())) return { date: '—', time: '', ts: 0 };
+      return {
+        date: d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
+        time: d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }),
+        ts: d.getTime(),
+      };
+    }
+
+    async function loadAnnouncements() {
+      var AnnApi = window.BarangayConnectAnnouncementsApi;
+      var list = document.getElementById('announcementsList');
+      if (!list) return;
+      if (!AnnApi) return;
+
+      try {
+        var data = await AnnApi.fetchLatest(4);
+        list.innerHTML = '';
+
+        if (!data || data.length === 0) {
+          list.innerHTML = '<p class="overview-activity-empty">No announcements yet.</p>';
+          return;
+        }
+
+        list.innerHTML = data.map(function (announcement) {
+          var dt = parseActivityDate(announcement.announcementDate);
+          var tone = announcement.featured ? 'amber' : announcementTypeTone(announcement.type);
+          var subtitle = truncateText(announcement.description, 48);
+          if (announcement.featured) {
+            subtitle = 'Important · ' + subtitle;
+          } else if (announcement.author) {
+            subtitle = subtitle + ' · ' + String(announcement.author).trim();
+          }
+
+          return (
+            '<div class="overview-activity-item">' +
+              '<div class="overview-activity-icon overview-activity-icon--' + tone + '">' +
+                '<i class="fas fa-bullhorn" aria-hidden="true"></i>' +
+              '</div>' +
+              '<div class="overview-activity-content">' +
+                '<div class="overview-activity-title">' + escapeHtml(announcement.title) + '</div>' +
+                '<div class="overview-activity-subtitle">' + escapeHtml(subtitle) + '</div>' +
+              '</div>' +
+              '<div class="overview-activity-time">' +
+                '<span class="overview-activity-date">' + escapeHtml(dt.date) + '</span>' +
+              '</div>' +
+            '</div>'
+          );
+        }).join('');
+      } catch (error) {
+        console.error('Announcement Error:', error);
+        list.innerHTML = '<p class="overview-activity-empty">Could not load announcements.</p>';
+      }
+    }
+
+    document.getElementById('markAllNotifPopupBtn')?.addEventListener('click', function () {
+      markAllNotificationsRead().catch(function (e) {
+        console.warn('Mark all read failed:', e);
+      });
+    });
+
+    document.getElementById('notifPopupClose')?.addEventListener('click', closeNotifPopup);
+    document.getElementById('notifPopupBackdrop')?.addEventListener('click', closeNotifPopup);
+
+    document.getElementById('summaryCardReports')?.addEventListener('click', function () {
+      navigateToPortalSection('reports');
+    });
+
+    document.getElementById('summaryCardRequests')?.addEventListener('click', function () {
+      navigateToPortalSection('requests');
+    });
+
+    document.getElementById('viewAllAnnouncements')?.addEventListener('click', function () {
+      navigateToPortalSection('announcements');
+    });
+
+    document.getElementById('notifSummaryCard')?.addEventListener('click', openNotifPopup);
+
+    document.addEventListener('keydown', function (event) {
+      if (event.key === 'Escape' && isNotifPopupOpen()) {
+        closeNotifPopup();
+      }
+    });
+
+    window.addEventListener('load', function () {
+      initDashboardGreeting();
+      loadDashboardData();
+      loadAnnouncements();
+      setInterval(loadAnnouncements, 15000);
+      window.setInterval(function () {
+        var residentId = getResidentId();
+        if (!residentId) return;
+        loadNotificationCounts(residentId);
+        loadNotificationsList(residentId);
+      }, 45000);
+    });
+  </script>
+</body>
+</html>

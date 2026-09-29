@@ -1,0 +1,19 @@
+# Supabase-backed portal HTML is served only after PHP verifies the matching authenticated role.
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteRule ^Admin/html/(.+\.html)$ FrontPage/php/portal_page.php?role=admin&path=$1 [QSA,B,L]
+  RewriteRule ^Residents/html/(.+\.html)$ FrontPage/php/portal_page.php?role=resident&path=$1 [QSA,B,L]
+</IfModule>
+
+# Cache rules
+<IfModule mod_headers.c>
+  <FilesMatch "\.(html|htm|css|js)$">
+    Header set Cache-Control "no-cache, no-store, must-revalidate"
+    Header set Pragma "no-cache"
+    Header set Expires "0"
+  </FilesMatch>
+</IfModule>
+
+<FilesMatch "^\.env(\.|$)">
+  Require all denied
+</FilesMatch>

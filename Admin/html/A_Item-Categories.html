@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Item Categories - BarangayConnect</title>
+  <link rel="stylesheet" href="../../Shared/css/bc-admin-list-page.css?v=20250803">
+  <link rel="stylesheet" href="../css/bc-admin-page-title.css?v=20250642">
+  <link rel="stylesheet" href="../css/A_borrow-inventory-style.css?v=20250803">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <script src="../../Shared/js/bc-borrow-inventory-ui.js?v=20250803"></script>
+  <style>* { scrollbar-width: none !important; } *::-webkit-scrollbar { display: none !important; }</style>
+</head>
+<body data-bi-page="categories">
+  <div class="bi-page">
+    <div class="page-header"><h1 class="page-title">Item Categories</h1></div>
+    <div class="bi-category-grid" id="biCategoryGrid"></div>
+    <div class="bi-card" style="margin-top:1.25rem">
+      <div class="bi-table-wrap">
+        <table class="bi-table">
+          <thead><tr><th>Category</th><th>Description</th><th>Items</th><th></th></tr></thead>
+          <tbody id="biCategoryTableBody"><tr><td colspan="4">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <script src="../../Shared/js/bc-borrow-inventory-api.js?v=20250803"></script>
+  <script src="../../Shared/js/bc-admin-borrow-inventory.js?v=20250803"></script>
+  <script src="../../Shared/js/bc-nav-persist.js?v=20250803"></script>
+  <script src="../../Shared/js/bc-nav-iframe-child.js"></script>
+  <script>BorrowInventoryUI.initSidebarIframe(); BorrowInventoryUI.notifyNav('inventory');</script>
+</body>
+</html>

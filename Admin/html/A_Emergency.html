@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Emergency - BarangayConnect</title>
+
+  <link rel="stylesheet" href="../css/A_emergency-style.css">
+  <link rel="stylesheet" href="../css/bc-admin-page-title.css?v=20250642">
+
+  <style>
+    * { scrollbar-width: none; -ms-overflow-style: none; }
+    *::-webkit-scrollbar { display: none; }
+  </style>
+
+  <script src="https://kit.fontawesome.com/a2e0f1f0c1.js" crossorigin="anonymous"></script>
+  <script src="../../Shared/js/bc-notify.js?v=20250659"></script>
+  <script src="../../Shared/js/bc-emergency-api.js?v=20250711"></script>
+</head>
+
+<body>
+<div class="emergency-container">
+
+  <!-- HEADER -->
+  <div class="emergency-header">
+    <h1 class="emergency-title">Emergency Contacts</h1>
+  </div>
+
+  <!-- CONTACTS MANAGEMENT -->
+  <div class="contacts-management">
+    <div class="section-title-wrapper">
+      <h2 class="section-title">Emergency Contacts Management</h2>
+    </div>
+
+    <div class="management-actions">
+      <button class="add-contact-btn" onclick="openAddContactModal()">
+        <i class="fas fa-plus"></i> Add New Contact
+      </button>
+    </div>
+
+    <div class="contacts-table-container">
+      <div class="table-header">
+        <div class="table-cell">SERVICE</div>
+        <div class="table-cell">CONTACT NUMBER</div>
+        <div class="table-cell">DESCRIPTION</div>
+        <div class="table-cell">LAST UPDATED</div>
+        <div class="table-cell">ACTIONS</div>
+      </div>
+
+      <div class="table-body">
+        <!-- Contacts loaded here -->
+      </div>
+    </div>
+  </div>
+
+  <!-- PROCEDURES SECTION -->
+  <div class="procedures-section">
+    <div class="section-title-wrapper">
+      <h2 class="section-title">Emergency Procedures</h2>
+    </div>
+
+    <div class="management-actions">
+      <button class="add-contact-btn" onclick="openAddProcedureModal()">
+        <i class="fas fa-plus"></i> Add New Procedure
+      </button>
+    </div>
+
+    <div class="procedures-grid">
+      <!-- Procedures loaded here -->
+    </div>
+  </div>
+
+  <!-- 🔥 REMOVED HOTLINES SECTION COMPLETELY -->
+
+  <!-- PROCEDURE EDIT MODAL -->
+  <div class="modal-overlay" id="procedureEditModalOverlay">
+    <div class="modal-wrapper">
+      <div class="modal-header">
+        <h3 id="procedureModalTitle"><i class="fas fa-edit"></i> Edit Procedure</h3>
+        <button class="modal-close" id="procedureModalClose"><i class="fas fa-times"></i></button>
+      </div>
+
+      <form id="procedureEditForm" class="modal-form">
+        <div class="form-group">
+          <label>Title *</label>
+          <input type="text" id="procedureEditTitle" required>
+        </div>
+        
+        <div class="form-group">
+          <label>Steps *</label>
+          <textarea id="procedureEditSteps" rows="8" placeholder="1 step per line" required></textarea>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="secondary-btn" id="procedureCancelBtn">Cancel</button>
+          <button type="submit" class="primary-btn" id="procedureSubmitBtn">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 🔥 REMOVED HOTLINE EDIT MODAL COMPLETELY -->
+
+  <!-- CONTACT ADD/EDIT MODAL -->
+  <div class="modal-overlay" id="contactEditModalOverlay">
+    <div class="modal-wrapper">
+      <div class="modal-header">
+        <h3 id="contactModalTitle"><i class="fas fa-edit"></i> Contact</h3>
+        <button class="modal-close" id="contactModalClose"><i class="fas fa-times"></i></button>
+      </div>
+
+      <form id="contactEditForm" class="modal-form">
+        <div class="form-group">
+          <label>Service Name *</label>
+          <input type="text" id="contactEditName" required>
+        </div>
+
+        <div class="form-group">
+          <label>Contact Number *</label>
+          <input type="text" id="contactEditNumber" required>
+        </div>
+
+        <div class="form-group">
+          <label>Description</label>
+          <textarea id="contactEditDescription" rows="3"></textarea>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="secondary-btn" id="contactCancelBtn">Cancel</button>
+          <button type="submit" class="primary-btn" id="contactSubmitBtn">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- CONFIRM MODAL -->
+  <div class="modal-overlay" id="confirmModalOverlay">
+    <div class="modal-wrapper" style="max-width:450px;">
+      <div class="modal-header">
+        <h3><i class="fas fa-exclamation-triangle"></i> Confirm</h3>
+        <button class="modal-close" id="confirmModalClose"><i class="fas fa-times"></i></button>
+      </div>
+
+      <div class="modal-form">
+        <p id="confirmMessage"></p>
+        <div class="form-actions">
+          <button type="button" class="secondary-btn" id="confirmCancelBtn">Cancel</button>
+          <button type="button" class="primary-btn" id="confirmOkBtn">OK</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+const EmApi = window.BarangayConnectEmergencyApi;
+
+function escapeHtml(text) {
+  return String(text == null ? '' : text)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function notify(type, message, title) {
+  if (window.bcNotify && window.bcNotify[type]) {
+    window.bcNotify[type](message, { title: title || '' });
+  }
+}
+
+function getIconClass(name) {
+  const s = String(name || '').toLowerCase();
+  if (s.includes('medical') || s.includes('ambulance')) return 'fa-ambulance';
+  if (s.includes('fire')) return 'fa-fire';
+  if (s.includes('police')) return 'fa-shield-alt';
+  if (s.includes('barangay')) return 'fa-building';
+  if (s.includes('red cross') || s.includes('redcross')) return 'fa-heart';
+  if (s.includes('public works')) return 'fa-tools';
+  return 'fa-phone';
+}
+
+function getProcedureIcon(title) {
+  const t = String(title || '').toLowerCase();
+  if (t.includes('fire') || t.includes('burn')) return 'fa-fire';
+  if (t.includes('medical') || t.includes('injury')) return 'fa-first-aid';
+  if (t.includes('earthquake') || t.includes('quake')) return 'fa-house-damage';
+  if (t.includes('flood') || t.includes('water')) return 'fa-water';
+  if (t.includes('storm') || t.includes('typhoon')) return 'fa-cloud-showers-heavy';
+  return 'fa-exclamation-circle';
+}
+
+function normalizeSteps(raw) {
+  if (Array.isArray(raw)) return raw;
+  if (typeof raw === 'string') {
+    try {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) return parsed;
+    } catch (e) { /* ignore */ }
+  }
+  return [];
+}
+
+const contactEditForm = document.getElementById('contactEditForm');
+const contactModalTitle = document.getElementById('contactModalTitle');
+const contactSubmitBtn = document.getElementById('contactSubmitBtn');
+const contactEditName = document.getElementById('contactEditName');
+const contactEditNumber = document.getElementById('contactEditNumber');
+const contactEditDescription = document.getElementById('contactEditDescription');
+const contactEditModalOverlay = document.getElementById('contactEditModalOverlay');
+
+const procedureModalTitle = document.getElementById('procedureModalTitle');
+const procedureSubmitBtn = document.getElementById('procedureSubmitBtn');
+const procedureEditTitle = document.getElementById('procedureEditTitle');
+const procedureEditSteps = document.getElementById('procedureEditSteps');
+const procedureEditModalOverlay = document.getElementById('procedureEditModalOverlay');
+const procedureEditForm = document.getElementById('procedureEditForm');
+const proceduresGrid = document.querySelector('.procedures-grid');
+
+let currentEditContactId = null;
+let currentProcedureId = null;
+let confirmCallback = null;
+
+async function getEmergencyContacts() {
+  if (!EmApi) return [];
+  return EmApi.fetchContacts();
+}
+
+async function getEmergencyProcedures() {
+  if (!EmApi) return [];
+  return EmApi.fetchProcedures();
+}
+
+async function renderEmergencyContacts() {
+  const tableBody = document.querySelector('.table-body');
+  if (!tableBody || !EmApi) return;
+
+  try {
+    const contacts = await getEmergencyContacts();
+    if (!contacts.length) {
+      tableBody.innerHTML = '<div class="table-row"><div class="table-cell">No emergency contacts yet.</div></div>';
+      return;
+    }
+
+    tableBody.innerHTML = contacts.map(function (c) {
+      return (
+        '<div class="table-row" data-row-id="' + c.id + '">' +
+          '<div class="table-cell service-info">' +
+            '<div class="service-info-content">' +
+              '<div class="service-icon"><i class="fas ' + escapeHtml(c.icon || getIconClass(c.serviceName)) + '"></i></div>' +
+              '<div class="service-details"><div class="service-name">' + escapeHtml(c.serviceName) + '</div></div>' +
+            '</div>' +
+          '</div>' +
+          '<div class="table-cell contact-number">' + escapeHtml(c.contactNumber) + '</div>' +
+          '<div class="table-cell description">' + escapeHtml(c.description || '') + '</div>' +
+          '<div class="table-cell last-updated">' + escapeHtml(c.lastUpdated || '') + '</div>' +
+          '<div class="table-cell actions">' +
+            '<button class="action-btn edit-btn" onclick="openContactEditModal(' + c.id + ')"><i class="fas fa-edit"></i></button>' +
+            '<button class="action-btn contact-delete-btn" onclick="deleteEmergencyContact(' + c.id + ')"><i class="fas fa-trash"></i></button>' +
+          '</div>' +
+        '</div>'
+      );
+    }).join('');
+  } catch (err) {
+    console.error(err);
+    notify('error', 'Could not load emergency contacts.', 'Load failed');
+  }
+}
+
+function showConfirmModal(message, callback) {
+  document.getElementById('confirmMessage').textContent = message;
+  confirmCallback = callback;
+  document.getElementById('confirmModalOverlay').style.display = 'flex';
+}
+
+function closeConfirmModal() {
+  document.getElementById('confirmModalOverlay').style.display = 'none';
+  confirmCallback = null;
+}
+
+document.getElementById('confirmOkBtn').onclick = function () {
+  if (confirmCallback) confirmCallback();
+  closeConfirmModal();
+};
+document.getElementById('confirmCancelBtn').onclick = closeConfirmModal;
+document.getElementById('confirmModalClose').onclick = closeConfirmModal;
+
+function deleteEmergencyContact(id) {
+  showConfirmModal('Delete this contact?', async function () {
+    try {
+      await EmApi.removeContact(id);
+      notify('success', 'Contact deleted.', 'Deleted');
+      renderEmergencyContacts();
+    } catch (err) {
+      console.error(err);
+      notify('error', 'Could not delete contact.', 'Delete failed');
+    }
+  });
+}
+
+function openAddContactModal() {
+  currentEditContactId = null;
+  contactModalTitle.innerHTML = "<i class='fas fa-plus'></i> Add Contact";
+  contactSubmitBtn.textContent = 'Add Contact';
+  contactEditName.value = '';
+  contactEditNumber.value = '';
+  contactEditDescription.value = '';
+  contactEditModalOverlay.style.display = 'flex';
+}
+
+async function openContactEditModal(id) {
+  currentEditContactId = id;
+  const contacts = await getEmergencyContacts();
+  const c = contacts.find(function (x) { return x.id == id; });
+  if (!c) return;
+
+  contactModalTitle.innerHTML = "<i class='fas fa-edit'></i> Edit Contact";
+  contactSubmitBtn.textContent = 'Save Changes';
+  contactEditName.value = c.serviceName;
+  contactEditNumber.value = c.contactNumber;
+  contactEditDescription.value = c.description || '';
+  contactEditModalOverlay.style.display = 'flex';
+}
+
+document.getElementById('contactModalClose').onclick =
+document.getElementById('contactCancelBtn').onclick = function () {
+  contactEditModalOverlay.style.display = 'none';
+};
+
+contactEditForm.addEventListener('submit', async function (e) {
+  e.preventDefault();
+  const serviceName = contactEditName.value.trim();
+  const contactNumber = contactEditNumber.value.trim();
+  const description = contactEditDescription.value.trim();
+  if (!serviceName || !contactNumber) {
+    notify('warning', 'Service name and contact number are required.', 'Missing fields');
+    return;
+  }
+
+  const payload = {
+    serviceName: serviceName,
+    contactNumber: contactNumber,
+    description: description,
+    icon: getIconClass(serviceName),
+    isCritical: /medical|fire|police|911|emergency/i.test(serviceName),
+  };
+
+  try {
+    if (currentEditContactId) {
+      await EmApi.updateContact(currentEditContactId, payload);
+      notify('success', 'Contact updated.', 'Saved');
+    } else {
+      await EmApi.createContact(payload);
+      notify('success', 'Contact added.', 'Saved');
+    }
+    contactEditModalOverlay.style.display = 'none';
+    renderEmergencyContacts();
+  } catch (err) {
+    console.error(err);
+    notify('error', 'Could not save contact.', 'Save failed');
+  }
+});
+
+async function renderEmergencyProcedures() {
+  if (!proceduresGrid || !EmApi) return;
+
+  try {
+    const procedures = await getEmergencyProcedures();
+    if (!procedures.length) {
+      proceduresGrid.innerHTML = '<p>No emergency procedures yet.</p>';
+      return;
+    }
+
+    proceduresGrid.innerHTML = procedures.map(function (p) {
+      const steps = normalizeSteps(p.steps);
+      return (
+        '<div class="procedure-card" data-id="' + p.id + '">' +
+          '<div class="procedure-icon"><i class="fas ' + escapeHtml(p.icon || getProcedureIcon(p.title)) + '"></i></div>' +
+          '<div class="procedure-content">' +
+            '<h3 class="procedure-title">' + escapeHtml(p.title) + '</h3>' +
+            '<ol class="procedure-steps">' + steps.map(function (s) { return '<li>' + escapeHtml(s) + '</li>'; }).join('') + '</ol>' +
+          '</div>' +
+          '<div class="procedure-actions">' +
+            '<button class="action-btn edit-btn" data-id="' + p.id + '"><i class="fas fa-edit"></i></button>' +
+            '<button class="action-btn procedure-delete-btn" data-id="' + p.id + '"><i class="fas fa-trash"></i></button>' +
+          '</div>' +
+        '</div>'
+      );
+    }).join('');
+
+    proceduresGrid.querySelectorAll('.edit-btn').forEach(function (btn) {
+      btn.addEventListener('click', function () { openProcedureEditModal(btn.dataset.id); });
+    });
+    proceduresGrid.querySelectorAll('.procedure-delete-btn').forEach(function (btn) {
+      btn.addEventListener('click', function () { deleteEmergencyProcedure(btn.dataset.id); });
+    });
+  } catch (err) {
+    console.error(err);
+    notify('error', 'Could not load procedures.', 'Load failed');
+  }
+}
+
+function deleteEmergencyProcedure(id) {
+  showConfirmModal('Delete this procedure?', async function () {
+    try {
+      await EmApi.removeProcedure(id);
+      notify('success', 'Procedure deleted.', 'Deleted');
+      renderEmergencyProcedures();
+    } catch (err) {
+      console.error(err);
+      notify('error', 'Could not delete procedure.', 'Delete failed');
+    }
+  });
+}
+
+function openAddProcedureModal() {
+  currentProcedureId = null;
+  procedureModalTitle.innerHTML = "<i class='fas fa-plus'></i> Add Procedure";
+  procedureSubmitBtn.textContent = 'Add Procedure';
+  procedureEditTitle.value = '';
+  procedureEditSteps.value = '';
+  procedureEditModalOverlay.style.display = 'flex';
+}
+
+async function openProcedureEditModal(id) {
+  currentProcedureId = id;
+  const procedures = await getEmergencyProcedures();
+  const p = procedures.find(function (x) { return x.id == id; });
+  if (!p) {
+    notify('warning', 'Procedure not found.', 'Not found');
+    return;
+  }
+
+  procedureModalTitle.innerHTML = "<i class='fas fa-edit'></i> Edit Procedure";
+  procedureSubmitBtn.textContent = 'Save Changes';
+  procedureEditTitle.value = p.title;
+  procedureEditSteps.value = normalizeSteps(p.steps).join('\n');
+  procedureEditModalOverlay.style.display = 'flex';
+}
+
+document.getElementById('procedureModalClose').onclick =
+document.getElementById('procedureCancelBtn').onclick = function () {
+  procedureEditModalOverlay.style.display = 'none';
+};
+
+procedureEditForm.addEventListener('submit', async function (e) {
+  e.preventDefault();
+  const title = procedureEditTitle.value.trim();
+  const steps = procedureEditSteps.value.split('\n').map(function (s) { return s.trim(); }).filter(Boolean);
+  if (!title || !steps.length) {
+    notify('warning', 'Title and at least one step are required.', 'Missing fields');
+    return;
+  }
+
+  const payload = {
+    title: title,
+    steps: steps,
+    icon: getProcedureIcon(title),
+  };
+
+  try {
+    if (currentProcedureId) {
+      await EmApi.updateProcedure(currentProcedureId, payload);
+      notify('success', 'Procedure updated.', 'Saved');
+    } else {
+      await EmApi.createProcedure(payload);
+      notify('success', 'Procedure added.', 'Saved');
+    }
+    procedureEditModalOverlay.style.display = 'none';
+    renderEmergencyProcedures();
+  } catch (err) {
+    console.error(err);
+    notify('error', 'Could not save procedure.', 'Save failed');
+  }
+});
+
+document.addEventListener('DOMContentLoaded', function () {
+  renderEmergencyContacts();
+  renderEmergencyProcedures();
+  setInterval(function () {
+    renderEmergencyContacts();
+    renderEmergencyProcedures();
+  }, 15000);
+});
+</script>
+
+</body>
+</html>

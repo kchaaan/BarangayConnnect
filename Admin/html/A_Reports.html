@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <title>Reports - BarangayConnect</title>
+  <link rel="stylesheet" href="../../Shared/css/bc-request-details-table.css?v=20250630">
+  <link rel="stylesheet" href="../../Shared/css/bc-admin-list-page.css?v=20250668">
+  <link rel="stylesheet" href="../../Shared/css/bc-reports-list-table.css?v=20250688">
+  <link rel="stylesheet" href="../css/bc-admin-page-title.css?v=20250642">
+  <link rel="stylesheet" href="../css/A_reports-style.css?v=20250729">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <script src="../../Shared/js/bc-notify.js?v=20250659"></script>
+  <script src="../../Shared/js/bc-reports-api.js?v=20250685"></script>
+  <script src="../../Shared/js/bc-admin-reports-daily-stats.js?v=20250685"></script>
+  <script>
+    (function () {
+      function applyAdminSidebarState(collapsed) {
+        document.documentElement.classList.toggle('admin-sidebar-expanded', !collapsed);
+      }
+      applyAdminSidebarState(false);
+      window.addEventListener('message', function (event) {
+        if (event.data && event.data.type === 'bc-admin-sidebar') {
+          applyAdminSidebarState(!!event.data.collapsed);
+        }
+      });
+      if (window.parent !== window) {
+        try {
+          window.parent.postMessage({ type: 'bc-admin-sidebar-request' }, '*');
+        } catch (err) { /* ignore */ }
+      }
+    })();
+  </script>
+  <style>
+    * {
+      scrollbar-width: none !important;
+      -ms-overflow-style: none !important;
+    }
+    *::-webkit-scrollbar {
+      display: none !important;
+    }
+
+    html, body {
+      height: 100%;
+      min-height: 0;
+    }
+
+    body {
+      overflow-x: hidden !important;
+      overflow-y: auto !important;
+      min-width: 100% !important;
+    }
+
+    .reports-container {
+      min-width: 100% !important;
+      overflow: visible !important;
+      padding-top: 0 !important;
+    }
+
+    .page-header {
+      min-width: 100% !important;
+      overflow: visible !important;
+    }
+
+    .empty-state {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 20px;
+      background: #f5f7f2;
+      border: 1px dashed #b8c4af;
+      border-radius: 10px;
+      color: #4a5c3a;
+      font-weight: 600;
+    }
+    .empty-state .empty-icon {
+      width: 40px;
+      height: 40px;
+      display: flex;
+      border-radius: 50%;
+      align-items: center;
+      justify-content: center;
+      background: #e3eadc;
+      color: #6c8055;
+      font-size: 18px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="reports-container">
+
+    <!-- HEADER -->
+    <div class="page-header">
+      <h1 class="page-title">Reports</h1>
+    </div>
+
+    <!-- STATS + FILTERS -->
+    <div class="search-stats-section">
+      <div class="stats-section">
+        <div class="stat-card clickable-stat">
+          <div class="stat-icon"><i class="fas fa-file-alt"></i></div>
+          <div class="stat-content">
+            <h3>Reports</h3>
+            <div class="stat-number" id="totalReportsCount">0</div>
+          </div>
+        </div>
+
+        <div class="stat-card clickable-stat">
+          <div class="stat-icon"><i class="fas fa-hourglass-half"></i></div>
+          <div class="stat-content">
+            <h3>In Progress</h3>
+            <div class="stat-number" id="inProgressReportsCount">0</div>
+          </div>
+        </div>
+
+        <div class="stat-card clickable-stat">
+          <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+          <div class="stat-content">
+            <h3>Resolved</h3>
+            <div class="stat-number" id="resolvedReportsCount">0</div>
+          </div>
+        </div>
+
+        <div class="stat-card clickable-stat">
+          <div class="stat-icon"><i class="fas fa-ban"></i></div>
+          <div class="stat-content">
+            <h3>Cancelled</h3>
+            <div class="stat-number" id="cancelledReportsCount">0</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="reports-toolbar admin-list-toolbar">
+        <div class="filter-group">
+          <label for="dateFilter" class="filter-label">Period</label>
+          <select id="dateFilter" class="filter-select">
+            <option value="all">All Time</option>
+            <option value="week">This Week</option>
+            <option value="month">This Month</option>
+            <option value="year">This Year</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label for="statusFilter" class="filter-label">Status</label>
+          <select id="statusFilter" class="filter-select">
+            <option value="all">All Status</option>
+            <option value="pending">Pending</option>
+            <option value="in progress">In Progress</option>
+            <option value="resolved">Resolved</option>
+          </select>
+        </div>
+        <div class="search-group">
+          <input type="text" placeholder="Search reporter, issue, or status" class="search-input" aria-label="Search reports">
+          <button type="button" class="search-btn" aria-label="Search"><i class="fas fa-search"></i></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- REPORTS LIST (same card + table as resident R_Reports.html) -->
+    <section class="reports-list-section reports-history card-surface" id="reportsListSection">
+      <div class="reports-list__toolbar">
+        <div class="reports-list__heading">
+          <h2 class="reports-list__title" id="reportsListTitle">Reports List</h2>
+          <p class="reports-archive__subtitle" id="reportsListSubtitle" hidden>Historical records for resolved and cancelled reports</p>
+        </div>
+        <div class="reports-list__controls">
+          <button type="button" class="btn-ghost" id="toggleReportsArchive" title="View archived reports" aria-pressed="false">
+            <i class="fas fa-box-archive" aria-hidden="true"></i>
+            Archive
+          </button>
+          <button type="button" class="btn-ghost" id="refreshAdminReports" title="Refresh list">
+            <i class="fas fa-arrows-rotate" aria-hidden="true"></i>
+            Refresh
+          </button>
+        </div>
+      </div>
+
+      <div class="reports-table-wrap">
+        <div class="reports-table" id="reportsMainTable" role="table" aria-label="All submitted reports">
+          <div class="reports-table__header" role="row">
+            <div class="reports-table__cell" role="columnheader">Report ID</div>
+            <div class="reports-table__cell" role="columnheader">Issue</div>
+            <div class="reports-table__cell" role="columnheader">Location</div>
+            <div class="reports-table__cell" role="columnheader">Date Reported</div>
+            <div class="reports-table__cell" role="columnheader">Status</div>
+            <div class="reports-table__cell" role="columnheader" id="reportsLastColHeader">Last Update</div>
+            <div class="reports-table__cell reports-table__cell--actions" role="columnheader">Action</div>
+          </div>
+          <div class="table-body reports-table__body">
+            <div class="empty-state" id="reportsEmptyState">
+              <div class="empty-icon"><i class="fas fa-inbox"></i></div>
+              <div>
+                <div class="empty-title">No reports yet</div>
+                <p class="empty-subtitle">New submissions will appear here automatically.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- VIEW REPORT MODAL (same layout as A_Request.html review modal) -->
+  <div id="reportDetailsModal" class="request-modal" aria-hidden="true">
+    <div class="request-modal-content" role="dialog" aria-modal="true" aria-labelledby="modalReportTitle">
+      <button class="request-modal-close" id="reportModalClose" aria-label="Close report details">&times;</button>
+
+      <div class="request-modal-header">
+        <div>
+          <p class="modal-eyebrow">Review Report</p>
+          <h2 id="modalReportTitle">Review Report</h2>
+        </div>
+      </div>
+
+      <div class="request-modal-body">
+
+        <div id="adminReportImageContainer" class="info-section-card report-image-section" hidden>
+          <div class="section-title-wrapper">
+            <h3 class="section-title">Report Image</h3>
+          </div>
+          <img id="adminReportImage" class="report-modal-image" alt="Report attachment">
+        </div>
+
+        <div class="info-section-card">
+          <div class="section-title-wrapper">
+            <h3 class="section-title">Report Information</h3>
+          </div>
+          <table class="bc-details-table">
+            <tbody>
+              <tr><th scope="row">Reporter Name</th><td id="modalReporterName">—</td></tr>
+              <tr><th scope="row">Category</th><td id="modalCategory">—</td></tr>
+              <tr><th scope="row">Issue</th><td id="modalIssue">—</td></tr>
+              <tr><th scope="row">Location</th><td id="modalLocation">—</td></tr>
+              <tr><th scope="row">Status</th><td id="modalStatus">—</td></tr>
+              <tr><th scope="row">Date Reported</th><td id="modalDateReported">—</td></tr>
+              <tr><th scope="row">Time</th><td id="modalTimeReported">—</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <section class="notes-section">
+          <p class="section-eyebrow">Additional Details</p>
+          <div class="notes-box" id="modalAdditionalDetails">No additional details provided.</div>
+        </section>
+
+      </div>
+    </div>
+  </div>
+
+
+
+
+  <!-- SCRIPT WILL BE SENT IN PART 2 -->
+<script>
+const ReportsApi = window.BarangayConnectReportsApi;
+const DailyStats = window.BarangayConnectReportsDailyStats;
+let adminReportsCache = [];
+let adminArchiveCache = [];
+let showingArchive = false;
+
+function reportStatusKey(status) {
+  return String(status || "").trim().toLowerCase();
+}
+
+function isActiveReport(report) {
+  return report && !report.isArchived;
+}
+
+/* ============================================================
+   LOAD REPORTS ON PAGE OPEN
+============================================================ */
+document.addEventListener("DOMContentLoaded", () => {
+  loadAdminReports();
+  document.getElementById("dateFilter").addEventListener("change", renderCurrentReportsTable);
+  document.getElementById("statusFilter").addEventListener("change", renderCurrentReportsTable);
+  document.getElementById("refreshAdminReports")?.addEventListener("click", loadAdminReports);
+  document.getElementById("toggleReportsArchive")?.addEventListener("click", toggleReportsArchive);
+});
+
+function toggleReportsArchive() {
+  showingArchive = !showingArchive;
+
+  const btn = document.getElementById("toggleReportsArchive");
+  const title = document.getElementById("reportsListTitle");
+  const subtitle = document.getElementById("reportsListSubtitle");
+  const lastColHeader = document.getElementById("reportsLastColHeader");
+  const table = document.getElementById("reportsMainTable");
+  const toolbar = document.querySelector(".reports-toolbar.admin-list-toolbar");
+  const searchInput = document.querySelector(".search-group input");
+
+  if (btn) {
+    btn.classList.toggle("is-active", showingArchive);
+    btn.setAttribute("aria-pressed", showingArchive ? "true" : "false");
+    btn.title = showingArchive ? "Back to active reports" : "View archived reports";
+  }
+
+  if (title) {
+    title.innerHTML = showingArchive
+      ? '<i class="fas fa-box-archive" aria-hidden="true"></i> Archive'
+      : "Reports List";
+  }
+
+  if (subtitle) subtitle.hidden = !showingArchive;
+  if (lastColHeader) lastColHeader.textContent = showingArchive ? "Archived" : "Last Update";
+  if (table) {
+    table.classList.toggle("reports-table--archive", showingArchive);
+    table.setAttribute("aria-label", showingArchive ? "Archived reports" : "All submitted reports");
+  }
+  if (toolbar) toolbar.hidden = showingArchive;
+  if (searchInput) searchInput.value = "";
+
+  renderCurrentReportsTable();
+}
+
+function renderCurrentReportsTable() {
+  if (showingArchive) {
+    renderArchiveTable(adminArchiveCache);
+  } else {
+    renderAdminTable(adminReportsCache);
+  }
+}
+
+function closeReportModal() {
+  const modal = document.getElementById('reportDetailsModal');
+  modal.classList.remove('show');
+  modal.setAttribute('aria-hidden', 'true');
+  document.body.style.overflow = '';
+}
+
+document.getElementById('reportModalClose').addEventListener('click', closeReportModal);
+
+
+/* ============================================================
+   FETCH ALL REPORTS
+============================================================ */
+function loadAdminReports() {
+  const tableBody = document.querySelector(".reports-table__body");
+  if (!ReportsApi) {
+    if (tableBody) {
+      tableBody.innerHTML =
+        '<div class="empty-state"><div class="empty-icon"><i class="fas fa-triangle-exclamation"></i></div><div><div class="empty-title">Reports API not loaded</div><p class="empty-subtitle">Hard refresh the admin page (Ctrl+Shift+R).</p></div></div>';
+    }
+    return;
+  }
+
+  Promise.all([
+    fetch(ReportsApi.apiUrl("all")).then(res => {
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      return res.json();
+    }),
+    fetch(ReportsApi.apiUrl("archived")).then(res => {
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      return res.json();
+    }),
+  ])
+    .then(([activeData, archivedData]) => {
+      adminReportsCache = Array.isArray(activeData) ? activeData : [];
+      adminArchiveCache = Array.isArray(archivedData) ? archivedData : [];
+      renderCurrentReportsTable();
+    })
+    .catch(err => {
+      console.error("Fetch error:", err);
+      if (tableBody) {
+        tableBody.innerHTML =
+          '<div class="empty-state"><div class="empty-icon"><i class="fas fa-database"></i></div><div><div class="empty-title">Could not load reports</div><p class="empty-subtitle">Start Apache/MySQL in XAMPP, submit a report from the resident portal, then refresh.</p></div></div>';
+      }
+      updateStats();
+    });
+}
+
+
+/* ============================================================
+   RENDER TABLE
+============================================================ */
+function escapeHtml(str) {
+  return String(str || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function formatReportId(id) {
+  const n = parseInt(id, 10);
+  if (!n) return "—";
+  return "RPT-" + String(n).padStart(4, "0");
+}
+
+function formatTableDate(iso) {
+  if (!iso) return "—";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "—";
+  return d.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
+}
+
+function adminStatusClass(status) {
+  const s = String(status || "pending").toLowerCase().replace(/_/g, " ").trim();
+  if (s.includes("cancel")) return "cancelled";
+  if (s.includes("complete") || s.includes("resolve")) return "completed";
+  if (s.includes("progress") || s.includes("process")) return "processing";
+  return "pending";
+}
+
+function adminStatusCellHtml(report) {
+  const status = report.status || "Pending";
+  const sc = adminStatusClass(status);
+
+  if (status === "Resolved") {
+    return '<span class="reports-status completed">Resolved</span>';
+  }
+
+  return `
+    <select class="reports-status-select reports-status-select--${sc}" aria-label="Update report status">
+      <option ${status === "Pending" ? "selected" : ""}>Pending</option>
+      <option ${status === "In Progress" ? "selected" : ""}>In Progress</option>
+      <option ${status === "Resolved" ? "selected" : ""}>Resolved</option>
+      <option ${status === "Cancelled" ? "selected" : ""}>Cancelled</option>
+    </select>
+  `;
+}
+
+function archiveStatusBadge(status) {
+  const key = reportStatusKey(status);
+  if (key === "cancelled") {
+    return '<span class="reports-status cancelled">Cancelled</span>';
+  }
+  return '<span class="reports-status completed">Resolved</span>';
+}
+
+function buildReportRow(report, options) {
+  const opts = options || {};
+  const location = report.location || "—";
+  const locationShort = location.length > 42 ? location.slice(0, 42) + "…" : location;
+  const dateReported = formatTableDate(report.dateSubmitted);
+  const lastCol = opts.archived
+    ? formatTableDate(report.dateArchived || report.dateUpdated)
+    : formatTableDate(report.dateUpdated || report.dateSubmitted);
+
+  const row = document.createElement("div");
+  row.className = "reports-table__row";
+  row.setAttribute("role", "row");
+  row.dataset.id = report.reportId;
+  row.dataset.issue = report.title;
+  row.dataset.status = report.status;
+  row.dataset.location = location;
+  if (opts.archived) row.dataset.archived = "1";
+
+  row.innerHTML = `
+    <div class="reports-table__cell reports-table__cell--id" role="cell" data-label="Report ID">${escapeHtml(formatReportId(report.reportId))}</div>
+    <div class="reports-table__cell reports-table__cell--issue" role="cell" data-label="Issue" title="${escapeHtml(report.title)}">${escapeHtml(report.title)}</div>
+    <div class="reports-table__cell reports-table__cell--location" role="cell" data-label="Location" title="${escapeHtml(location)}">${escapeHtml(locationShort)}</div>
+    <div class="reports-table__cell" role="cell" data-label="Date Reported">${dateReported}</div>
+    <div class="reports-table__cell reports-table__cell--status" role="cell" data-label="Status">
+      ${opts.archived ? archiveStatusBadge(report.status) : adminStatusCellHtml(report)}
+    </div>
+    <div class="reports-table__cell" role="cell" data-label="${opts.archived ? "Archived" : "Last Update"}">${lastCol}</div>
+    <div class="reports-table__cell reports-table__cell--actions" role="cell" data-label="Action">
+      <button type="button" class="table-action-btn view" title="View details"><i class="fas fa-eye"></i></button>
+    </div>
+  `;
+
+  return row;
+}
+
+function renderAdminTable(data) {
+  const tableBody = document.querySelector(".reports-table__body");
+
+  tableBody.innerHTML = "";
+
+  if (!data || data.length === 0) {
+    tableBody.innerHTML = `
+      <div class="empty-state" id="reportsEmptyState">
+        <div class="empty-icon"><i class="fas fa-inbox"></i></div>
+        <div>
+          <div class="empty-title">No reports yet</div>
+          <p class="empty-subtitle">New submissions will appear here automatically.</p>
+        </div>
+      </div>
+    `;
+    updateStats();
+    return;
+  }
+
+  data.sort((a, b) => new Date(b.dateSubmitted) - new Date(a.dateSubmitted));
+
+  const filteredReports = filterByStatus(filterByDate(data));
+
+  if (filteredReports.length === 0) {
+    tableBody.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon"><i class="fas fa-filter"></i></div>
+        <div>
+          <div class="empty-title">No reports found</div>
+          <p class="empty-subtitle">Try a different date or status filter.</p>
+        </div>
+      </div>
+    `;
+    updateStats();
+    return;
+  }
+
+  filteredReports.forEach(report => {
+    tableBody.appendChild(buildReportRow(report, { archived: false }));
+  });
+
+  attachReportActions();
+  updateStats();
+}
+
+function renderArchiveTable(data) {
+  const tableBody = document.querySelector(".reports-table__body");
+  if (!tableBody) return;
+
+  tableBody.innerHTML = "";
+
+  if (!data || data.length === 0) {
+    tableBody.innerHTML = `
+      <div class="empty-state" id="archiveEmptyState">
+        <div class="empty-icon"><i class="fas fa-box-open"></i></div>
+        <div>
+          <div class="empty-title">No archived reports yet</div>
+          <p class="empty-subtitle">Resolved reports move here after 24 hours. Cancelled reports are archived immediately.</p>
+        </div>
+      </div>
+    `;
+    return;
+  }
+
+  const filtered = filterByDate(data, true);
+  if (filtered.length === 0) {
+    tableBody.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon"><i class="fas fa-filter"></i></div>
+        <div>
+          <div class="empty-title">No archived reports found</div>
+          <p class="empty-subtitle">Try a different period filter.</p>
+        </div>
+      </div>
+    `;
+    return;
+  }
+
+  filtered.sort((a, b) => new Date(b.dateArchived || b.dateUpdated) - new Date(a.dateArchived || a.dateUpdated));
+
+  filtered.forEach(report => {
+    tableBody.appendChild(buildReportRow(report, { archived: true }));
+  });
+
+  attachReportActions();
+}
+
+
+function filterByDate(reports, useArchivedDate) {
+  const filter = document.getElementById("dateFilter").value;
+  const now = new Date();
+
+  return reports.filter(report => {
+    const raw = useArchivedDate
+      ? (report.dateArchived || report.dateUpdated || report.dateSubmitted)
+      : report.dateSubmitted;
+    const reportDate = new Date(raw);
+
+    if (filter === "week") {
+      const startOfWeek = new Date(now);
+      startOfWeek.setDate(now.getDate() - now.getDay());
+      startOfWeek.setHours(0, 0, 0, 0);
+      return reportDate >= startOfWeek;
+    }
+
+    if (filter === "month") {
+      return (
+        reportDate.getMonth() === now.getMonth() &&
+        reportDate.getFullYear() === now.getFullYear()
+      );
+    }
+
+    if (filter === "year") {
+      return reportDate.getFullYear() === now.getFullYear();
+    }
+
+    return true;
+  });
+}
+
+function filterByStatus(reports) {
+  const filter = (document.getElementById("statusFilter")?.value || "all").toLowerCase();
+  if (filter === "all") return reports;
+  return reports.filter(report =>
+    String(report.status || "").toLowerCase() === filter
+  );
+}
+
+/* ============================================================
+   SEARCH FUNCTION
+============================================================ */
+document.querySelector('.search-group input').addEventListener('input', function() {
+  const term = this.value.toLowerCase();
+  document.querySelectorAll('.reports-table__body .reports-table__row').forEach(row => {
+    const issue = (row.dataset.issue || '').toLowerCase();
+    const status = (row.dataset.status || '').toLowerCase();
+    const location = (row.dataset.location || '').toLowerCase();
+    const id = (row.querySelector('.reports-table__cell--id')?.textContent || '').toLowerCase();
+
+    row.style.display =
+      issue.includes(term) || status.includes(term) || location.includes(term) || id.includes(term)
+      ? 'grid' : 'none';
+  });
+});
+
+
+function updateStats() {
+  const active = filterByDate(adminReportsCache.filter(isActiveReport));
+
+  document.getElementById('totalReportsCount').textContent = active.length;
+
+  document.getElementById('inProgressReportsCount').textContent =
+    active.filter(r => reportStatusKey(r.status) === 'in progress').length;
+
+  const daily = DailyStats ? DailyStats.loadDailyStats() : { resolved: 0, cancelled: 0 };
+  document.getElementById('resolvedReportsCount').textContent = daily.resolved;
+  document.getElementById('cancelledReportsCount').textContent = daily.cancelled;
+
+  const rows = [...document.querySelectorAll('.reports-table__body .reports-table__row')];
+  const emptyState = document.getElementById('reportsEmptyState');
+  if (emptyState) {
+    emptyState.style.display = rows.length === 0 ? 'flex' : 'none';
+  }
+}
+/* ============================================================
+   OPEN REPORT MODAL (WITH IMAGE FETCH)
+============================================================ */
+function openReportModal(row) {
+
+  const reportId = row.dataset.id;
+
+  fetch(ReportsApi.apiUrl("get", reportId))
+    .then(res => res.json())
+    .then(report => {
+
+      document.getElementById('modalReporterName').textContent = 'Anonymous';
+      document.getElementById('modalCategory').textContent = report.category || '—';
+      document.getElementById('modalIssue').textContent = report.title || '—';
+      document.getElementById('modalLocation').textContent = report.location || '—';
+      document.getElementById('modalStatus').textContent = report.status || '—';
+      document.getElementById('modalReportTitle').textContent = report.title || 'Review Report';
+
+      const d = new Date(report.dateSubmitted);
+      document.getElementById('modalDateReported').textContent = d.toLocaleDateString();
+      document.getElementById('modalTimeReported').textContent =
+        d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+      document.getElementById('modalAdditionalDetails').textContent =
+        report.description || 'No additional details provided.';
+
+      const imgContainer = document.getElementById('adminReportImageContainer');
+      const img = document.getElementById('adminReportImage');
+      if (report.imageBase64) {
+        img.src = `data:image/jpeg;base64,${report.imageBase64}`;
+        imgContainer.hidden = false;
+      } else {
+        img.removeAttribute('src');
+        imgContainer.hidden = true;
+      }
+
+      const modal = document.getElementById('reportDetailsModal');
+      modal.classList.add('show');
+      modal.removeAttribute('aria-hidden');
+      document.body.style.overflow = 'hidden';
+    })
+    .catch(err => {
+      console.error("Failed to load report details:", err);
+      alert("Failed to load report details.");
+    });
+}
+
+/* ============================================================
+   BUTTONS + STATUS DROPDOWNS
+============================================================ */
+function attachReportActions() {
+  document.querySelectorAll('.reports-table__body .reports-table__row').forEach(row => {
+    
+    // VIEW BUTTON
+    const viewBtn = row.querySelector('.table-action-btn.view');
+    if (viewBtn && !viewBtn.dataset.bound) {
+      viewBtn.dataset.bound = "1";
+      viewBtn.addEventListener("click", () => openReportModal(row));
+    }
+
+    // STATUS DROPDOWN
+    const select = row.querySelector('.reports-status-select');
+    if (select && !select.dataset.bound) {
+      select.dataset.bound = "1";
+      select.addEventListener("focus", () => {
+        select.dataset.prevStatus = select.value;
+      });
+      select.addEventListener("change", () => {
+        const newStatus = select.value;
+        const id = row.dataset.id;
+        const cached = adminReportsCache.find(r => String(r.reportId) === String(id));
+        const oldStatus = select.dataset.prevStatus || (cached && cached.status) || "Pending";
+
+        if (DailyStats) {
+          DailyStats.recordStatusTransition(oldStatus, newStatus);
+        }
+        updateStats();
+
+        updateReportStatus(id, newStatus)
+          .then((ok) => {
+            if (!ok) {
+              alert("Failed to update report status.");
+              loadAdminReports();
+              return;
+            }
+            loadAdminReports();
+          });
+      });
+    }
+
+  });
+}
+
+function updateReportStatus(id, newStatus) {
+  return fetch(ReportsApi.apiUrl("status", id), {
+    method: "PUT",
+    headers: { "Content-Type": "text/plain" },
+    body: newStatus
+  })
+    .then(res => res.text())
+    .then(result => {
+      console.log("STATUS UPDATED:", result);
+      return result === "SUCCESS";
+    })
+    .catch(err => {
+      console.error("Update failed:", err);
+      return false;
+    });
+}
+
+</script>

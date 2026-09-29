@@ -1,0 +1,115 @@
+/* Aligned label–value tables in admin/resident review modals */
+.request-modal .bc-details-table,
+.report-details-modal .bc-details-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-size: 0.95rem;
+  text-align: left;
+}
+
+.request-modal .bc-details-table th,
+.request-modal .bc-details-table td,
+.report-details-modal .bc-details-table th,
+.report-details-modal .bc-details-table td {
+  text-align: left;
+  vertical-align: top;
+  padding: 0.6rem 0.75rem;
+  border-bottom: 1px solid #e4ebe4;
+  line-height: 1.45;
+}
+
+.request-modal .bc-details-table th,
+.report-details-modal .bc-details-table th {
+  width: 36%;
+  max-width: 200px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-light, #6b7280);
+  background: #f6f8f5;
+  padding-right: 1rem;
+}
+
+.request-modal .bc-details-table td,
+.report-details-modal .bc-details-table td {
+  width: 64%;
+  color: var(--text-dark, #1f2937);
+  font-weight: 500;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+.request-modal .bc-details-table tbody tr:last-child th,
+.request-modal .bc-details-table tbody tr:last-child td,
+.report-details-modal .bc-details-table tbody tr:last-child th,
+.report-details-modal .bc-details-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.request-modal .bc-details-table tbody tr:hover td,
+.report-details-modal .bc-details-table tbody tr:hover td {
+  background: #fafcfa;
+}
+
+.request-modal #dynamicRequestDetails .bc-req-detail-group {
+  margin-bottom: 1.25rem;
+}
+
+.request-modal #dynamicRequestDetails .bc-req-detail-group:last-child {
+  margin-bottom: 0;
+}
+
+.request-modal .bc-req-detail-group__title {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--clr-1, #5f7f58);
+  margin: 0 0 0.5rem;
+  padding: 0 0 0.35rem;
+  border-bottom: 2px solid rgba(95, 127, 88, 0.2);
+  text-align: left;
+}
+
+.request-modal .bc-req-detail-section-hint {
+  text-align: left;
+  margin: 0 0 0.85rem;
+}
+
+.request-modal .info-section-card .section-title-wrapper,
+.report-details-modal .info-section-card .section-title-wrapper {
+  text-align: left;
+}
+
+@media (max-width: 560px) {
+  .request-modal .bc-details-table,
+  .request-modal .bc-details-table tbody,
+  .request-modal .bc-details-table tr,
+  .request-modal .bc-details-table th,
+  .request-modal .bc-details-table td,
+  .report-details-modal .bc-details-table,
+  .report-details-modal .bc-details-table tbody,
+  .report-details-modal .bc-details-table tr,
+  .report-details-modal .bc-details-table th,
+  .report-details-modal .bc-details-table td {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .request-modal .bc-details-table th,
+  .report-details-modal .bc-details-table th {
+    border-bottom: none;
+    padding-bottom: 0.2rem;
+    background: transparent;
+  }
+
+  .request-modal .bc-details-table td,
+  .report-details-modal .bc-details-table td {
+    padding-top: 0;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid #e4ebe4;
+  }
+}

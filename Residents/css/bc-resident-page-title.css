@@ -1,0 +1,44 @@
+/**
+ * Shared page title spacing — matches R_Home-Dashboard (.dashboard-header / .dashboard-title).
+ * Load this stylesheet last on resident iframe pages.
+ */
+:root {
+  --bc-page-pad-top: 1.85rem;
+  --bc-page-pad-x: 1.25rem;
+  --bc-page-pad-bottom: 1.25rem;
+  --bc-page-header-mb: 1.5rem;
+  --bc-page-header-pb: 0.75rem;
+  --bc-page-title-mt: 0.25rem;
+  --bc-page-title-mb: 0.5rem;
+}
+
+body {
+  padding: var(--bc-page-pad-top) var(--bc-page-pad-x) var(--bc-page-pad-bottom) !important;
+}
+
+.transparency-wrapper {
+  padding: var(--bc-page-pad-top) 24px 24px 24px !important;
+}
+
+body:has(.transparency-wrapper) {
+  padding: 0 !important;
+}
+
+.page-header,
+.dashboard-header,
+.emergency-header {
+  margin-top: 0 !important;
+  margin-bottom: var(--bc-page-header-mb) !important;
+  padding: 0 0 var(--bc-page-header-pb) 0 !important;
+}
+
+.page-title,
+.dashboard-title,
+.emergency-title {
+  margin: var(--bc-page-title-mt) 0 var(--bc-page-title-mb) 0 !important;
+}
+
+/* Transparency main heading */
+.transparency-card > h2:first-of-type {
+  margin: var(--bc-page-title-mt) 0 var(--bc-page-title-mb) 0 !important;
+}

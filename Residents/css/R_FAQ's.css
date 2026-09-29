@@ -1,0 +1,208 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --primary: #35543a;
+  --secondary: #c5d6c0;
+  --background: #f5f5f5;
+  --white: #ffffff;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Poppins', sans-serif;
+  background: var(--background);
+  color: #333;
+  padding: 2rem;
+}
+
+/* FAQ Container */
+.faq-container {
+  max-width: 900px;
+  margin: auto;
+  background: var(--white);
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  padding: 2rem;
+}
+
+/* Header */
+.faq-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.faq-header h1 {
+  color: var(--primary);
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.faq-header p {
+  color: #666;
+  font-size: 0.95rem;
+}
+
+/* FAQ Items */
+.faq-item {
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.faq-item:last-child {
+  border-bottom: none;
+}
+
+.faq-question {
+  width: 100%;
+  background: none;
+  border: none;
+  outline: none;
+  padding: 1.2rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--primary);
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: background 0.3s ease;
+}
+
+.faq-question:hover {
+  background: #f0f4ef;
+}
+
+.faq-question i {
+  transition: transform 0.3s ease;
+}
+
+/* Answer */
+.faq-answer {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s ease;
+  padding: 0 1.2rem;
+}
+
+.faq-answer p {
+  padding-bottom: 1rem;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: #555;
+}
+
+/* Active State */
+.faq-item.active .faq-answer {
+  max-height: 300px;
+}
+
+.faq-item.active .faq-question i {
+  transform: rotate(180deg);
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  body {
+    padding: 1rem;
+  }
+
+  .faq-container {
+    padding: 1.5rem;
+  }
+
+  .faq-header h1 {
+    font-size: 1.6rem;
+  }
+}
+
+/* ================= FEEDBACK SECTION ================= */
+.feedback-section {
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 1px solid #e0e0e0;
+  text-align: center;
+}
+
+.feedback-section h2 {
+  color: var(--primary);
+  margin-bottom: 0.5rem;
+}
+
+.feedback-section p {
+  color: #666;
+  font-size: 0.95rem;
+  margin-bottom: 1.5rem;
+}
+
+.feedback-icons {
+  display: flex;
+  justify-content: center;
+  gap: 2.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.feedback-option {
+  cursor: pointer;
+  color: #999;
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.feedback-option i {
+  font-size: 2.8rem;
+}
+
+.feedback-option span {
+  display: block;
+  font-size: 0.9rem;
+  margin-top: 0.3rem;
+}
+
+.feedback-option:hover {
+  transform: scale(1.1);
+}
+
+.feedback-option.active {
+  color: var(--primary);
+}
+
+.feedback-section textarea {
+  width: 100%;
+  max-width: 600px;
+  height: 100px;
+  padding: 1rem;
+  border-radius: 12px;
+  border: 1px solid #ccc;
+  resize: none;
+  margin-bottom: 1rem;
+  font-family: inherit;
+}
+
+.feedback-btn {
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  padding: 0.7rem 2.2rem;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.feedback-btn:hover {
+  background: #2c4631;
+}
+
+/* Center feedback input and button */
+.feedback-section textarea {
+  display: block;
+  margin: 0 auto 1rem auto;
+}
+
+.feedback-btn {
+  display: block;
+  margin: 0 auto;
+}
+

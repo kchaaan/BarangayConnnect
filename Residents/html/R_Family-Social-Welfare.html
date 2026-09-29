@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <title>Family, Social & Welfare - BarangayConnect</title>
+  <link rel="stylesheet" href="../css/R_Family-Social-Welfare-style.css">
+  <link rel="stylesheet" href="../../Shared/css/bc-notify.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <script src="https://kit.fontawesome.com/a2e0f1f0c1.js" crossorigin="anonymous"></script>
+  <script src="../../Shared/js/bc-notify.js?v=20250659"></script>
+  <style>
+    * { scrollbar-width: none !important; -ms-overflow-style: none !important; }
+    *::-webkit-scrollbar { display: none !important; }
+    body {
+      overflow-x: visible !important;
+      min-width: 100% !important;
+    }
+    .request-container { min-width: 100% !important; overflow: visible !important; padding-top: 0 !important; }
+    .page-header { min-width: 100% !important; overflow: visible !important; }
+    .form-group--full { flex: 1 1 100%; }
+    .religion-other-wrap { margin-top: 0.65rem; }
+    .religion-other-wrap[hidden] { display: none !important; }
+    .religion-other-label { font-size: 0.9rem; margin-bottom: 0.35rem; }
+    .form-subsection-title { font-size: 1.05rem; color: var(--clr-1, #5f7f58); margin: 1.25rem 0 0.35rem; font-weight: 600; }
+    .field-hint { font-size: 0.8rem; color: #666; margin: 0.35rem 0 0; }
+    .bc-file-protocol-banner { background: #8b2f2f; color: #fff; padding: 0.85rem 1rem; font-size: 0.9rem; line-height: 1.45; text-align: center; }
+    .bc-file-protocol-banner a { color: #e8ffc8; font-weight: 600; }
+    .bc-file-protocol-banner[hidden] { display: none !important; }
+  </style>
+  <link rel="stylesheet" href="../css/bc-resident-page-title.css?v=20250620">
+</head>
+<body>
+  <div id="bcFileProtocolBanner" class="bc-file-protocol-banner" role="alert" hidden>
+    <strong>Submit will not work while this page is opened as a file.</strong>
+    Open with XAMPP Apache running:
+    <a id="bcLocalhostPageLink" href="#">localhost link</a>
+  </div>
+  <div class="request-container">
+
+    <!-- Page Header -->
+    <div class="page-header">
+      <div class="header-content">
+        <button class="back-btn" onclick="goBack()" title="Back to Request Management">
+          <i class="fas fa-arrow-left"></i>
+        </button>
+        <div class="header-text">
+          <h1 class="page-title"><i class="fas fa-people-group"></i> Family, Social & Welfare</h1>
+          <p class="page-subtitle">Request family assistance, social welfare, and endorsement documents</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="content-wrapper">
+
+      <!-- Request Form Section -->
+      <div class="form-section">
+        <div class="form-card">
+          <h2 class="form-title"><i class="fas fa-file-signature"></i> Request Form</h2>
+
+          <form id="requestForm" class="request-form">
+
+            <!-- Document Type -->
+            <div class="form-group">
+              <label for="documentType" class="form-label"><i class="fas fa-file-alt"></i> Document Type <span class="required">*</span></label>
+              <select id="documentType" name="documentType" class="form-select" required>
+                <option value="">Select a document type...</option>
+                <option value="solo-parent">Certificate of Solo Parent</option>
+                <option value="guardianship">Certificate of Guardianship</option>
+                <option value="marriage-requirements">Certificate for Marriage Requirements</option>
+                <option value="joint-affidavits">Joint Affidavits related to family matters</option>
+                <option value="indigency">Certificate of Indigency</option>
+                <option value="financial-assistance">Financial Assistance Request Endorsement</option>
+                <option value="medical-assistance">Medical Assistance Endorsement</option>
+                <option value="scholarship">Scholarship Endorsement</option>
+                <option value="senior-citizen-id">Senior Citizen ID Endorsement</option>
+              </select>
+            </div>
+
+            <div id="bcResidentPersonalFields"></div>
+
+            <!-- File Uploads -->
+            <div class="form-group">
+              <label class="form-label"><i class="fas fa-upload"></i> Upload Requirements <span class="required">*</span></label>
+
+              <div class="upload-section">
+                <div class="upload-item">
+                  <label class="upload-label" for="validId"><i class="fas fa-id-badge"></i> Valid ID</label>
+                  <input type="file" id="validId" class="file-input" accept="image/*,.pdf" required>
+                </div>
+
+                <div class="upload-item">
+                  <label class="upload-label" for="proofRelationship"><i class="fas fa-users"></i> Proof of Relationship</label>
+                  <input type="file" id="proofRelationship" class="file-input" accept="image/*,.pdf">
+                </div>
+
+                <div class="upload-item">
+                  <label class="upload-label" for="supportingDocs"><i class="fas fa-file-alt"></i> Supporting Documents</label>
+                  <input type="file" id="supportingDocs" class="file-input" accept="image/*,.pdf">
+                </div>
+
+                <div class="upload-item">
+                  <label class="upload-label" for="barangayResidency"><i class="fas fa-home"></i> Barangay Residency Record</label>
+                  <input type="file" id="barangayResidency" class="file-input" accept="image/*,.pdf" required>
+                </div>
+
+                <div class="upload-item">
+                  <label class="upload-label" for="lowIncomeProof"><i class="fas fa-hand-holding-heart"></i> Proof of Low-Income Status</label>
+                  <input type="file" id="lowIncomeProof" class="file-input" accept="image/*,.pdf">
+                </div>
+
+                <div class="upload-item">
+                  <label class="upload-label" for="medicalSchoolDocs"><i class="fas fa-file-medical"></i> Medical or School Documents</label>
+                  <input type="file" id="medicalSchoolDocs" class="file-input" accept="image/*,.pdf">
+                </div>
+
+                <div class="upload-item">
+                  <label class="upload-label" for="applicationForm"><i class="fas fa-file-signature"></i> Application / Endorsement Form</label>
+                  <input type="file" id="applicationForm" class="file-input" accept="image/*,.pdf">
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label"><i class="fas fa-comment-alt"></i> Additional Notes</label>
+              <textarea id="notes" name="notes" class="form-textarea"></textarea>
+            </div>
+
+            <div class="form-actions">
+              <button type="button" class="btn btn-secondary" onclick="goBack()"><i class="fas fa-times"></i> Cancel</button>
+              <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane"></i> Submit Request</button>
+            </div>
+
+          </form>
+        </div>
+      </div>
+
+      <div class="info-card payment-card">
+        <h2 class="section-title"><i class="fas fa-money-bill-wave"></i> Payment Fee</h2>
+        <p class="payment-note">Payment fee will be determined based on the selected document type.</p>
+        <p class="payment-contact">Please contact the barangay office for exact fee amounts.</p>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="../../Shared/js/bc-nav-persist.js?v=20250604"></script>
+  <script src="../../Shared/js/bc-nav-iframe-child.js?v=20250604"></script>
+  <script src="../../Shared/js/bc-address-streets.js?v=20250604"></script>
+  <script src="../../Shared/js/bc-phone.js?v=20250604"></script>
+  <script src="../../Shared/js/bc-requests-api.js?v=20250604"></script>
+  <script src="../../Shared/js/bc-resident-request-form.js?v=20250604"></script>
+  <script>
+function goBack() {
+  if (window.bcNavigatePage) bcNavigatePage('R_Request-management.html');
+  else window.location.href = 'R_Request-management.html?v=' + Date.now();
+}
+
+(function () {
+  const RF = window.BarangayConnectResidentRequestForm;
+  const form = document.getElementById('requestForm');
+  if (!form || !RF) return;
+
+  RF.registerRequestFormLifecycle(async function () {
+    RF.initFileProtocolBanner('R_Family-Social-Welfare.html');
+    RF.injectPersonalFields('bcResidentPersonalFields');
+    RF.initPersonalFields();
+    await RF.prefillFromProfile();
+  });
+
+  form.addEventListener('submit', async function (e) {
+    e.preventDefault();
+
+    const docVal = document.getElementById('documentType').value;
+    if (!docVal) {
+      window.bcNotify?.error('Please select a document type.', { title: 'Missing information' });
+      return;
+    }
+
+    const validIdFile = document.getElementById('validId').files[0];
+    const barangayResidencyFile = document.getElementById('barangayResidency').files[0];
+    if (!validIdFile || !barangayResidencyFile) {
+      window.bcNotify?.error('Please upload both Valid ID and Barangay Residency Record.', { title: 'Missing files' });
+      return;
+    }
+
+    const documentTypeMap = {
+      'solo-parent': 'Certificate of Solo Parent',
+      guardianship: 'Certificate of Guardianship',
+      'marriage-requirements': 'Certificate for Marriage Requirements',
+      'joint-affidavits': 'Joint Affidavits related to family matters',
+      indigency: 'Certificate of Indigency',
+      'financial-assistance': 'Financial Assistance Request Endorsement',
+      'medical-assistance': 'Medical Assistance Endorsement',
+      scholarship: 'Scholarship Endorsement',
+      'senior-citizen-id': 'Senior Citizen ID Endorsement',
+    };
+
+    const payload = RF.buildBasePayload('family_social_welfare', documentTypeMap[docVal] || docVal, {});
+    if (!payload) return;
+
+    const uploads = [
+      { label: 'Valid ID', file: validIdFile },
+      { label: 'Barangay Residency Record', file: barangayResidencyFile },
+    ];
+
+    const optionalFiles = [
+      { id: 'proofRelationship', label: 'Proof of Relationship' },
+      { id: 'supportingDocs', label: 'Supporting Documents' },
+      { id: 'lowIncomeProof', label: 'Proof of Low-Income Status' },
+      { id: 'medicalSchoolDocs', label: 'Medical or School Documents' },
+      { id: 'applicationForm', label: 'Application / Endorsement Form' },
+    ];
+    optionalFiles.forEach(function (item) {
+      const file = document.getElementById(item.id)?.files[0];
+      if (file) uploads.push({ label: item.label, file });
+    });
+
+    await RF.submitMultipart(payload, uploads);
+  });
+})();
+</script>

@@ -1,0 +1,217 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css');
+
+:root {
+  --clr-1: #5f7f58; /* primary - matching Emergency */
+  --clr-2: #7faa70; /* secondary */
+  --clr-3: #e8f2e5; /* light */
+  --clr-4: #f4f8f4; /* background */
+  --white: #ffffff;
+  --light-gray: #f8f9fa;
+  --text-dark: #2f3a2f;
+  --text-light: #5f6d5b;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Poppins', sans-serif;
+  background: var(--clr-4);
+  min-height: 100vh;
+  color: var(--text-dark);
+  line-height: 1.6;
+  padding: 0.75rem 1rem 1rem 1rem;
+  margin: 0;
+  overflow-x: auto;
+  /* Hide scrollbar but allow scrolling */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
+}
+
+body::-webkit-scrollbar {
+  display: none; /* WebKit */
+}
+
+.request-management-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  background: transparent;
+  padding: 1rem;
+  overflow: visible;
+}
+
+/* Page Header */
+.page-header {
+  margin-bottom: 1.5rem;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.page-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin: 0 0 1rem 0;
+  background: linear-gradient(135deg, #35543a, #4a6741);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Main Cards Container */
+.cards-container {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 2rem;
+  margin-top: 0;
+  margin-bottom: 3rem;
+  max-width: 1000px;
+  margin-left: auto;
+  margin-right: auto;
+  align-items: stretch;
+}
+
+.management-card {
+  background: white;
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  text-decoration: none;
+  color: var(--text-dark);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  border: 2px solid transparent;
+  max-width: none;
+  width: 100%;
+  margin: 0;
+  height: 100%;
+}
+
+.management-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 5px;
+  background: linear-gradient(135deg, var(--clr-1), var(--clr-2));
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.management-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+  border-color: var(--clr-1);
+}
+
+.management-card:hover::before {
+  opacity: 1;
+}
+
+.card-icon {
+  margin-bottom: 1.5rem;
+  color: var(--clr-1);
+  font-size: 2.5rem;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: var(--clr-3);
+  padding: 1rem;
+}
+
+.management-card:hover .card-icon {
+  color: var(--clr-2);
+  transform: scale(1.1);
+}
+
+.card-content h3 {
+  font-size: 1.4rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: var(--clr-1);
+}
+
+.card-content p {
+  color: var(--text-light);
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  body {
+    padding: 0.5rem;
+  }
+  
+  .page-title {
+    font-size: 2rem;
+  }
+  
+  .cards-container {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.5rem;
+  }
+  
+  .management-card {
+    padding: 1.5rem;
+    max-width: 300px;
+  }
+  
+  .card-content h3 {
+    font-size: 1.2rem;
+  }
+  
+  .card-icon {
+    font-size: 2.2rem;
+    width: 90px;
+    height: 90px;
+    padding: 0.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  body {
+    padding: 0.25rem;
+  }
+  
+  .page-title {
+    font-size: 1.8rem;
+  }
+  
+  .cards-container {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .management-card {
+    padding: 1.5rem 1rem;
+    min-height: 160px;
+    max-width: 280px;
+  }
+  
+  .card-icon {
+    font-size: 1.8rem;
+    width: 80px;
+    height: 80px;
+    padding: 0.6rem;
+    margin-bottom: 1rem;
+  }
+  
+  .card-content h3 {
+    font-size: 1.1rem;
+  }
+}
+

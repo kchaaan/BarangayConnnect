@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Announcements - BarangayConnect</title>
+  <link rel="stylesheet" href="../css/R_announcements-style.css">
+  <link rel="stylesheet" href="../css/bc-resident-page-title.css?v=20250620">
+  <script src="https://kit.fontawesome.com/a2e0f1f0c1.js" crossorigin="anonymous"></script>
+  <script src="../../Shared/js/bc-announcements-api.js?v=20250710"></script>
+  <style>
+    /* Force hide all scrollbars */
+    * {
+      scrollbar-width: none !important;
+      -ms-overflow-style: none !important;
+    }
+    *::-webkit-scrollbar {
+      display: none !important;
+    }
+  </style>
+</head>
+<body>
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="header-content">
+      <h1 class="page-title">
+        <i class="fas fa-bullhorn"></i>
+        Community Announcements
+      </h1>
+      <p class="page-subtitle">Stay informed about important updates and events in your barangay</p>
+    </div>
+  </div>
+
+  <!-- Filter and Search -->
+  <div class="filter-section">
+    <div class="search-box">
+      <i class="fas fa-search"></i>
+      <input type="text" placeholder="Search announcements..." id="searchInput">
+    </div>
+    <div class="filter-buttons">
+      <button class="filter-btn active" data-filter="all">All</button>
+      <button class="filter-btn" data-filter="important">Important</button>
+      <button class="filter-btn" data-filter="event">Events</button>
+      <button class="filter-btn" data-filter="maintenance">Maintenance</button>
+    </div>
+  </div>
+
+  <!-- Announcements List -->
+  <div class="announcements-container" id="announcementsContainer">
+    <p class="announcements-loading">Loading announcements…</p>
+  </div>
+
+  <script>
+const container = document.getElementById('announcementsContainer');
+const searchInput = document.getElementById('searchInput');
+const filterButtons = document.querySelectorAll('.filter-btn');
+const AnnApi = window.BarangayConnectAnnouncementsApi;
+
+let announcementsData = [];
+let activeFilter = 'all';
+
+function escapeHtml(text) {
+  return String(text == null ? '' : text)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+async function loadAnnouncements() {
+  if (!AnnApi) return;
+  try {
+    announcementsData = await AnnApi.fetchPublished();
+    applyFilters();
+  } catch (err) {
+    console.error('Failed to load announcements:', err);
+    container.innerHTML = '<p class="announcements-loading">Could not load announcements.</p>';
+  }
+}
+
+// -------------------------------
+// RENDER ANNOUNCEMENTS
+// -------------------------------
+function renderAnnouncements(list) {
+  if (!list.length) {
+    container.innerHTML = '<p class="announcements-loading">No announcements found.</p>';
+    return;
+  }
+
+  container.innerHTML = list.map(function (a) {
+    const badgeType = mapTypeToBadge(a.type);
+    const formattedDate = formatDate(a.announcementDate);
+    return (
+      '<div class="announcement-card ' + (a.featured ? 'featured' : '') + '">' +
+        '<div class="announcement-header">' +
+          '<div class="announcement-badge ' + badgeType + '">' + escapeHtml(capitalize(a.type)) + '</div>' +
+          '<div class="announcement-date">' + escapeHtml(formattedDate) + '</div>' +
+        '</div>' +
+        '<div class="announcement-content">' +
+          '<h3>' + escapeHtml(a.title) + '</h3>' +
+          '<p>' + escapeHtml(a.description) + '</p>' +
+          '<div class="announcement-details">' +
+            '<div class="detail-item"><i class="fas fa-calendar"></i><span>' + escapeHtml(formattedDate) + '</span></div>' +
+            '<div class="detail-item"><i class="fas fa-user"></i><span>' + escapeHtml(a.author || 'Barangay Office') + '</span></div>' +
+          '</div>' +
+        '</div>' +
+      '</div>'
+    );
+  }).join('');
+}
+
+function applyFilters() {
+  const term = searchInput.value.toLowerCase();
+  let list = announcementsData.slice();
+
+  if (activeFilter !== 'all') {
+    list = list.filter(function (a) {
+      const type = String(a.type || '').toLowerCase();
+      if (activeFilter === 'important') {
+        return type === 'important' || type === 'emergency' || a.featured;
+      }
+      return type === activeFilter;
+    });
+  }
+
+  if (term) {
+    list = list.filter(function (a) {
+      return String(a.title || '').toLowerCase().includes(term) ||
+        String(a.description || '').toLowerCase().includes(term);
+    });
+  }
+
+  renderAnnouncements(list);
+}
+
+// -------------------------------
+// MAP TYPE TO BADGE CLASS
+// -------------------------------
+function mapTypeToBadge(type) {
+  switch (type.toLowerCase()) {
+    case "important": return "important";
+    case "event": return "event";
+    case "service":
+    case "services": return "service";
+    case "emergency": return "important"; // treat emergency as important
+    case "maintenance": return "service"; // optional mapping
+    default: return "general";
+  }
+}
+
+// -------------------------------
+// FORMAT DATE
+// -------------------------------
+function formatDate(raw) {
+  if (!raw) return '';
+  const date = new Date(String(raw).includes('T') ? raw : raw + 'T12:00:00');
+  if (Number.isNaN(date.getTime())) return '';
+  return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+}
+
+// -------------------------------
+// FILTER BUTTONS
+// -------------------------------
+filterButtons.forEach(btn => {
+  btn.addEventListener('click', function () {
+    filterButtons.forEach(function (b) { b.classList.remove('active'); });
+    btn.classList.add('active');
+    activeFilter = btn.getAttribute('data-filter') || 'all';
+    applyFilters();
+  });
+});
+
+// -------------------------------
+// SEARCH FUNCTIONALITY
+// -------------------------------
+searchInput.addEventListener('input', applyFilters);
+
+// Capitalize first letter
+function capitalize(s) {
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+// -------------------------------
+// INITIAL LOAD
+// -------------------------------
+loadAnnouncements();
+setInterval(loadAnnouncements, 15000);
+</script>

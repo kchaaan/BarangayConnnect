@@ -1,0 +1,21 @@
+### OS ###
+.DS_Store
+Thumbs.db
+
+### Editors ###
+.vscode/
+.idea/
+*.swp
+
+### Logs ###
+*.log
+
+### Secrets (API keys) ###
+FrontPage/php/gemini_secrets.local.php
+.env
+.env.*
+!.env.example
+
+### User uploads (keep folder, ignore files) ###
+FrontPage/uploads/**/*
+!FrontPage/uploads/**/.gitkeep

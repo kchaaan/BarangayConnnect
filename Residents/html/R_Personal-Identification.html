@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Personal Identification & Residency - BarangayConnect</title>
+  <link rel="stylesheet" href="../css/R_Personal-Identification-style.css">
+  <link rel="stylesheet" href="../../Shared/css/bc-notify.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <script src="https://kit.fontawesome.com/a2e0f1f0c1.js" crossorigin="anonymous"></script>
+  <script src="../../Shared/js/bc-notify.js?v=20250659"></script>
+  <style>
+    * { scrollbar-width: none !important; -ms-overflow-style: none !important; }
+    *::-webkit-scrollbar { display: none !important; }
+    body {
+      overflow-x: visible !important;
+      min-width: 100% !important;
+    }
+    .request-container { min-width: 100% !important; overflow: visible !important; padding-top: 0 !important; }
+    .page-header { min-width: 100% !important; overflow: visible !important; }
+    .form-group--full { flex: 1 1 100%; }
+    .religion-other-wrap,
+    .street-other-wrap { margin-top: 0.65rem; }
+    .religion-other-wrap[hidden],
+    .street-other-wrap[hidden] { display: none !important; }
+    .religion-other-label { font-size: 0.9rem; margin-bottom: 0.35rem; }
+    .form-subsection-title {
+      font-size: 1.05rem;
+      color: var(--clr-1, #5f7f58);
+      margin: 1.25rem 0 0.35rem;
+      font-weight: 600;
+    }
+    .form-subsection-hint {
+      font-size: 0.85rem;
+      color: #666;
+      margin: 0 0 1rem;
+    }
+    .field-hint {
+      font-size: 0.8rem;
+      color: #666;
+      margin: 0.35rem 0 0;
+    }
+    .draft-notice {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.5rem 0.75rem;
+      background: #e8f4ec;
+      border: 1px solid #b8d4c4;
+      border-radius: 8px;
+      padding: 0.65rem 0.85rem;
+      margin-bottom: 1rem;
+      font-size: 0.88rem;
+      color: #1a5c36;
+    }
+    .draft-notice[hidden] { display: none !important; }
+    .draft-notice i { color: #2d7a4f; }
+    .draft-discard-btn {
+      margin-left: auto;
+      padding: 0.3rem 0.65rem;
+      font-size: 0.8rem;
+      border: 1px solid #2d7a4f;
+      background: #fff;
+      color: #1a5c36;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .draft-discard-btn:hover { background: #2d7a4f; color: #fff; }
+    .draft-hint {
+      font-size: 0.8rem;
+      color: #666;
+      margin: -0.5rem 0 1rem;
+    }
+    .draft-hint[hidden] { display: none !important; }
+    .bc-file-protocol-banner {
+      background: #8b2f2f;
+      color: #fff;
+      padding: 0.85rem 1rem;
+      margin: 0;
+      font-size: 0.9rem;
+      line-height: 1.45;
+      text-align: center;
+    }
+    .bc-file-protocol-banner a { color: #e8ffc8; font-weight: 600; }
+    .bc-file-protocol-banner[hidden] { display: none !important; }
+  </style>
+  <link rel="stylesheet" href="../css/bc-resident-page-title.css?v=20250620">
+</head>
+<body>
+  <div id="bcFileProtocolBanner" class="bc-file-protocol-banner" role="alert" hidden>
+    <strong>Submit will not work while this page is opened as a file.</strong>
+    Open with XAMPP Apache running:
+    <a id="bcLocalhostPersonalIdLink" href="http://localhost/BarangayConnect-ITG6-main/BarangayConnec-G6-Main/Residents/html/R_Personal-Identification.html">http://localhost/BarangayConnect-ITG6-main/BarangayConnec-G6-Main/Residents/html/R_Personal-Identification.html</a>
+  </div>
+  <script>
+    (function () {
+      if (window.location.protocol === 'file:') {
+        var b = document.getElementById('bcFileProtocolBanner');
+        if (b) b.hidden = false;
+      }
+    })();
+  </script>
+  <div class="request-container">
+
+    <!-- PAGE HEADER -->
+    <div class="page-header">
+      <div class="header-content">
+        <button class="back-btn" onclick="goBack()"><i class="fas fa-arrow-left"></i></button>
+        <div class="header-text">
+          <h1 class="page-title"><i class="fas fa-id-card"></i> Personal Identification & Residency</h1>
+          <p class="page-subtitle">Request certificates and identification documents</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="content-wrapper">
+      <!-- FORM SECTION -->
+      <div class="form-section">
+        <div class="form-card">
+          <h2 class="form-title"><i class="fas fa-file-signature"></i> Request Form</h2>
+
+          <div id="draftNotice" class="draft-notice" role="status" aria-live="polite" hidden>
+            <i class="fas fa-history"></i>
+            <span id="draftNoticeText">Your previous entries were restored.</span>
+            <button type="button" id="draftDiscardBtn" class="draft-discard-btn">Discard draft</button>
+          </div>
+          <p id="draftAutoSaveHint" class="draft-hint" hidden>
+            <i class="fas fa-save"></i> This form auto-saves for 1 minute if you refresh or leave. Uploaded files cannot be restored — re-attach them if needed.
+          </p>
+
+          <form id="requestForm" class="request-form">
+            
+            <!-- DOCUMENT TYPE -->
+            <div class="form-group">
+              <label class="form-label"><i class="fas fa-file-alt"></i> Document Type <span class="required">*</span></label>
+              <select id="documentType" name="documentType" class="form-select" required>
+                <option value="">Select a document type...</option>
+                <option value="barangay-clearance">Barangay Clearance</option>
+                <option value="certificate-residency">Barangay Certificate of Residency</option>
+                <option value="indigency-certificate">Barangay Indigency Certificate</option>
+                <option value="barangay-id">Barangay ID</option>
+              </select>
+            </div>
+
+            <!-- PERSONAL DETAILS -->
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label"><i class="fas fa-user"></i> First Name <span class="required">*</span></label>
+                <input type="text" id="firstName" name="firstName" class="form-input" required>
+              </div>
+
+              <div class="form-group">
+                <div class="label-row">
+                  <label class="form-label"><i class="fas fa-user"></i> Middle Name</label>
+                  <label class="checkbox-label"><input type="checkbox" id="middleNameNA"> <span>N/A</span></label>
+                </div>
+                <input type="text" id="middleName" name="middleName" class="form-input">
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label"><i class="fas fa-user"></i> Last Name <span class="required">*</span></label>
+                <input type="text" id="lastName" name="lastName" class="form-input" required>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label"><i class="fas fa-signature"></i> Suffix</label>
+                <select id="suffix" name="suffix" class="form-select">
+                  <option value="">Select suffix...</option>
+                  <option value="Jr.">Jr.</option>
+                  <option value="Sr.">Sr.</option>
+                  <option value="III">III</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label"><i class="fas fa-venus-mars"></i> Gender <span class="required">*</span></label>
+                <select id="gender" name="gender" class="form-select" required>
+                  <option value="">Select gender...</option>
+                  <option value="male">Male</option>
+                  <option value="female">Female</option>
+                  <option value="prefer-not-to-say">Prefer not to say</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label"><i class="fas fa-calendar"></i> Date of Birth <span class="required">*</span></label>
+                <input type="date" id="birthdate" name="birthdate" class="form-input" required>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label"><i class="fas fa-hourglass-half"></i> Age</label>
+                <input type="number" id="age" name="age" class="form-input" readonly placeholder="Auto-computed">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label"><i class="fas fa-map-pin"></i> Place of Birth <span class="required">*</span></label>
+                <input type="text" id="placeOfBirth" name="placeOfBirth" class="form-input" required>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label"><i class="fas fa-ring"></i> Civil Status <span class="required">*</span></label>
+                <select id="civilStatus" name="civilStatus" class="form-select" required>
+                  <option value="">Select civil status...</option>
+                  <option value="single">Single</option>
+                  <option value="married">Married</option>
+                  <option value="widowed">Widowed</option>
+                  <option value="separated">Separated</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label"><i class="fas fa-flag"></i> Citizenship <span class="required">*</span></label>
+                <input type="text" id="citizenship" name="citizenship" class="form-input" required>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group form-group--full">
+                <label class="form-label" for="religionSelect"><i class="fas fa-praying-hands"></i> Religion <span class="required">*</span></label>
+                <select id="religionSelect" name="religionSelect" class="form-select" required>
+                  <option value="">Select religion...</option>
+                  <option value="Roman Catholic">Roman Catholic</option>
+                  <option value="Islam">Islam</option>
+                  <option value="Iglesia ni Cristo">Iglesia ni Cristo</option>
+                  <option value="Philippine Independent Church (Aglipayan)">Philippine Independent Church (Aglipayan)</option>
+                  <option value="Seventh-day Adventist">Seventh-day Adventist</option>
+                  <option value="Bible Baptist">Bible Baptist</option>
+                  <option value="United Church of Christ in the Philippines">United Church of Christ in the Philippines</option>
+                  <option value="Jehovah's Witnesses">Jehovah's Witnesses</option>
+                  <option value="Church of Jesus Christ of Latter-day Saints">Church of Jesus Christ of Latter-day Saints</option>
+                  <option value="Members Church of God International">Members Church of God International</option>
+                  <option value="Evangelical / Born Again">Evangelical / Born Again</option>
+                  <option value="Buddhism">Buddhism</option>
+                  <option value="Indigenous / Ancestral">Indigenous / Ancestral</option>
+                  <option value="None / Not religious">None / Not religious</option>
+                  <option value="__other__">Other — specify below</option>
+                </select>
+                <div id="religionOtherWrap" class="religion-other-wrap" hidden>
+                  <label class="form-label religion-other-label" for="religionOther">Specify religion</label>
+                  <input type="text" id="religionOther" name="religionOther" class="form-input" placeholder="Enter denomination or affiliation" autocomplete="off">
+                </div>
+              </div>
+            </div>
+
+            <h3 class="form-subsection-title"><i class="fas fa-map-marker-alt"></i> Address Information</h3>
+            <p class="form-subsection-hint">Same layout as registration on the home page</p>
+
+            <div class="form-group form-group--full">
+              <label class="form-label" for="streetSelect"><i class="fas fa-road"></i> Street <span class="required">*</span></label>
+              <select id="streetSelect" name="street" class="form-select" required>
+                <option value="" disabled selected>Select street...</option>
+              </select>
+              <div id="streetOtherWrap" class="street-other-wrap religion-other-wrap" hidden>
+                <label class="form-label religion-other-label" for="streetOther">Specify street name</label>
+                <input type="text" id="streetOther" name="streetOther" class="form-input" placeholder="Enter street name" autocomplete="off">
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="blockLot"><i class="fas fa-th"></i> Block / Lot</label>
+                <input type="text" id="blockLot" name="blockLot" class="form-input" placeholder="Blk / Lot">
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="houseUnit"><i class="fas fa-home"></i> House No. / Unit</label>
+                <input type="text" id="houseUnit" name="houseUnit" class="form-input" placeholder="No. or unit">
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="barangay"><i class="fas fa-building"></i> Barangay <span class="required">*</span></label>
+                <input type="text" id="barangay" name="barangay" class="form-input" value="Tambo" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="city"><i class="fas fa-city"></i> City / Municipality <span class="required">*</span></label>
+                <input type="text" id="city" name="city" class="form-input" value="Parañaque City" required>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="province"><i class="fas fa-flag"></i> Province <span class="required">*</span></label>
+                <input type="text" id="province" name="province" class="form-input" value="Metro Manila" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="region"><i class="fas fa-globe-asia"></i> Region <span class="required">*</span></label>
+                <input type="text" id="region" name="region" class="form-input" value="NCR" required>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label"><i class="fas fa-phone"></i> Contact Number <span class="required">*</span></label>
+                <input type="tel" id="contactNumber" name="contactNumber" class="form-input"
+                  inputmode="numeric" maxlength="11" pattern="[0-9]{11}"
+                  placeholder="09XXXXXXXXX (11 digits)"
+                  title="Enter exactly 11 digits, numbers only (e.g. 09171234567)" required>
+                <p class="field-hint">11-digit Philippine mobile number only (numbers, no letters).</p>
+              </div>
+              <div class="form-group">
+                <label class="form-label"><i class="fas fa-envelope"></i> Email Address</label>
+                <input type="email" id="email" name="email" class="form-input">
+              </div>
+            </div>
+
+            <!-- FILE UPLOADS -->
+            <div class="form-group">
+              <label class="form-label"><i class="fas fa-upload"></i> Upload Requirements <span class="required">*</span></label>
+              
+              <div class="upload-section">
+
+                <div class="upload-item">
+                  <label class="upload-label" for="validId"><i class="fas fa-id-badge"></i> Valid ID</label>
+                  <input type="file" id="validId" name="validId" class="file-input" required>
+                </div>
+
+                <div class="upload-item">
+                  <label class="upload-label" for="proofResidency"><i class="fas fa-home"></i> Proof of Residency</label>
+                  <input type="file" id="proofResidency" name="proofResidency" class="file-input" required>
+                </div>
+
+                <div class="upload-item">
+                  <label class="upload-label" for="photo"><i class="fas fa-image"></i> 1×1 or 2×2 Photo</label>
+                  <input type="file" id="photo" name="photo" class="file-input">
+                </div>
+
+              </div>
+            </div>
+
+            <!-- NOTES -->
+            <div class="form-group">
+              <label class="form-label"><i class="fas fa-comment-alt"></i> Additional Notes</label>
+              <textarea id="notes" name="notes" class="form-textarea"></textarea>
+            </div>
+
+            <div class="form-actions">
+              <button type="button" onclick="goBack()" class="btn btn-secondary"><i class="fas fa-times"></i> Cancel</button>
+              <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane"></i> Submit Request</button>
+            </div>
+
+          </form>
+        </div>
+      </div>
+
+      <!-- PAYMENT -->
+      <div class="info-card payment-card">
+        <h2 class="section-title"><i class="fas fa-money-bill-wave"></i> Payment Fee</h2>
+        <p class="payment-note">Payment fee will be determined based on the selected document type.</p>
+        <p class="payment-contact">Please contact the barangay office for exact fee amounts.</p>
+      </div>
+
+    </div>
+  </div>
+
+ <script src="../../Shared/js/bc-nav-persist.js"></script>
+ <script src="../../Shared/js/bc-nav-iframe-child.js"></script>
+ <script src="../../Shared/js/bc-address-streets.js?v=20250603"></script>
+ <script src="../../Shared/js/bc-phone.js"></script>
+ <script src="../../Shared/js/bc-requests-api.js"></script>
+ <script src="../../Shared/js/bc-notify.js?v=20250659"></script>
+ <script>
+function goBack() {
+  window.location.href = 'R_Request-management.html';
+}
+
+/* ----- Form draft: auto-save & restore (1 minute) ----- */
+const FORM_DRAFT_TTL_MS = 60 * 1000;
+const FORM_DRAFT_KEY_PREFIX = 'bc_personal_id_draft_';
+
+function getFormDraftStorageKey() {
+  const residentId = localStorage.getItem('residentId') || 'guest';
+  return FORM_DRAFT_KEY_PREFIX + residentId;
+}
+
+function collectFormDraftState() {
+  return {
+    documentType: document.getElementById('documentType')?.value || '',
+    firstName: document.getElementById('firstName')?.value || '',
+    middleName: document.getElementById('middleName')?.value || '',
+    middleNameNA: !!document.getElementById('middleNameNA')?.checked,
+    lastName: document.getElementById('lastName')?.value || '',
+    suffix: document.getElementById('suffix')?.value || '',
+    gender: document.getElementById('gender')?.value || '',
+    birthdate: document.getElementById('birthdate')?.value || '',
+    age: document.getElementById('age')?.value || '',
+    placeOfBirth: document.getElementById('placeOfBirth')?.value || '',
+    civilStatus: document.getElementById('civilStatus')?.value || '',
+    citizenship: document.getElementById('citizenship')?.value || '',
+    religionSelect: document.getElementById('religionSelect')?.value || '',
+    religionOther: document.getElementById('religionOther')?.value || '',
+    streetSelect: document.getElementById('streetSelect')?.value || '',
+    streetOther: document.getElementById('streetOther')?.value || '',
+    blockLot: document.getElementById('blockLot')?.value || '',
+    houseUnit: document.getElementById('houseUnit')?.value || '',
+    barangay: document.getElementById('barangay')?.value || '',
+    city: document.getElementById('city')?.value || '',
+    province: document.getElementById('province')?.value || '',
+    region: document.getElementById('region')?.value || '',
+    contactNumber: document.getElementById('contactNumber')?.value || '',
+    email: document.getElementById('email')?.value || '',
+    notes: document.getElementById('notes')?.value || '',
+  };
+}
+
+function isFormDraftEmpty(state) {
+  if (!state) return true;
+  const skip = new Set(['middleNameNA', 'barangay', 'city', 'province', 'region']);
+  return Object.entries(state).every(([key, val]) => {
+    if (skip.has(key)) return true;
+    if (typeof val === 'boolean') return !val;
+    return String(val || '').trim() === '';
+  });
+}
+
+function readFormDraft() {
+  try {
+    const raw = sessionStorage.getItem(getFormDraftStorageKey());
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed.expiresAt !== 'number' || !parsed.fields) return null;
+    if (Date.now() > parsed.expiresAt) {
+      clearFormDraft();
+      return null;
+    }
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+function clearFormDraft() {
+  try {
+    sessionStorage.removeItem(getFormDraftStorageKey());
+  } catch {
+    /* ignore */
+  }
+  document.getElementById('draftNotice')?.setAttribute('hidden', '');
+  document.getElementById('draftAutoSaveHint')?.setAttribute('hidden', '');
+}
+
+let formDraftSaveTimer = null;
+
+function saveFormDraft() {
+  const fields = collectFormDraftState();
+  if (isFormDraftEmpty(fields)) {
+    clearFormDraft();
+    return;
+  }
+  const now = Date.now();
+  const payload = {
+    savedAt: now,
+    expiresAt: now + FORM_DRAFT_TTL_MS,
+    fields,
+  };
+  try {
+    sessionStorage.setItem(getFormDraftStorageKey(), JSON.stringify(payload));
+    document.getElementById('draftAutoSaveHint')?.removeAttribute('hidden');
+  } catch (e) {
+    console.warn('Draft save failed:', e);
+  }
+}
+
+function scheduleFormDraftSave() {
+  if (formDraftSaveTimer) clearTimeout(formDraftSaveTimer);
+  formDraftSaveTimer = setTimeout(saveFormDraft, 350);
+}
+
+function applyMiddleNameNA(checked) {
+  const input = document.getElementById('middleName');
+  const na = document.getElementById('middleNameNA');
+  if (!input || !na) return;
+  na.checked = !!checked;
+  if (checked) {
+    input.value = 'N/A';
+    input.disabled = true;
+  } else {
+    input.disabled = false;
+    if (input.value === 'N/A') input.value = '';
+  }
+}
+
+function applyFormDraftState(fields) {
+  if (!fields) return;
+  const set = (id, val) => {
+    const el = document.getElementById(id);
+    if (el && val != null) el.value = val;
+  };
+
+  set('documentType', fields.documentType);
+  set('firstName', fields.firstName);
+  set('lastName', fields.lastName);
+  set('suffix', fields.suffix);
+  set('gender', fields.gender);
+  set('birthdate', fields.birthdate);
+  set('age', fields.age);
+  set('placeOfBirth', fields.placeOfBirth);
+  set('civilStatus', fields.civilStatus);
+  set('citizenship', fields.citizenship);
+  set('religionSelect', fields.religionSelect);
+  set('religionOther', fields.religionOther);
+  syncReligionOtherField();
+  set('streetSelect', fields.streetSelect);
+  set('streetOther', fields.streetOther);
+  window.BarangayConnectAddress?.syncStreetOtherField('streetSelect');
+  set('blockLot', fields.blockLot);
+  set('houseUnit', fields.houseUnit);
+  set('barangay', fields.barangay || 'Tambo');
+  set('city', fields.city || 'Parañaque City');
+  set('province', fields.province || 'Metro Manila');
+  set('region', fields.region || 'NCR');
+  set('contactNumber', fields.contactNumber);
+  set('email', fields.email);
+  set('notes', fields.notes);
+
+  if (fields.middleNameNA) {
+    applyMiddleNameNA(true);
+  } else {
+    applyMiddleNameNA(false);
+    set('middleName', fields.middleName);
+  }
+
+  const dob = document.getElementById('birthdate');
+  if (dob?.value && typeof computeAge === 'function') {
+    document.getElementById('age').value = computeAge(dob.value);
+  }
+}
+
+function tryRestoreFormDraft() {
+  const draft = readFormDraft();
+  if (!draft) return false;
+
+  applyFormDraftState(draft.fields);
+
+  const remainingSec = Math.max(1, Math.ceil((draft.expiresAt - Date.now()) / 1000));
+  const notice = document.getElementById('draftNotice');
+  const noticeText = document.getElementById('draftNoticeText');
+  if (noticeText) {
+    noticeText.textContent =
+      'Your previous entries were restored (auto-saved ' +
+      remainingSec +
+      ' second' +
+      (remainingSec === 1 ? '' : 's') +
+      ' remaining). Re-attach uploaded files if needed.';
+  }
+  notice?.removeAttribute('hidden');
+  document.getElementById('draftAutoSaveHint')?.removeAttribute('hidden');
+  return true;
+}
+
+function initFormDraftAutosave(formEl) {
+  purgeExpiredFormDrafts();
+
+  formEl.addEventListener('input', scheduleFormDraftSave);
+  formEl.addEventListener('change', scheduleFormDraftSave);
+
+  document.getElementById('draftDiscardBtn')?.addEventListener('click', () => {
+    const ask = window.bcConfirm
+      ? window.bcConfirm('Discard the saved draft? This cannot be undone.', { title: 'Confirm draft discard' })
+      : Promise.resolve(window.confirm('Discard the saved draft? This cannot be undone.'));
+    ask.then((ok) => {
+      if (ok) clearFormDraft();
+    });
+  });
+
+  window.addEventListener('beforeunload', saveFormDraft);
+
+  setInterval(() => {
+    const draft = readFormDraft();
+    if (!draft) return;
+    if (Date.now() > draft.expiresAt) {
+      clearFormDraft();
+    }
+  }, 5000);
+}
+
+function purgeExpiredFormDrafts() {
+  try {
+    const keys = [];
+    for (let i = 0; i < sessionStorage.length; i++) {
+      const k = sessionStorage.key(i);
+      if (k && k.startsWith(FORM_DRAFT_KEY_PREFIX)) keys.push(k);
+    }
+    keys.forEach((key) => {
+      try {
+        const parsed = JSON.parse(sessionStorage.getItem(key));
+        if (parsed && parsed.expiresAt && Date.now() > parsed.expiresAt) {
+          sessionStorage.removeItem(key);
+        }
+      } catch {
+        sessionStorage.removeItem(key);
+      }
+    });
+  } catch {
+    /* ignore */
+  }
+}
+
+function getReligionValue() {
+  const sel = document.getElementById('religionSelect');
+  if (!sel || !sel.value) return '';
+  if (sel.value === '__other__') {
+    return (document.getElementById('religionOther')?.value || '').trim();
+  }
+  return sel.value;
+}
+
+function syncReligionOtherField() {
+  const sel = document.getElementById('religionSelect');
+  const wrap = document.getElementById('religionOtherWrap');
+  const other = document.getElementById('religionOther');
+  if (!sel || !wrap) return;
+  const isOther = sel.value === '__other__';
+  wrap.hidden = !isOther;
+  if (other) {
+    other.required = isOther;
+    if (!isOther) other.value = '';
+  }
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+
+  const form = document.getElementById('requestForm');
+  if (!form) return;
+
+  document.getElementById('religionSelect')?.addEventListener('change', syncReligionOtherField);
+  syncReligionOtherField();
+
+  if (window.BarangayConnectAddress) {
+    window.BarangayConnectAddress.initStreetField(document.getElementById('streetSelect'));
+  }
+
+  if (window.BarangayConnectPhone) {
+    window.BarangayConnectPhone.bindMobileDigitsOnly(document.getElementById('contactNumber'));
+  }
+
+  initFormDraftAutosave(form);
+
+  (async function prefillFromProfile() {
+    if (readFormDraft()) return;
+
+    const residentId = localStorage.getItem('residentId');
+    if (!residentId) return;
+    try {
+      const url = new URL('../../FrontPage/php/resident_profile.php', window.location.href);
+      url.searchParams.set('id', residentId);
+      const res = await fetch(url.href);
+      if (!res.ok) return;
+      const u = await res.json();
+      if (!u || u.success === false) return;
+
+      if (u.firstName) document.getElementById('firstName').value = u.firstName;
+      if (u.middleName) document.getElementById('middleName').value = u.middleName;
+      if (u.lastName) document.getElementById('lastName').value = u.lastName;
+      if (u.suffix) document.getElementById('suffix').value = u.suffix;
+      if (u.gender) document.getElementById('gender').value = u.gender.toLowerCase();
+      if (u.dateOfBirth) document.getElementById('birthdate').value = u.dateOfBirth;
+      if (u.placeOfBirth) document.getElementById('placeOfBirth').value = u.placeOfBirth;
+      if (u.civilStatus) document.getElementById('civilStatus').value = u.civilStatus.toLowerCase();
+      if (u.citizenship) document.getElementById('citizenship').value = u.citizenship;
+      if (u.email) document.getElementById('email').value = u.email;
+      if (u.mobile) document.getElementById('contactNumber').value = u.mobile;
+      if (u.barangay) document.getElementById('barangay').value = u.barangay;
+      if (u.city) document.getElementById('city').value = u.city;
+      if (u.province) document.getElementById('province').value = u.province;
+
+      const extra = typeof u.profile_extra === 'string'
+        ? (() => { try { return JSON.parse(u.profile_extra); } catch { return {}; } })()
+        : (u.profileExtra || {});
+      if (extra.region) document.getElementById('region').value = extra.region;
+      if (extra.blockLot) document.getElementById('blockLot').value = extra.blockLot;
+      if (extra.houseUnit) document.getElementById('houseUnit').value = extra.houseUnit;
+
+      const streetEl = document.getElementById('streetSelect');
+      if (streetEl && extra.street) {
+        window.BarangayConnectAddress?.setStreetValue(streetEl, extra.street);
+      } else if (streetEl && u.street) {
+        const match = window.BarangayConnectAddress?.STREETS?.find((s) => u.street.includes(s));
+        window.BarangayConnectAddress?.setStreetValue(streetEl, match || u.street);
+      }
+
+      if (u.religion) {
+        const relSel = document.getElementById('religionSelect');
+        const opts = relSel ? [...relSel.options] : [];
+        const hit = opts.find((o) => o.value === u.religion);
+        if (hit) {
+          relSel.value = u.religion;
+        } else if (relSel) {
+          relSel.value = '__other__';
+          document.getElementById('religionOther').value = u.religion;
+          syncReligionOtherField();
+        }
+      }
+
+      const dob = document.getElementById('birthdate');
+      if (dob && dob.value) {
+        document.getElementById('age').value = computeAge(dob.value);
+      }
+    } catch (e) {
+      console.warn('Profile prefill:', e);
+    }
+  })().then(function () {
+    tryRestoreFormDraft();
+  });
+
+  form.addEventListener('submit', async function (e) {
+    e.preventDefault();
+
+    const notify = window.bcNotify || { error: (m) => window.alert(m), success: (m) => window.alert(m), info: (m) => window.alert(m) };
+
+    const residentId = localStorage.getItem("residentId");
+    if (!residentId) {
+      notify.error('No logged-in resident found. Please log in from the home page first.', { title: 'Not signed in' });
+      return;
+    }
+
+    const religionVal = getReligionValue();
+    if (!document.getElementById('religionSelect')?.value) {
+      notify.error('Please select your religion.', { title: 'Missing information' });
+      return;
+    }
+    if (document.getElementById('religionSelect')?.value === '__other__' && !religionVal) {
+      notify.error('Please specify your religion.', { title: 'Missing information' });
+      return;
+    }
+
+    const streetVal = window.BarangayConnectAddress?.getStreetValue('streetSelect') || '';
+    const barangayVal = document.getElementById('barangay')?.value.trim();
+    const cityVal = document.getElementById('city')?.value.trim();
+    const provinceVal = document.getElementById('province')?.value.trim();
+    const regionVal = document.getElementById('region')?.value.trim();
+    if (!streetVal || !barangayVal || !cityVal || !provinceVal || !regionVal) {
+      notify.error('Please complete all required address fields (street, barangay, city, province, region).', {
+        title: 'Missing information',
+      });
+      return;
+    }
+    if (document.getElementById('streetSelect')?.value === '__other__' && !streetVal) {
+      notify.error('Please specify your street name.', { title: 'Missing information' });
+      return;
+    }
+
+    const contactEl = document.getElementById('contactNumber');
+    const contactRaw = contactEl?.value.trim() || '';
+    const contactDigits = window.BarangayConnectPhone
+      ? window.BarangayConnectPhone.normalizeMobile11(contactRaw)
+      : contactRaw.replace(/\D/g, '');
+    if (contactEl) contactEl.value = contactDigits;
+    if (!window.BarangayConnectPhone?.validateMobile11(contactDigits)) {
+      notify.error('Contact number must be exactly 11 digits (numbers only, e.g. 09171234567).', {
+        title: 'Invalid contact number',
+      });
+      contactEl?.focus();
+      return;
+    }
+
+    const addrIds = {
+      houseUnitId: 'houseUnit',
+      blockLotId: 'blockLot',
+      streetId: 'streetSelect',
+      barangayId: 'barangay',
+      cityId: 'city',
+      provinceId: 'province',
+      regionId: 'region',
+    };
+    const houseStreet = window.BarangayConnectAddress
+      ? window.BarangayConnectAddress.buildHouseStreetLine(addrIds)
+      : streetVal;
+    const fullAddress = window.BarangayConnectAddress
+      ? window.BarangayConnectAddress.buildFullAddress(addrIds)
+      : [houseStreet, barangayVal, cityVal, provinceVal, regionVal].join(', ');
+
+    // ===============================
+    // ✅ BUILD REQUEST DTO (JSON PART)
+    // ===============================
+    const map = {
+      'barangay-clearance': 'Barangay Clearance',
+      'certificate-residency': 'Barangay Certificate of Residency',
+      'indigency-certificate': 'Barangay Indigency Certificate',
+      'barangay-id': 'Barangay ID'
+    };
+
+    const dataPayload = {
+      residentId: residentId,
+      firstName: document.getElementById('firstName').value,
+      middleName: document.getElementById('middleName').value || "",
+      lastName: document.getElementById('lastName').value,
+      suffix: document.getElementById('suffix').value || "",
+      gender: document.getElementById('gender').value,
+      placeOfBirth: document.getElementById('placeOfBirth').value,
+      civilStatus: document.getElementById('civilStatus').value,
+      citizenship: document.getElementById('citizenship').value,
+      religion: religionVal,
+      email: document.getElementById('email').value || "",
+      mobile: contactDigits,
+      houseStreet: houseStreet,
+      blockLot: document.getElementById('blockLot')?.value.trim() || '',
+      houseUnit: document.getElementById('houseUnit')?.value.trim() || '',
+      street: streetVal,
+      barangay: barangayVal,
+      city: cityVal,
+      province: provinceVal,
+      region: regionVal,
+      address: fullAddress,
+      birthdate: document.getElementById('birthdate').value,
+      age: Number(document.getElementById('age').value) || null,
+      documentType: map[document.getElementById('documentType').value],
+      requestNotes: document.getElementById('notes').value || "",
+      submissionDate: new Date().toISOString(),
+      status: "pending",
+      requestType: 'personal_identification',
+    };
+
+    // ===============================
+    // BUILD MULTIPART FORM DATA
+    // ===============================
+    const multipart = new FormData();
+
+    multipart.append(
+      'data',
+      new Blob([JSON.stringify(dataPayload)], { type: 'application/json' })
+    );
+
+    const validId = document.getElementById('validId').files[0];
+    const proofResidency = document.getElementById('proofResidency').files[0];
+    const photo = document.getElementById('photo').files[0];
+
+    if (!validId || !proofResidency) {
+      notify.error('Please upload both Valid ID and Proof of Residency.', { title: 'Missing files' });
+      return;
+    }
+
+    const api = window.BarangayConnectRequestsApi;
+
+    // files[] required — plain "files" only keeps the last file in PHP
+    const uploadItems = [
+      { label: 'Valid ID', file: validId },
+      { label: 'Proof of Residency', file: proofResidency },
+    ];
+    if (photo) uploadItems.push({ label: '1×1 or 2×2 Photo', file: photo });
+    if (api && api.appendRequestFiles) {
+      api.appendRequestFiles(multipart, uploadItems);
+    } else {
+      uploadItems.forEach(function (item) {
+        multipart.append('file_labels[]', item.label);
+        multipart.append('files[]', item.file);
+      });
+    }
+
+    const canSubmit = api && api.canSubmitToServer();
+
+    if (!canSubmit || !api) {
+      notify.error(
+        'Start Apache in XAMPP, then open:\nhttp://localhost/BarangayConnect-ITG6-main/BarangayConnec-G6-Main/Residents/html/R_Personal-Identification.html',
+        { title: 'Cannot submit here' }
+      );
+      return;
+    }
+
+    if (api.isFileProtocol && api.isFileProtocol()) {
+      const ok = window.bcConfirm
+        ? await window.bcConfirm(
+            'This page was opened as a file (file://). Submit will try to send data to XAMPP on localhost.\n\n' +
+              'For best results, use the localhost link in the red banner. Continue anyway?',
+            { title: 'File mode warning', okText: 'Continue', cancelText: 'Cancel' }
+          )
+        : window.confirm(
+            'This page was opened as a file (file://). Submit will try to send data to XAMPP on localhost.\n\n' +
+              'For best results, use the localhost link in the red banner. Continue anyway?'
+          );
+      if (!ok) return;
+    }
+
+    try {
+      const submitUrl = api.submitUrl();
+      const res = await fetch(submitUrl, { method: 'POST', body: multipart });
+      const text = await res.text();
+      let json = null;
+      try {
+        json = JSON.parse(text);
+      } catch {
+        console.warn('Non-JSON response:', text.slice(0, 300));
+      }
+      if (json && json.success) {
+        clearFormDraft();
+        const ref = json.requestId || ('REQ-' + String(json.id || '').padStart(3, '0'));
+        const redirectUrl =
+          api.isFileProtocol && api.isFileProtocol()
+            ? api.XAMPP_HTTP_BASE + 'Residents/html/R_Request-management.html'
+            : 'R_Request-management.html';
+        notify.success('Your request has been submitted successfully!', {
+          title: 'Request submitted',
+          subtitle: 'BarangayConnect — Personal Identification',
+          reference: ref,
+          onOk: () => {
+            window.location.href = redirectUrl;
+          },
+        });
+        return;
+      }
+      if (json && json.error) {
+        notify.error(json.error, { title: 'Submission failed' });
+        return;
+      }
+      notify.error(
+        'Could not save to the database (HTTP ' +
+          res.status +
+          '). Make sure Apache and MySQL are running in XAMPP.\n\n' +
+          (text ? text.slice(0, 200) : ''),
+        { title: 'Server error' }
+      );
+      return;
+    } catch (err) {
+      console.error(err);
+      notify.error(
+        'Could not reach the server.\n\n' +
+          '1. Start Apache and MySQL in XAMPP Control Panel\n' +
+          '2. Open this page at:\n' +
+          'http://localhost/BarangayConnect-ITG6-main/BarangayConnec-G6-Main/Residents/html/R_Personal-Identification.html\n\n' +
+          'Do not double-click the HTML file (file://).',
+        { title: 'Connection failed' }
+      );
+    }
+  });
+
+  // ===============================
+  // FILE NAME DISPLAY (UNCHANGED)
+  // ===============================
+  document.querySelectorAll('.file-input').forEach(input => {
+    input.addEventListener('change', function () {
+      const file = this.files[0];
+      if (file) {
+        const label = this.closest('.upload-item').querySelector('.upload-label');
+        const name = file.name.length > 30 ? file.name.substring(0, 30) + "..." : file.name;
+        label.innerHTML = `<i class="fas fa-check-circle"></i> ${name}`;
+        label.style.color = "var(--clr-1)";
+      }
+    });
+  });
+
+  // ===============================
+  // MIDDLE NAME N/A (UNCHANGED)
+  // ===============================
+  const na = document.getElementById('middleNameNA');
+  if (na) {
+    na.addEventListener('change', function () {
+      applyMiddleNameNA(this.checked);
+      scheduleFormDraftSave();
+    });
+  }
+
+  function computeAge(dateValue) {
+    if (!dateValue) return "";
+    const dob = new Date(dateValue);
+    if (Number.isNaN(dob.getTime())) return "";
+
+    const today = new Date();
+    let computed = today.getFullYear() - dob.getFullYear();
+    const monthDiff = today.getMonth() - dob.getMonth();
+
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
+      computed -= 1;
+    }
+
+    return computed >= 0 ? computed : "";
+  }
+
+  const dobInput = document.getElementById('birthdate');
+  const ageInput = document.getElementById('age');
+  if (dobInput && ageInput) {
+    dobInput.addEventListener('change', function () {
+      ageInput.value = computeAge(this.value);
+      scheduleFormDraftSave();
+    });
+  }
+
+});
+</script>

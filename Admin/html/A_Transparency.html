@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Transparency - BarangayConnect</title>
+  <link rel="stylesheet" href="../css/A_transparency-style.css?v=20250722">
+  <link rel="stylesheet" href="../css/bc-admin-page-title.css?v=20250642">
+  <style>
+    * { scrollbar-width: none !important; -ms-overflow-style: none !important; }
+    *::-webkit-scrollbar { display: none !important; }
+  </style>
+  <script src="https://kit.fontawesome.com/a2e0f1f0c1.js" crossorigin="anonymous"></script>
+  <script src="../../Shared/js/bc-notify.js?v=20250659"></script>
+  <script src="../../Shared/js/bc-transparency-api.js?v=20250722"></script>
+</head>
+
+<body>
+  <main class="transparency-wrapper">
+    <div class="transparency-card">
+      <h2>Transparency</h2>
+
+      <div class="budget-section">
+        <div class="budget-head">
+          <p class="budget-title">Annual Budget</p>
+          <div class="budget-controls">
+            <button id="budgetHistoryBtn" class="edit-budget-btn"><i class="fas fa-history"></i></button>
+            <button id="editBudgetBtn" class="edit-budget-btn"><i class="fas fa-pen"></i></button>
+          </div>
+        </div>
+
+        <!-- ❌ REMOVED DEFAULT VALUES -->
+        <!-- 🔄 REPLACED WITH EMPTY VALUES TO BE FILLED BY BACKEND -->
+        <h3 id="annualBudget">₱ 0</h3>
+        <div class="progress-bar">
+          <div class="progress-fill" id="budgetProgress" style="width: 0%"></div>
+        </div>
+        <p class="spent-line">
+          Spent: <span id="spentAmount">₱ 0</span>
+          <span id="remainingFunds">Remaining Funds: ₱ 0</span>
+        </p>
+      </div>
+
+      <!-- Projects & Programs Management -->
+      <section class="management-section">
+        <div class="management-header">
+          <h2><i class="fas fa-briefcase"></i> Projects & Programs</h2>
+          <div class="management-controls">
+            <div class="filter-group">
+              <select id="statusFilter" class="filter-select">
+                <option value="all">All Status</option>
+                <option value="Ongoing">Ongoing</option>
+                <option value="Completed">Completed</option>
+                <option value="Pending">Pending</option>
+              </select>
+              <select id="typeFilter" class="filter-select">
+                <option value="all">All Types</option>
+                <option value="Project">Projects</option>
+                <option value="Program">Programs</option>
+              </select>
+            </div>
+
+            <button class="primary-btn" id="addNewBtn"><i class="fas fa-plus"></i> Add New</button>
+          </div>
+        </div>
+
+        <div class="items-container" id="itemsContainer"></div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- Add/Edit Modal -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal-wrapper">
+
+      <div class="modal-header">
+        <h3 id="modalTitle">Add New Item</h3>
+        <button class="modal-close" id="modalClose"><i class="fas fa-times"></i></button>
+      </div>
+
+      <form id="itemForm" class="modal-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Name <span class="required">*</span></label>
+            <input type="text" id="itemName" required>
+          </div>
+          <div class="form-group">
+            <label>Type <span class="required">*</span></label>
+            <select id="itemType" required>
+              <option value="Project">Project</option>
+              <option value="Program">Program</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Budget (₱) <span class="required">*</span></label>
+            <input type="number" id="itemBudget" min="0" required>
+          </div>
+          <div class="form-group">
+            <label>Spent (₱) <span class="required">*</span></label>
+            <input type="number" id="itemSpent" min="0" required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Start Date</label>
+            <input type="date" id="itemStart">
+          </div>
+          <div class="form-group">
+            <label>End Date</label>
+            <input type="date" id="itemEnd">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Status <span class="required">*</span></label>
+            <select id="itemStatus" required>
+              <option value="Ongoing">Ongoing</option>
+              <option value="Completed">Completed</option>
+              <option value="Pending">Pending</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Description</label>
+            <textarea id="itemDescription" rows="3"></textarea>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="secondary-btn" id="cancelBtn">Cancel</button>
+          <button type="submit" class="primary-btn">Save Changes</button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+
+  <!-- Budget Modal -->
+  <div class="modal-overlay" id="budgetModalOverlay" style="display:none">
+    <div class="modal-wrapper budget-modal">
+
+      <div class="modal-header">
+        <h3><i class="fas fa-coins"></i> Edit Annual Budget</h3>
+        <button class="modal-close" id="budgetModalClose"><i class="fas fa-times"></i></button>
+      </div>
+
+      <form id="budgetForm" class="modal-form">
+        <div class="form-group" style="width:100%">
+          <label>Annual Budget (₱) <span class="required">*</span></label>
+          <input type="number" id="budgetInput" min="0" required>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="secondary-btn" id="budgetCancelBtn">Cancel</button>
+          <button type="button" class="primary-btn" id="budgetSaveBtn">Save</button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+
+  <!-- Budget History Modal -->
+  <div class="modal-overlay" id="budgetHistoryOverlay" style="display:none">
+    <div class="modal-wrapper budget-modal">
+
+      <div class="modal-header">
+        <h3><i class="fas fa-history"></i> Budget History</h3>
+        <button class="modal-close" id="budgetHistoryClose"><i class="fas fa-times"></i></button>
+      </div>
+
+      <div class="history-table-container">
+        <table class="history-table">
+          <thead>
+            <tr>
+              <th>Date & Time</th>
+              <th>Previous Budget</th>
+              <th>New Budget</th>
+              <th>Change</th>
+            </tr>
+          </thead>
+          <tbody id="budgetHistoryList"></tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- BACKEND: PHP / MySQL via XAMPP -->
+  <script>
+(function() {
+
+  const TransparencyApi = window.BarangayConnectTransparencyApi;
+
+  const peso = n => `₱ ${Number(n || 0).toLocaleString("en-PH")}`;
+  const qs = s => document.querySelector(s);
+  const qsa = s => [...document.querySelectorAll(s)];
+
+  function notify(type, message, title) {
+    if (window.bcNotify && window.bcNotify[type]) {
+      window.bcNotify[type](message, { title: title || "Transparency" });
+    } else {
+      window.alert(message);
+    }
+  }
+
+  function fileUrl(relativePath) {
+    if (!relativePath) return "#";
+    if (!TransparencyApi) return relativePath;
+    return new URL(relativePath, TransparencyApi.uploadBase()).href;
+  }
+
+  let items = [];
+  let editingId = null;
+  let currentBudget = 0;
+
+  async function loadItems() {
+    if (!TransparencyApi) return;
+    try {
+      const res = await fetch(TransparencyApi.apiUrl("items"));
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      items = await res.json();
+      renderItems();
+      updateBudget();
+    } catch (e) {
+      console.error("Error loading items:", e);
+    }
+  }
+
+  async function loadBudget() {
+    if (!TransparencyApi) return;
+    try {
+      const res = await fetch(TransparencyApi.apiUrl("budget"));
+      if (res.status === 204) {
+        currentBudget = 0;
+      } else if (!res.ok) {
+        throw new Error("HTTP " + res.status);
+      } else {
+        const data = await res.json();
+        currentBudget = Number(data.amount || 0);
+      }
+      updateBudget();
+    } catch (e) {
+      console.log("Could not load budget", e);
+    }
+  }
+
+  // ============================================================
+  // 🔄 UPDATE BUDGET UI
+  // ============================================================
+  function updateBudget() {
+    const totalSpent = items.reduce((sum, i) => sum + (i.spent || 0), 0);
+    const remaining = currentBudget - totalSpent;
+
+    const pct = currentBudget > 0 ? (totalSpent / currentBudget) * 100 : 0;
+
+    qs("#annualBudget").textContent = peso(currentBudget);
+    qs("#spentAmount").textContent = peso(totalSpent);
+    qs("#remainingFunds").textContent = `Remaining Funds: ${peso(remaining)}`;
+    qs("#budgetProgress").style.width = pct + "%";
+  }
+
+
+  // ============================================================
+  // 📌 RENDER ITEMS
+  // ============================================================
+  function renderItems() {
+    const container = qs("#itemsContainer");
+    const statusFilter = qs("#statusFilter").value;
+    const typeFilter = qs("#typeFilter").value;
+
+    let filtered = items.filter(i =>
+      (statusFilter === "all" || i.status === statusFilter) &&
+      (typeFilter === "all" || i.type === typeFilter)
+    );
+
+    if (filtered.length === 0) {
+      container.innerHTML = `<div class="empty-state"><i class="fas fa-inbox"></i><p>No items found</p></div>`;
+      return;
+    }
+
+    container.innerHTML = filtered.map(i => `
+      <div class="item-card" data-id="${i.id}">
+        <div class="item-header">
+          <div class="item-title">
+            <h4>${i.name}</h4>
+            <span class="item-type-badge ${i.type.toLowerCase()}">${i.type}</span>
+          </div>
+          <span class="status-badge ${i.status.toLowerCase()}">${i.status}</span>
+        </div>
+
+        <div class="item-body">
+          <div class="item-metrics">
+            <div class="metric"><label>Budget</label><span>${peso(i.budget)}</span></div>
+            <div class="metric"><label>Spent</label><span>${peso(i.spent)}</span></div>
+            <!-- 🔧 FIXED: progress text -->
+            <div class="metric">
+              <label>Progress</label>
+              <span>${
+                (i.budget > 0 && i.spent > 0)
+                  ? Math.max(1, Math.round((i.spent / i.budget) * 100))
+                  : 0
+              }%</span>
+            </div>
+          </div>
+
+          <div class="progress-track">
+            <!-- 🔧 FIXED: progress bar width (handles budget = 0) -->
+            <div class="progress-bar-item" style="width:${
+              i.budget > 0
+                ? Math.min(100, (i.spent / i.budget) * 100)
+                : 0
+            }%"></div>
+          </div>
+
+          ${i.description ? `<p class="item-description">${i.description}</p>` : ""}
+        </div>
+
+        <div class="item-actions">
+          <label class="action-icon upload">
+            <input hidden type="file" class="upload-input" data-id="${i.id}" accept="application/pdf">
+            <i class="fas fa-file-upload"></i>
+          </label>
+
+          ${i.documents && i.documents.length > 0 
+            ? i.documents.map(d => 
+                `<a href="${fileUrl(d.filePath)}" class="action-icon view" target="_blank" rel="noopener">
+                   <i class="fas fa-file-pdf"></i>
+                 </a>`
+              ).join("")
+            : ""
+          }
+
+          <button class="action-icon edit" data-id="${i.id}"><i class="fas fa-edit"></i></button>
+          <button class="action-icon delete" data-id="${i.id}"><i class="fas fa-trash"></i></button>
+        </div>
+
+      </div>
+    `).join("");
+
+    bindActions();
+  }
+
+  // ============================================================
+  // ♻ Attach functional buttons
+  // ============================================================
+  function bindActions() {
+
+    qsa(".edit").forEach(btn =>
+      btn.onclick = () => {
+        const item = items.find(i => i.id == btn.dataset.id);
+        openModal(item);
+      }
+    );
+
+    qsa(".delete").forEach(btn =>
+      btn.onclick = async () => {
+        const ok = window.bcConfirm
+          ? await window.bcConfirm("Delete this item?", { title: "Confirm deletion" })
+          : window.confirm("Delete this item?");
+        if (!ok) return;
+
+        await fetch(TransparencyApi.apiUrl("item", btn.dataset.id), { method: "DELETE" });
+        loadItems();
+      }
+    );
+
+    qsa(".upload-input").forEach(input =>
+      input.onchange = async e => {
+        let file = e.target.files[0];
+        if (!file) return;
+
+        const fd = new FormData();
+        fd.append("file", file);
+
+        await fetch(TransparencyApi.apiUrl("document", input.dataset.id), {
+          method: "POST",
+          body: fd
+        });
+
+        loadItems();
+      }
+    );
+
+  }
+
+
+  // ============================================================
+  // MODALS
+  // ============================================================
+  qs("#addNewBtn").onclick = () => openModal(null);
+  qs("#cancelBtn").onclick = closeModal;
+  qs("#modalClose").onclick = closeModal;
+
+  function openModal(item) {
+    editingId = item ? item.id : null;
+
+    qs("#modalTitle").textContent = item ? "Edit Item" : "Add New Item";
+
+    qs("#itemName").value = item?.name || "";
+    qs("#itemType").value = item?.type || "Project";
+    qs("#itemBudget").value = item?.budget || "";
+    qs("#itemSpent").value = item?.spent || "";
+    qs("#itemStatus").value = item?.status || "Ongoing";
+    qs("#itemDescription").value = item?.description || "";
+    qs("#itemStart").value = item?.startDate || "";
+    qs("#itemEnd").value = item?.endDate || "";
+
+    qs("#modalOverlay").style.display = "flex";
+  }
+
+  function closeModal() {
+    qs("#modalOverlay").style.display = "none";
+  }
+
+  // ============================================================
+  // SAVE ITEM
+  // ============================================================
+  qs("#itemForm").onsubmit = async e => {
+    e.preventDefault();
+
+    if (!TransparencyApi) {
+      notify("error", "Transparency API not loaded. Hard refresh the page.", "Error");
+      return;
+    }
+
+    const data = {
+      name: qs("#itemName").value,
+      type: qs("#itemType").value,
+      budget: Number(qs("#itemBudget").value),
+      spent: Number(qs("#itemSpent").value),
+      status: qs("#itemStatus").value,
+      description: qs("#itemDescription").value,
+      startDate: qs("#itemStart").value || null,
+      endDate: qs("#itemEnd").value || null
+    };
+
+    try {
+      const url = editingId
+        ? TransparencyApi.apiUrl("item", editingId)
+        : TransparencyApi.apiUrl("items");
+      const method = editingId ? "PUT" : "POST";
+
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+      });
+
+      if (!res.ok) throw new Error("HTTP " + res.status);
+
+      closeModal();
+      notify("success", editingId ? "Item updated." : "Item added.", "Saved");
+      loadItems();
+    } catch (err) {
+      console.error(err);
+      notify("error", "Could not save item. Check Apache/MySQL in XAMPP.", "Save failed");
+    }
+  };
+
+
+  // ============================================================
+  // BUDGET MODAL
+  // ============================================================
+  qs("#editBudgetBtn").onclick = () => {
+    qs("#budgetInput").value = currentBudget;
+    qs("#budgetModalOverlay").style.display = "flex";
+  };
+
+  qs("#budgetModalClose").onclick = () => qs("#budgetModalOverlay").style.display = "none";
+  qs("#budgetCancelBtn").onclick = () => qs("#budgetModalOverlay").style.display = "none";
+
+  async function saveBudget() {
+    if (!TransparencyApi) {
+      notify("error", "Transparency API not loaded. Hard refresh the page.", "Error");
+      return;
+    }
+
+    const input = qs("#budgetInput");
+    const raw = input.value.trim();
+    if (raw === "" || Number(raw) < 0) {
+      notify("error", "Enter a valid annual budget amount.", "Invalid amount");
+      input.focus();
+      return;
+    }
+
+    const newBudget = Number(raw);
+    const saveBtn = qs("#budgetSaveBtn");
+    if (saveBtn) saveBtn.disabled = true;
+
+    try {
+      const res = await fetch(TransparencyApi.apiUrl("budget"), {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ amount: newBudget })
+      });
+
+      if (!res.ok) throw new Error("HTTP " + res.status);
+
+      currentBudget = newBudget;
+      updateBudget();
+      qs("#budgetModalOverlay").style.display = "none";
+      notify("success", "Annual budget saved.", "Saved");
+      loadBudget();
+    } catch (err) {
+      console.error(err);
+      notify("error", "Could not save budget. Start Apache/MySQL in XAMPP, then try again.", "Save failed");
+    } finally {
+      if (saveBtn) saveBtn.disabled = false;
+    }
+  }
+
+  qs("#budgetForm").addEventListener("submit", e => e.preventDefault());
+  qs("#budgetSaveBtn").addEventListener("click", saveBudget);
+
+
+  // ============================================================
+  // BUDGET HISTORY
+  // ============================================================
+  qs("#budgetHistoryBtn").onclick = async () => {
+    if (!TransparencyApi) return;
+    try {
+      const res = await fetch(TransparencyApi.apiUrl("budget_history"));
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      const history = await res.json();
+
+    const table = qs("#budgetHistoryList");
+
+    if (history.length === 0) {
+      table.innerHTML = `<tr><td colspan="4" style="text-align:center;color:#64748b">No history</td></tr>`;
+    } else {
+      table.innerHTML = history.map(h => `
+        <tr>
+          <td>${new Date(h.changedAt).toLocaleString()}</td>
+          <td>${peso(h.previous)}</td>
+          <td>${peso(h.newAmount)}</td>
+          <td>${peso(h.newAmount - h.previous)}</td>
+        </tr>
+      `).join("");
+    }
+
+    qs("#budgetHistoryOverlay").style.display = "flex";
+    } catch (err) {
+      console.error(err);
+      notify("error", "Could not load budget history.", "Error");
+    }
+  };
+
+  qs("#budgetHistoryClose").onclick = () =>
+    qs("#budgetHistoryOverlay").style.display = "none";
+
+  // ============================================================
+  // STARTUP
+  // ============================================================
+  loadItems();
+  loadBudget();
+
+})();
+  </script>
+</body>
+</html>

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Borrowing History - BarangayConnect</title>
+  <link rel="stylesheet" href="../../Shared/css/bc-admin-list-page.css?v=20250803">
+  <link rel="stylesheet" href="../css/bc-admin-page-title.css?v=20250642">
+  <link rel="stylesheet" href="../css/A_borrow-inventory-style.css?v=20250803">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <script src="../../Shared/js/bc-borrow-inventory-ui.js?v=20250803"></script>
+  <style>* { scrollbar-width: none !important; } *::-webkit-scrollbar { display: none !important; }</style>
+</head>
+<body data-bi-page="history">
+  <div class="bi-page">
+    <div class="page-header"><h1 class="page-title">Borrowing History</h1></div>
+    <div class="bi-card">
+      <div class="bi-table-wrap">
+        <table class="bi-table">
+          <thead><tr><th>Request ID</th><th>Resident</th><th>Item</th><th>Qty</th><th>Borrow Date</th><th>Return Date</th><th>Status</th><th></th></tr></thead>
+          <tbody id="biHistoryTableBody"><tr><td colspan="8">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <script src="../../Shared/js/bc-borrow-inventory-api.js?v=20250803"></script>
+  <script src="../../Shared/js/bc-admin-borrow-inventory.js?v=20250803"></script>
+  <script src="../../Shared/js/bc-nav-persist.js?v=20250803"></script>
+  <script src="../../Shared/js/bc-nav-iframe-child.js"></script>
+  <script>BorrowInventoryUI.initSidebarIframe(); BorrowInventoryUI.notifyNav('borrowed-items');</script>
+</body>
+</html>

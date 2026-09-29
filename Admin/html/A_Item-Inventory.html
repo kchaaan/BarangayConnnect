@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Item Inventory - BarangayConnect</title>
+  <link rel="stylesheet" href="../../Shared/css/bc-admin-list-page.css?v=20250803">
+  <link rel="stylesheet" href="../css/bc-admin-page-title.css?v=20250642">
+  <link rel="stylesheet" href="../css/A_borrow-inventory-style.css?v=20250803">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <script src="../../Shared/js/bc-notify.js?v=20250659"></script>
+  <script src="../../Shared/js/bc-borrow-inventory-ui.js?v=20250803"></script>
+  <style>* { scrollbar-width: none !important; } *::-webkit-scrollbar { display: none !important; }</style>
+</head>
+<body data-bi-page="inventory">
+  <div class="bi-page">
+    <div class="page-header"><h1 class="page-title">Item Inventory</h1></div>
+    <div class="bi-stats">
+      <div class="bi-stat-card"><div class="bi-stat-icon bi-stat-icon--green"><i class="fas fa-boxes"></i></div><div><p class="bi-stat-label">Total Items</p><div class="bi-stat-value" id="biInvTotal">0</div></div></div>
+      <div class="bi-stat-card"><div class="bi-stat-icon bi-stat-icon--blue"><i class="fas fa-check"></i></div><div><p class="bi-stat-label">Available</p><div class="bi-stat-value" id="biInvAvail">0</div></div></div>
+      <div class="bi-stat-card"><div class="bi-stat-icon bi-stat-icon--orange"><i class="fas fa-exclamation-circle"></i></div><div><p class="bi-stat-label">Low Stock</p><div class="bi-stat-value" id="biInvLow">0</div></div></div>
+      <div class="bi-stat-card"><div class="bi-stat-icon bi-stat-icon--red"><i class="fas fa-times"></i></div><div><p class="bi-stat-label">Unavailable</p><div class="bi-stat-value" id="biInvUnavail">0</div></div></div>
+    </div>
+    <div class="bi-card">
+      <div class="bi-tabs"><button type="button" class="bi-tab is-active">Item List</button><button type="button" class="bi-tab" onclick="bcNavigatePage('A_Item-Categories.html')">Category View</button></div>
+      <div style="padding:1rem">
+        <div class="bi-toolbar" style="margin-bottom:0">
+          <div class="bi-search-wrap"><i class="fas fa-search"></i><input type="search" id="invSearch" placeholder="Search item name or description…"></div>
+          <div class="bi-filter-group"><label>Category</label><select id="invCategoryFilter"><option value="all">All</option></select></div>
+          <div class="bi-filter-group"><label>Status</label><select id="invStatusFilter"><option value="all">All</option><option value="available">Available</option><option value="low_stock">Low Stock</option><option value="unavailable">Unavailable</option></select></div>
+          <button type="button" class="bi-btn bi-btn--primary" onclick="BorrowInventoryUI.openModal('addItemModal')"><i class="fas fa-plus"></i> Add New Item</button>
+        </div>
+      </div>
+      <div class="bi-table-wrap">
+        <table class="bi-table">
+          <thead><tr><th>Item Name</th><th>Category</th><th>Available</th><th>Total</th><th>Unit</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="biInventoryTableBody"><tr><td colspan="7">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div id="addItemModal" class="bi-modal" role="dialog" aria-hidden="true">
+    <div class="bi-modal-box bi-modal-box--sm">
+      <div class="bi-modal-header"><h2>Add New Item</h2><button type="button" class="bi-modal-close" data-bi-close="addItemModal">&times;</button></div>
+      <div class="bi-modal-body">
+        <div class="bi-form-grid">
+          <div class="bi-form-field full"><label>Item Name *</label><input type="text" id="addItemName" required></div>
+          <div class="bi-form-field"><label>Category</label><select id="addItemCategory"></select></div>
+          <div class="bi-form-field"><label>Unit</label><select id="addItemUnit"><option>pcs</option><option>set</option><option>unit</option><option>kit</option></select></div>
+          <div class="bi-form-field full"><label>Description</label><textarea id="addItemDesc"></textarea></div>
+          <div class="bi-form-field"><label>Total Quantity *</label><input type="number" id="addItemTotal" min="0" value="0"></div>
+          <div class="bi-form-field"><label>Available Quantity *</label><input type="number" id="addItemAvail" min="0" value="0"></div>
+        </div>
+      </div>
+      <div class="bi-modal-footer" style="justify-content:flex-end">
+        <button type="button" class="bi-btn bi-btn--outline" data-bi-close="addItemModal">Cancel</button>
+        <button type="button" class="bi-btn bi-btn--primary" id="addItemSave">Save Item</button>
+      </div>
+    </div>
+  </div>
+  <div id="editItemModal" class="bi-modal" role="dialog" aria-hidden="true">
+    <div class="bi-modal-box bi-modal-box--sm">
+      <div class="bi-modal-header"><h2>Edit Item</h2><button type="button" class="bi-modal-close" data-bi-close="editItemModal">&times;</button></div>
+      <div class="bi-modal-body">
+        <input type="hidden" id="editItemId">
+        <div class="bi-form-grid">
+          <div class="bi-form-field full"><label>Item Name *</label><input type="text" id="editItemName" required></div>
+          <div class="bi-form-field"><label>Category</label><select id="editItemCategory"></select></div>
+          <div class="bi-form-field"><label>Unit</label><select id="editItemUnit"><option>pcs</option><option>set</option><option>unit</option><option>kit</option></select></div>
+          <div class="bi-form-field full"><label>Description</label><textarea id="editItemDesc"></textarea></div>
+          <div class="bi-form-field"><label>Total Quantity *</label><input type="number" id="editItemTotal" min="0"></div>
+          <div class="bi-form-field"><label>Available Quantity *</label><input type="number" id="editItemAvail" min="0"></div>
+        </div>
+      </div>
+      <div class="bi-modal-footer" style="justify-content:flex-end">
+        <button type="button" class="bi-btn bi-btn--outline" data-bi-close="editItemModal">Cancel</button>
+        <button type="button" class="bi-btn bi-btn--primary" id="editItemSave">Save Changes</button>
+      </div>
+    </div>
+  </div>
+  <script src="../../Shared/js/bc-borrow-inventory-api.js?v=20250826"></script>
+  <script src="../../Shared/js/bc-borrow-sync.js?v=20250826"></script>
+  <script src="../../Shared/js/bc-admin-borrow-inventory.js?v=20250826"></script>
+  <script src="../../Shared/js/bc-nav-persist.js?v=20250803"></script>
+  <script src="../../Shared/js/bc-nav-iframe-child.js"></script>
+  <script>BorrowInventoryUI.initSidebarIframe(); BorrowInventoryUI.bindModalClosers(); BorrowInventoryUI.notifyNav('inventory');</script>
+</body>
+</html>

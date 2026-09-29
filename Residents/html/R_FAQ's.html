@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>BarangayConnect | FAQs</title>
+  <link rel="stylesheet" href="../css/R_FAQ's.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <script src="../../Shared/js/bc-notify.js?v=20250659"></script>
+  <script src="../../Shared/js/bc-feedback-api.js?v=20250712"></script>
+</head>
+<body>
+
+  <div class="faq-container">
+    <div class="faq-header">
+      <h1><i class="fas fa-circle-question"></i> Frequently Asked Questions</h1>
+      <p>Find answers to common questions about the BarangayConnect system</p>
+    </div>
+
+    <div class="faq-list">
+
+      <div class="faq-item">
+        <button class="faq-question">
+          What is BarangayConnect?
+          <i class="fas fa-chevron-down"></i>
+        </button>
+        <div class="faq-answer">
+          <p>
+            BarangayConnect is a web-based barangay management system that allows residents
+            to access barangay services, announcements, reports, transparency records,
+            and emergency information online.
+          </p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-question">
+          Who can use the BarangayConnect system?
+          <i class="fas fa-chevron-down"></i>
+        </button>
+        <div class="faq-answer">
+          <p>
+            The system is designed for residents and barangay administrators.
+            Residents can submit requests and reports, while administrators manage
+            barangay records, documents, and community information.
+          </p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-question">
+          What happens after I finish registering?
+          <i class="fas fa-chevron-down"></i>
+        </button>
+        <div class="faq-answer">
+          <p>
+            When you complete registration successfully, your resident account is activated right away
+            and you are taken to the resident homepage. Use accurate information so barangay records stay
+            correct; the barangay may still follow up on concerns about false or duplicate accounts.
+          </p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-question">
+          What services can I request through the system?
+          <i class="fas fa-chevron-down"></i>
+        </button>
+        <div class="faq-answer">
+          <p>
+            Residents can request barangay documents such as clearance, certificates,
+            permits, and endorsements through the Requests section.
+          </p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-question">
+          How can I submit a report or complaint?
+          <i class="fas fa-chevron-down"></i>
+        </button>
+        <div class="faq-answer">
+          <p>
+            Reports can be submitted through the Reports section by describing
+            the issue or concern within the community.
+          </p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-question">
+          Can I track my requests and reports?
+          <i class="fas fa-chevron-down"></i>
+        </button>
+        <div class="faq-answer">
+          <p>
+            Yes. The system allows residents to track the status of submitted
+            requests and reports such as pending, approved, or completed.
+          </p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-question">
+          What is the Transparency section for?
+          <i class="fas fa-chevron-down"></i>
+        </button>
+        <div class="faq-answer">
+          <p>
+            The Transparency section shows barangay projects, programs,
+            and fund utilization to promote openness and accountability.
+          </p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-question">
+          Can I update my personal information?
+          <i class="fas fa-chevron-down"></i>
+        </button>
+        <div class="faq-answer">
+          <p>
+            Yes. Residents can update their profile and emergency contact
+            details through the Update Profile option in the settings menu.
+          </p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-question">
+          Is my information secure in the system?
+          <i class="fas fa-chevron-down"></i>
+        </button>
+        <div class="faq-answer">
+          <p>
+            Yes. BarangayConnect ensures that resident information is only accessible
+            to authorized barangay administrators.
+          </p>
+        </div>
+      </div>
+
+      <!-- SEND FEEDBACK SECTION -->
+      <div class="feedback-section">
+        <h2>Send Us Your Feedback</h2>
+        <p>Are you satisfied with the BarangayConnect system?</p>
+
+        <div class="feedback-icons">
+          <div class="feedback-option" data-value="Satisfied">
+            <i class="fas fa-face-smile"></i>
+            <span>Satisfied</span>
+          </div>
+
+          <div class="feedback-option" data-value="Not Satisfied">
+            <i class="fas fa-face-frown"></i>
+            <span>Not Satisfied</span>
+          </div>
+        </div>
+
+        <textarea id="feedbackMessage" placeholder="Write your feedback here..."></textarea>
+        <button class="feedback-btn">Submit Feedback</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- FAQ Script -->
+  <script>
+    /* EXISTING FAQ SCRIPT (KEEP THIS) */
+    document.querySelectorAll('.faq-question').forEach(button => {
+      button.addEventListener('click', () => {
+        const faqItem = button.parentElement;
+        const isActive = faqItem.classList.contains('active');
+
+        document.querySelectorAll('.faq-item').forEach(item => {
+          item.classList.remove('active');
+        });
+
+        if (!isActive) {
+          faqItem.classList.add('active');
+        }
+      });
+    });
+
+    /* ================= FEEDBACK SCRIPT (PHP / MySQL) ================= */
+
+    const FeedbackApi = window.BarangayConnectFeedbackApi;
+    let selectedFeedback = "";
+
+    function getResidentFeedbackIdentity() {
+      const residentUserId = parseInt(localStorage.getItem('residentId') || '0', 10) || 0;
+      const first = (localStorage.getItem('residentFirstname') || '').trim();
+      const last = (localStorage.getItem('residentLastname') || '').trim();
+      const name = [first, last].filter(Boolean).join(' ').trim();
+      return {
+        residentUserId: residentUserId > 0 ? residentUserId : null,
+        submitterName: name || 'Resident',
+      };
+    }
+
+    document.querySelectorAll('.feedback-option').forEach(option => {
+      option.addEventListener('click', () => {
+        document.querySelectorAll('.feedback-option').forEach(o => o.classList.remove('active'));
+        option.classList.add('active');
+        selectedFeedback = option.dataset.value;
+      });
+    });
+
+    document.querySelector('.feedback-btn').addEventListener('click', async () => {
+      const message = document.getElementById('feedbackMessage').value.trim();
+
+      if (!selectedFeedback) {
+        alert("Please select Satisfied or Not Satisfied.");
+        return;
+      }
+
+      if (!message) {
+        alert("Please write your feedback.");
+        return;
+      }
+
+      if (!FeedbackApi) {
+        alert("Feedback service is unavailable.");
+        return;
+      }
+
+      const identity = getResidentFeedbackIdentity();
+
+      try {
+        await FeedbackApi.create({
+          status: selectedFeedback,
+          message: message,
+          source: 'resident',
+          residentUserId: identity.residentUserId,
+          submitterName: identity.submitterName,
+        });
+
+        alert("Thank you for your feedback!");
+
+        document.getElementById('feedbackMessage').value = "";
+        document.querySelectorAll('.feedback-option').forEach(o => o.classList.remove('active'));
+        selectedFeedback = "";
+
+      } catch (error) {
+        console.error(error);
+        alert("Error sending feedback. Please try again.");
+      }
+    });
+  </script>
+
+</body>
+</html>
+```

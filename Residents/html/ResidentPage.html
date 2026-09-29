@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <title>BarangayConnect - Resident Portal</title>
+  <link rel="stylesheet" href="../css/resident-style.css?v=20250816" />
+  <link rel="stylesheet" href="../../Shared/css/bc-portal-mobile-nav.css?v=20250818" />
+  <link rel="stylesheet" href="../../Shared/css/bc-brand-logo.css?v=20260930" />
+  <link rel="stylesheet" href="../../Shared/css/bc-section-divider.css?v=20250635" />
+  <link rel="stylesheet" href="../../Shared/css/bc-chatbot-widget.css?v=20250721" />
+  <script src="https://kit.fontawesome.com/a2e0f1f0c1.js" crossorigin="anonymous"></script>
+  <script src="../../Shared/js/bc-notify.js?v=20250659"></script>
+  <style>
+    /* Global scrollbar hiding for all elements */
+    * {
+      scrollbar-width: none !important; /* Firefox */
+      -ms-overflow-style: none !important; /* Internet Explorer 10+ */
+    }
+    
+    *::-webkit-scrollbar {
+      display: none !important; /* WebKit */
+    }
+    
+    /* Ensure iframes don't show scrollbars */
+    iframe {
+      scrollbar-width: none !important;
+      -ms-overflow-style: none !important;
+    }
+    
+    iframe::-webkit-scrollbar {
+      display: none !important;
+    }
+  </style>
+</head>
+<body class="admin-body">
+
+  <!-- Admin Header -->
+  <header class="admin-header">
+    <div class="header-left">
+      <button type="button" class="header-mobile-menu" id="headerMobileMenu" aria-label="Open menu" aria-expanded="false" onclick="toggleSidebar()">
+        <i class="fas fa-bars" aria-hidden="true"></i>
+      </button>
+      <h1>
+        <span class="brand-logo">
+          <img src="../../Shared/images/barangay-tambo-seal.jpg" alt="Barangay Tambo official seal" width="180" height="180" />
+        </span>
+        BarangayConnect
+      </h1>
+    </div>
+    <div class="header-right">
+      <p class="admin-header-date" id="current-date" aria-live="polite"></p>
+      <div class="admin-header-weather" id="adminHeaderWeather" aria-live="polite" title="Loading weather…">
+        <i class="fas fa-cloud-sun admin-header-weather__icon is-partly" id="adminWeatherIcon" aria-hidden="true"></i>
+        <span class="admin-header-weather__temp" id="adminWeatherTemp">--°C</span>
+      </div>
+      <div class="settings-dropdown">
+        <button class="header-btn" title="Settings" onclick="toggleSettings()"><i class="fas fa-cog"></i></button>
+        <div class="settings-menu" id="settingsMenu">
+          <a href="#" class="settings-item" onclick="openUpdateProfile()">
+            <i class="fas fa-user-edit"></i>
+            <span>Update Profile</span>
+          </a>
+          <a href="#" class="settings-item" onclick="logout()">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>Log out</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <button type="button" id="bcSidebarBackdrop" class="bc-sidebar-backdrop" aria-label="Close menu" aria-hidden="true" onclick="closeMobileSidebar()"></button>
+
+  <!-- Admin Container -->
+  <div class="admin-container">
+    <!-- Modern Sidebar -->
+    <aside class="modern-sidebar collapsed" aria-label="Primary">
+      <div class="sidebar-toggle" onclick="toggleSidebar()" role="button" tabindex="0" aria-label="Toggle sidebar" aria-expanded="false" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleSidebar();}">
+        <div class="hamburger">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+      </div>
+      
+      <div class="sidebar-content">
+      <div class="sidebar-header">
+        <div class="user-info">
+            <div class="user-details">
+              <h3 id="user-greeting">Hello, Resident!</h3>
+              <p id="user-id-line"></p>
+              <p>Community Member</p>
+            </div>
+          </div>
+        </div>
+        
+        <nav class="sidebar-nav">
+          <ul class="nav-list">
+            <li class="nav-item active">
+              <a href="#" class="nav-link" data-section="dashboard">
+                <i class="fas fa-home"></i>
+                <span>Home</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="#" class="nav-link" data-section="reports">
+                <i class="fas fa-file-invoice"></i>
+                <span>Reports</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="#" class="nav-link" data-section="requests">
+                <i class="fas fa-file-alt"></i>
+                <span>Requests</span>
+              </a>
+            </li>
+
+            <li class="nav-group is-expanded" data-nav-group="borrow">
+              <button type="button" class="nav-group-toggle" aria-expanded="true" aria-controls="nav-submenu-resident-borrow">
+                <i class="fas fa-box-open"></i>
+                <span>Borrow Items</span>
+                <i class="fas fa-chevron-down nav-group-chevron" aria-hidden="true"></i>
+              </button>
+              <ul class="nav-submenu" id="nav-submenu-resident-borrow">
+                <li>
+                  <a href="#" class="nav-sublink" data-section="borrow" data-page="R_Borrow-Available-Items.html">Borrow Available Items</a>
+                </li>
+                <li>
+                  <a href="#" class="nav-sublink" data-section="borrow" data-page="R_My-Borrow-Requests.html">My Borrow Requests</a>
+                </li>
+              </ul>
+            </li>
+
+            <li class="nav-item">
+              <a href="#" class="nav-link" data-section="transparency">
+                <i class="fas fa-balance-scale"></i>
+                <span>Transparency</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="#" class="nav-link" data-section="announcements">
+                <i class="fas fa-bullhorn"></i>
+                <span>Announcements</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="#" class="nav-link" data-section="emergency">
+                <i class="fas fa-phone"></i>
+                <span>Emergency</span>
+              </a>
+            </li>
+
+          </ul>
+        </nav>
+        
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="admin-main">
+      <div class="main-content">
+        <!-- Content sections will be loaded dynamically -->
+        <div id="dashboard-section" class="content-section active">
+          <iframe src="R_Home-Dashboard.html?v=20250710" data-bc-default-src="R_Home-Dashboard.html" frameborder="0" title="Home"></iframe>
+        </div>
+
+        <div id="announcements-section" class="content-section">
+          <iframe src="R_Announcements.html?v=20250710" data-bc-default-src="R_Announcements.html" frameborder="0" title="Announcements"></iframe>
+        </div>
+
+        <div id="emergency-section" class="content-section">
+          <iframe src="R_Emergency.html?v=20250711" data-bc-default-src="R_Emergency.html" frameborder="0" title="Emergency"></iframe>
+        </div>
+
+        <div id="reports-section" class="content-section">
+          <iframe src="R_Reports.html?v=20250721" data-bc-default-src="R_Reports.html" frameborder="0" title="Reports"></iframe>
+        </div>
+
+        <div id="requests-section" class="content-section">
+          <iframe src="R_Request-management.html?v=20250620" data-bc-default-src="R_Request-management.html" frameborder="0" title="Requests"></iframe>
+        </div>
+
+        <div id="borrow-section" class="content-section">
+          <iframe src="R_Borrow-Available-Items.html?v=20250828" data-bc-default-src="R_Borrow-Available-Items.html" frameborder="0" title="Borrow Items"></iframe>
+        </div>
+
+        <div id="transparency-section" class="content-section">
+          <iframe src="R_Transparency.html?v=20250663" data-bc-default-src="R_Transparency.html" frameborder="0" title="Transparency"></iframe>
+        </div>
+
+
+      </div>
+    </main>
+  </div>
+
+  <!-- Update Profile Modal -->
+  <div id="updateProfileModal" class="modal">
+    <div class="modal-content profile-modal">
+      <span class="close" data-close="updateProfileModal">&times;</span>
+      <h2><i class="fas fa-user-edit"></i> Update Profile</h2>
+      
+      <form id="updateProfileForm">
+        <!-- Personal Information -->
+        <div class="form-section">
+          <h3><i class="fas fa-user"></i> Personal Information</h3>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label><i class="fas fa-user"></i> First Name</label>
+              <input type="text" id="firstName" name="firstName" placeholder="Enter your first name" required>
+            </div>
+            <div class="form-group">
+              <label><i class="fas fa-user"></i> Middle Name (Optional)</label>
+              <input type="text" id="middleName" name="middleName" placeholder="Enter your middle name">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label><i class="fas fa-user"></i> Last Name</label>
+              <input type="text" id="lastName" name="lastName" placeholder="Enter your last name" required>
+            </div>
+            <div class="form-group">
+              <label><i class="fas fa-signature"></i> Suffix</label>
+              <select id="suffix" name="suffix">
+                <option value="">Select Suffix</option>
+                <option value="Jr.">Jr.</option>
+                <option value="Sr.">Sr.</option>
+                <option value="III">III</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label><i class="fas fa-envelope"></i> Email Address</label>
+              <input type="email" id="email" name="email" placeholder="Enter your email address" required>
+            </div>
+            <div class="form-group">
+              <label><i class="fas fa-phone"></i> Mobile Number</label>
+              <input type="tel" id="mobile" name="mobile" placeholder="Enter your mobile number" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label><i class="fas fa-calendar"></i> Date of Birth</label>
+              <input type="date" id="dateOfBirth" name="dateOfBirth" required>
+            </div>
+            <div class="form-group">
+              <label><i class="fas fa-hourglass-half"></i> Age</label>
+              <input type="number" id="age" name="age" placeholder="Auto-computed" readonly>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label><i class="fas fa-venus-mars"></i> Gender</label>
+              <select id="gender" name="gender" required>
+                <option value="">Select Gender</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="prefer-not-to-say">Prefer not to say</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label><i class="fas fa-map-pin"></i> Place of Birth</label>
+              <input type="text" id="placeOfBirth" name="placeOfBirth" placeholder="Enter your place of birth" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label><i class="fas fa-ring"></i> Civil Status</label>
+              <select id="civilStatus" name="civilStatus" required>
+                <option value="">Select Civil Status</option>
+                <option value="single">Single</option>
+                <option value="married">Married</option>
+                <option value="widowed">Widowed</option>
+                <option value="separated">Separated</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label><i class="fas fa-flag"></i> Citizenship</label>
+              <input type="text" id="citizenship" name="citizenship" placeholder="Enter your citizenship" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label><i class="fas fa-praying-hands"></i> Religion</label>
+              <input type="text" id="religion" name="religion" placeholder="Enter your religion" required>
+            </div>
+          </div>
+        </div>
+
+        <!-- Address Information -->
+        <div class="form-section">
+          <h3><i class="fas fa-map-marker-alt"></i> Address Information</h3>
+          
+          <div class="form-group">
+            <label><i class="fas fa-home"></i> House Number & Street</label>
+            <input type="text" id="street" name="street" placeholder="Enter house number and street" required>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label><i class="fas fa-building"></i> Barangay</label>
+              <input type="text" id="barangay" name="barangay" value="Tambo" readonly>
+            </div>
+            <div class="form-group">
+              <label><i class="fas fa-city"></i> City</label>
+              <input type="text" id="city" name="city" value="Parañaque City" readonly>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label><i class="fas fa-map"></i> Postal Code</label>
+              <input type="text" id="postalCode" name="postalCode" placeholder="Enter postal code" required>
+            </div>
+            <div class="form-group">
+              <label><i class="fas fa-flag"></i> Province</label>
+              <input type="text" id="province" name="province" value="Metro Manila" readonly>
+            </div>
+          </div>
+        </div>
+
+        <!-- Emergency Contact -->
+        <div class="form-section">
+          <h3><i class="fas fa-phone-alt"></i> Emergency Contact</h3>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label><i class="fas fa-user-friends"></i> Emergency Contact Name</label>
+              <input type="text" id="emergencyName" name="emergencyName" placeholder="Enter emergency contact name" required>
+            </div>
+            <div class="form-group">
+              <label><i class="fas fa-phone"></i> Emergency Contact Number</label>
+              <input type="tel" id="emergencyNumber" name="emergencyNumber" placeholder="Enter emergency contact number" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label><i class="fas fa-link"></i> Relationship</label>
+            <select id="emergencyRelationship" name="emergencyRelationship" required>
+              <option value="">Select Relationship</option>
+              <option value="spouse">Spouse</option>
+              <option value="parent">Parent</option>
+              <option value="sibling">Sibling</option>
+              <option value="child">Child</option>
+              <option value="friend">Friend</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="form-actions">
+          <button type="button" class="cancel-btn" onclick="closeUpdateProfile()">Cancel</button>
+          <button type="submit" class="save-btn">
+            <i class="fas fa-save"></i> Save Changes
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+ <script src="../../Shared/js/bc-session.js"></script>
+  <script src="../../Shared/js/bc-nav-persist.js?v=20260930"></script>
+ <script src="../../Shared/js/resident-store.js"></script>
+ <script src="../../Shared/js/bc-resident-profile-api.js?v=20250720"></script>
+ <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" crossorigin="anonymous"></script>
+ <script src="../../Shared/js/bc-admin-sidebar-gsap.js?v=20250817"></script>
+ <script>
+
+    /* Role access is verified against the PHP Supabase session before portal initialization. */
+    (async function verifySupabaseResidentSession() {
+      const S=window.BarangayConnectSession;
+      const front=S?S.frontPageUrl():'../../FrontPage/html/Front.html';
+      document.documentElement.style.visibility='hidden';
+      try {
+        const response=await fetch('../../FrontPage/php/supabase_session.php',{credentials:'same-origin',cache:'no-store'});
+        const session=response.ok?await response.json():null;
+        if(!session||!session.authenticated||session.role!=='resident') throw new Error('Resident session required');
+        const profile=session.resident||{};
+        const user={id:session.id,residentId:session.residentId,firstname:profile.first_name||'Resident',firstName:profile.first_name||'Resident',lastName:profile.last_name||'',status:'ACTIVE'};
+        window.currentResident=user;
+        if(S) S.setResidentSession(user);
+        localStorage.setItem('residentId',String(session.id));
+        localStorage.setItem('residentCode',String(session.residentId||''));
+        localStorage.setItem('residentFirstname',user.firstname);
+        localStorage.setItem('residentLastname',user.lastName);
+        const greeting=document.getElementById('user-greeting'); if(greeting) greeting.textContent=`Hello, ${user.firstname}!`;
+        const idline=document.getElementById('user-id-line'); if(idline) idline.textContent=`ID: ${user.residentId||'—'}`;
+        document.documentElement.style.visibility='visible';
+      } catch(e) {
+        if(S) S.clearResidentSession();
+        ['residentId','residentCode','residentPortal','residentFirstname','residentLastname'].forEach(k=>localStorage.removeItem(k));
+        window.location.replace(front);
+      }
+    })();
+
+    /* ============================================================
+       (UNCHANGED) — Sidebar navigation
+       ============================================================ */
+
+    if (window.BarangayConnectNavPersist) {
+      window.BarangayConnectNavPersist.initPortal({
+        role: 'resident',
+        defaultSection: 'dashboard',
+        sectionDefaults: {
+          dashboard: 'R_Home-Dashboard.html',
+          reports: 'R_Reports.html',
+          requests: 'R_Request-management.html',
+          borrow: 'R_Borrow-Available-Items.html',
+          transparency: 'R_Transparency.html',
+          announcements: 'R_Announcements.html',
+          emergency: 'R_Emergency.html',
+        },
+      });
+    }
+
+
+
+    /* ============================================================
+       (UNCHANGED) — Settings Menu + Logout
+       ============================================================ */
+
+    function toggleSettings() {
+      const settingsMenu = document.getElementById('settingsMenu');
+      settingsMenu.classList.toggle('show');
+    }
+
+    document.addEventListener('click', function(event) {
+      const settingsDropdown = document.querySelector('.settings-dropdown');
+      const settingsMenu = document.getElementById('settingsMenu');
+      if (!settingsDropdown.contains(event.target)) settingsMenu.classList.remove('show');
+    });
+
+    function logout() {
+      fetch('../../FrontPage/php/supabase_logout.php',{method:'POST',credentials:'same-origin'}).catch(function(){});
+      if (window.BarangayConnectSession) {
+        window.BarangayConnectSession.clearResidentSession();
+        window.location.replace(window.BarangayConnectSession.frontPageUrl());
+      } else {
+        localStorage.removeItem("residentId");
+        localStorage.removeItem("residentCode");
+        localStorage.removeItem("residentPortal");
+        localStorage.removeItem("residentFirstname");
+        localStorage.removeItem("residentLastname");
+        window.location.href = '../../FrontPage/html/Front.html';
+      }
+    }
+
+
+
+    /* ============================================================
+       ✨ CHANGED — Populate Update Profile from DATABASE not localStorage
+       ============================================================ */
+
+    function normalizeSelectValue(value) {
+      return String(value || '').trim().toLowerCase();
+    }
+
+    function setSelectValue(id, value) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      const norm = normalizeSelectValue(value);
+      let matched = false;
+      Array.from(el.options).forEach(function (opt) {
+        if (normalizeSelectValue(opt.value) === norm) {
+          el.value = opt.value;
+          matched = true;
+        }
+      });
+      if (!matched && value) {
+        el.value = value;
+      }
+    }
+
+    function fillProfileForm(u) {
+      if (!u) return;
+      document.getElementById('firstName').value = u.firstName || u.firstname || '';
+      document.getElementById('middleName').value = u.middleName || '';
+      document.getElementById('lastName').value = u.lastName || u.lastname || '';
+      document.getElementById('suffix').value = u.suffix || '';
+      document.getElementById('email').value = u.email || '';
+      document.getElementById('mobile').value = u.mobile || '';
+      document.getElementById('dateOfBirth').value = u.dateOfBirth || '';
+      document.getElementById('age').value =
+        u.age != null && u.age !== '' && Number(u.age) > 0
+          ? u.age
+          : (computeAge(u.dateOfBirth) || '');
+      setSelectValue('gender', u.gender || '');
+      document.getElementById('placeOfBirth').value = u.placeOfBirth || '';
+      setSelectValue('civilStatus', u.civilStatus || '');
+      document.getElementById('citizenship').value = u.citizenship || '';
+      document.getElementById('religion').value = u.religion || '';
+      document.getElementById('street').value = u.street || u.houseStreet || '';
+      document.getElementById('postalCode').value = u.postalCode || '';
+      document.getElementById('emergencyName').value = u.emergencyName || '';
+      document.getElementById('emergencyNumber').value = u.emergencyNumber || '';
+      setSelectValue('emergencyRelationship', u.emergencyRelationship || '');
+    }
+
+    async function openUpdateProfile() {
+      document.getElementById('settingsMenu').classList.remove('show');
+      const modal = document.getElementById('updateProfileModal');
+      if (!modal) return;
+
+      modal.style.display = 'block';
+
+      const S = window.BarangayConnectSession;
+      const residentId = S ? S.getResidentId() : localStorage.getItem('residentId');
+      const residentCode = localStorage.getItem('residentCode');
+      const lookupId = residentId || residentCode;
+
+      const ProfileApi = window.BarangayConnectResidentProfileApi;
+      if (!ProfileApi) {
+        alert('Profile service failed to load. Hard refresh the page (Ctrl+F5).');
+        fillProfileForm(window.currentResident);
+        return;
+      }
+
+      if (!lookupId) {
+        alert('Session expired. Please log in again.');
+        return;
+      }
+
+      const saveBtn = document.querySelector('#updateProfileForm .save-btn');
+      const oldSaveLabel = saveBtn ? saveBtn.innerHTML : '';
+      if (saveBtn) {
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+      }
+
+      try {
+        const profile = await ProfileApi.fetchProfile(lookupId);
+        window.currentResident = profile;
+        fillProfileForm(profile);
+      } catch (err) {
+        console.error('Profile fetch:', err);
+        alert('Could not load your profile from the database. ' + (err.message || ''));
+        fillProfileForm(window.currentResident);
+      } finally {
+        if (saveBtn) {
+          saveBtn.disabled = false;
+          saveBtn.innerHTML = oldSaveLabel || '<i class="fas fa-save"></i> Save Changes';
+        }
+      }
+    }
+
+    function closeUpdateProfile() {
+      document.getElementById('updateProfileModal').style.display = 'none';
+    }
+
+
+
+    /* ============================================================
+       ✨ CHANGED — UPDATE PROFILE VIA DATABASE
+       ============================================================ */
+
+    document.getElementById('updateProfileForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const requiredFields = ['firstName', 'lastName', 'email', 'mobile', 'dateOfBirth', 'gender', 'placeOfBirth', 'civilStatus', 'citizenship', 'religion', 'street', 'postalCode', 'emergencyName', 'emergencyNumber', 'emergencyRelationship'];
+        let isValid = true;
+        requiredFields.forEach(field => {
+            const input = document.getElementById(field);
+            if (!input.value.trim()) {
+                input.style.borderColor = '#e74c3c';
+                isValid = false;
+            } else {
+                input.style.borderColor = '#e0e0e0';
+            }
+        });
+        if (!isValid) {
+            alert('Please fill in all required fields.');
+            return;
+        }
+
+        const S = window.BarangayConnectSession;
+        const residentId = S ? S.getResidentId() : localStorage.getItem('residentId');
+        const residentCode = localStorage.getItem('residentCode');
+        const lookupId = residentId || residentCode;
+
+        if (!lookupId) {
+            alert('Session expired. Please log in again.');
+            return;
+        }
+
+        const updatedData = {
+            firstName: document.getElementById('firstName').value.trim(),
+            middleName: document.getElementById('middleName').value.trim(),
+            lastName: document.getElementById('lastName').value.trim(),
+            suffix: document.getElementById('suffix').value,
+            email: document.getElementById('email').value.trim(),
+            mobile: document.getElementById('mobile').value.trim(),
+            dateOfBirth: document.getElementById('dateOfBirth').value,
+            age: document.getElementById('age').value ? Number(document.getElementById('age').value) : null,
+            gender: document.getElementById('gender').value,
+            placeOfBirth: document.getElementById('placeOfBirth').value.trim(),
+            civilStatus: document.getElementById('civilStatus').value,
+            citizenship: document.getElementById('citizenship').value.trim(),
+            religion: document.getElementById('religion').value.trim(),
+            street: document.getElementById('street').value.trim(),
+            barangay: document.getElementById('barangay').value.trim(),
+            city: document.getElementById('city').value.trim(),
+            province: document.getElementById('province').value.trim(),
+            postalCode: document.getElementById('postalCode').value.trim(),
+            emergencyName: document.getElementById('emergencyName').value.trim(),
+            emergencyNumber: document.getElementById('emergencyNumber').value.trim(),
+            emergencyRelationship: document.getElementById('emergencyRelationship').value
+        };
+
+        const ProfileApi = window.BarangayConnectResidentProfileApi;
+        if (!ProfileApi) {
+            alert('Profile service is unavailable.');
+            return;
+        }
+
+        const saveBtn = this.querySelector('.save-btn');
+        if (saveBtn) saveBtn.disabled = true;
+
+        try {
+            const result = await ProfileApi.updateProfile(lookupId, updatedData);
+            const profile = result.profile || await ProfileApi.fetchProfile(lookupId);
+            window.currentResident = profile;
+
+            if (window.BarangayConnectSession) {
+                window.BarangayConnectSession.setResidentSession({
+                    id: profile.id,
+                    residentId: profile.residentId,
+                    firstname: profile.firstName || profile.firstname,
+                    lastname: profile.lastName || profile.lastname,
+                    status: profile.status || 'ACTIVE',
+                });
+            } else {
+                localStorage.setItem('residentFirstname', profile.firstName || '');
+                localStorage.setItem('residentLastname', profile.lastName || '');
+            }
+
+            document.getElementById('user-greeting').textContent =
+                `Hello, ${profile.firstName || profile.firstname || 'Resident'}!`;
+
+            alert('Profile updated successfully!');
+            closeUpdateProfile();
+        } catch (err) {
+            console.error('Update error:', err);
+            alert(err.message || 'Error updating profile. Please try again.');
+        } finally {
+            if (saveBtn) saveBtn.disabled = false;
+        }
+    });
+
+    function computeAge(dateString) {
+      if (!dateString) return "";
+      const dob = new Date(dateString);
+      if (Number.isNaN(dob.getTime())) return "";
+      const today = new Date();
+      let ageValue = today.getFullYear() - dob.getFullYear();
+      const monthDiff = today.getMonth() - dob.getMonth();
+      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
+        ageValue -= 1;
+      }
+      return ageValue >= 0 ? ageValue : "";
+    }
+
+    (function setupAgeAutoCompute() {
+      const dobInput = document.getElementById('dateOfBirth');
+      const ageInput = document.getElementById('age');
+      if (!dobInput || !ageInput) return;
+
+      dobInput.addEventListener('change', function() {
+        ageInput.value = computeAge(this.value);
+      });
+    })();
+
+
+
+    /* ============================================================
+       (UNCHANGED) Sidebar Toggle, Layout, Heartbeat, Modal Close
+       ============================================================ */
+
+    function toggleSidebar() {
+      if (window.BarangayConnectSidebarGsap) {
+        window.BarangayConnectSidebarGsap.toggle();
+        return;
+      }
+      document.querySelector('.modern-sidebar').classList.toggle('collapsed');
+    }
+
+    window.addEventListener('message', function (event) {
+      if (event.data && event.data.type === 'bc-borrow-changed') {
+        document.querySelectorAll('iframe').forEach(function (iframe) {
+          try {
+            if (iframe.contentWindow) iframe.contentWindow.postMessage(event.data, '*');
+          } catch (err) { /* ignore */ }
+        });
+      }
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+      if (window.BarangayConnectSidebarGsap) {
+        window.BarangayConnectSidebarGsap.init();
+      }
+
+      const hamburgerIcon = document.querySelector('.sidebar-toprow i.fa-bars');
+      if (hamburgerIcon) {
+        hamburgerIcon.addEventListener('click', toggleSidebar);
+        hamburgerIcon.style.cursor = 'pointer';
+      }
+    });
+
+    function setHeaderOffset() {
+      var header = document.querySelector('.admin-header');
+      if (!header) return;
+      var borderBottom = 3;
+      var offset = header.offsetHeight + borderBottom;
+      document.documentElement.style.setProperty('--header-offset', offset + 'px');
+    }
+
+    function setCurrentDate() {
+      var dateElement = document.getElementById('current-date');
+      if (!dateElement) return;
+      var today = new Date();
+      var datePart = today.toLocaleDateString('en-US', {
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric'
+      });
+      var weekday = today.toLocaleDateString('en-US', { weekday: 'long' });
+      dateElement.textContent = datePart + ' | ' + weekday;
+    }
+
+    window.addEventListener('load', function() {
+      setHeaderOffset();
+      setCurrentDate();
+    });
+
+    window.addEventListener('resize', setHeaderOffset);
+
+    (function() {
+      const modal = document.getElementById('updateProfileModal');
+      const box = modal ? modal.querySelector('.modal-content') : null;
+      if (!modal) return;
+      let overlayMouseDown = false;
+      modal.addEventListener('mousedown', e => overlayMouseDown = (e.target === modal));
+      modal.addEventListener('mouseup', e => {
+        if (overlayMouseDown && e.target === modal) closeUpdateProfile();
+        overlayMouseDown = false;
+      });
+      if (box) ['mousedown','mouseup','click'].forEach(evt => box.addEventListener(evt,e=>e.stopPropagation()));
+      const closer = document.querySelector('[data-close="updateProfileModal"]');
+      if (closer) closer.addEventListener('click', closeUpdateProfile);
+    })();
+
+</script>
+  <script src="../../Shared/js/bc-chatbot-api.js?v=20250714"></script>
+  <script src="../../Shared/js/bc-chatbot-widget.js?v=20250718"></script>
+  <script>
+    window.addEventListener('load', function () {
+      if (window.BarangayConnectChatbotWidget) {
+        window.BarangayConnectChatbotWidget.init({
+          userRole: 'resident',
+          title: 'Barangay Assistant',
+        });
+      }
+    });
+  </script>
+  <script src="../../Shared/js/bc-admin-header-weather.js?v=20250671"></script>

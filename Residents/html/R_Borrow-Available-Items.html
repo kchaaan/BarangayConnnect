@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Borrow Available Items - BarangayConnect</title>
+  <link rel="stylesheet" href="../css/R_borrow-style.css?v=20250824">
+  <link rel="stylesheet" href="../../Shared/css/bc-reports-list-table.css?v=20250810">
+  <link rel="stylesheet" href="../css/bc-resident-page-title.css?v=20250620">
+  <link rel="stylesheet" href="../css/R_reports-style.css?v=20250667">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <script src="../../Shared/js/bc-session.js"></script>
+  <script src="../../Shared/js/bc-notify.js?v=20250659"></script>
+  <style>* { scrollbar-width: none !important; } *::-webkit-scrollbar { display: none !important; }</style>
+</head>
+<body data-r-borrow-page="available">
+  <div class="reports-page r-borrow-page">
+    <header class="page-header">
+      <h1 class="page-title">Borrow Available Items</h1>
+      <p class="page-lead">Browse barangay-owned items and submit a borrowing request. Items show as unavailable until staff record verified stock.</p>
+    </header>
+
+    <div class="r-borrow-toolbar card-surface" style="padding:1rem 1.1rem">
+      <div class="r-borrow-search">
+        <i class="fas fa-search" aria-hidden="true"></i>
+        <input type="search" id="rBorrowSearch" placeholder="Search item name…" aria-label="Search items">
+      </div>
+      <div class="r-borrow-filter">
+        <label for="rBorrowCategory">Category</label>
+        <select id="rBorrowCategory"><option value="all">All Categories</option></select>
+      </div>
+      <div class="r-borrow-filter">
+        <label for="rBorrowAvailability">Availability</label>
+        <select id="rBorrowAvailability">
+          <option value="all">All Status</option>
+          <option value="available">Available</option>
+          <option value="low_stock">Low Stock</option>
+          <option value="unavailable">Unavailable</option>
+        </select>
+      </div>
+      <p class="r-borrow-count" id="rBorrowCount">Showing 0 items</p>
+    </div>
+
+    <div class="r-borrow-layout">
+      <div class="r-borrow-layout__main">
+        <div id="rBorrowItemsEmpty" class="reports-state reports-state--empty" hidden>
+          <i class="fas fa-box-open"></i>
+          <p>No items match your search.</p>
+        </div>
+        <div class="r-borrow-grid" id="rBorrowItemsGrid"></div>
+      </div>
+
+      <aside class="r-borrow-side-panel" id="rBorrowSidePanel">
+        <div id="rBorrowPanelPlaceholder" class="r-borrow-side-panel__placeholder">
+          <i class="fas fa-hand-pointer"></i>
+          Select an item to view details or click <strong>View Details</strong>.
+        </div>
+        <div id="rBorrowPanelContent" hidden>
+          <div class="r-borrow-side-panel__head">
+            <h2>Item Information</h2>
+            <button type="button" class="r-borrow-side-panel__close" id="rBorrowPanelClose" aria-label="Close panel">&times;</button>
+          </div>
+          <div class="r-borrow-side-panel__icon" id="rPanelIcon"><i class="fas fa-box"></i></div>
+          <p class="r-borrow-side-panel__name" id="rPanelName"></p>
+          <p class="r-borrow-side-panel__cat" id="rPanelCat"></p>
+          <p class="r-borrow-side-panel__desc" id="rPanelDesc"></p>
+          <p class="r-borrow-side-panel__avail" id="rPanelAvail"></p>
+          <ul class="r-borrow-rules">
+            <li>Items must be returned on or before the expected return date and time.</li>
+            <li>Item must be in good condition upon return.</li>
+            <li>Late returns may affect future borrowing privileges.</li>
+          </ul>
+          <div class="r-borrow-side-panel__hint">
+            After clicking &ldquo;Borrow Item&rdquo;, you will fill out the request details on the next step.
+          </div>
+          <button type="button" class="btn-primary r-borrow-panel-btn" id="rPanelBorrowBtn">
+            <i class="fas fa-paper-plane" aria-hidden="true"></i> Borrow Item
+          </button>
+          <button type="button" class="btn-ghost r-borrow-panel-btn" id="rPanelDetailsBtn">View Full Details</button>
+        </div>
+      </aside>
+    </div>
+
+    <section class="r-borrow-how-it-works card-surface" aria-label="How borrowing works">
+      <h2 class="r-borrow-how-it-works__title">How it works</h2>
+      <ol class="r-borrow-how-it-works__steps">
+        <li class="r-borrow-how-it-works__step">
+          <div class="r-borrow-how-it-works__icon r-borrow-how-it-works__icon--green" aria-hidden="true">
+            <i class="fas fa-box"></i>
+          </div>
+          <div class="r-borrow-how-it-works__text">
+            <strong>1. Browse Items</strong>
+            <span>Choose an available barangay item.</span>
+          </div>
+        </li>
+        <li class="r-borrow-how-it-works__arrow" aria-hidden="true"><i class="fas fa-chevron-right"></i></li>
+        <li class="r-borrow-how-it-works__step">
+          <div class="r-borrow-how-it-works__icon r-borrow-how-it-works__icon--green" aria-hidden="true">
+            <i class="fas fa-file-signature"></i>
+          </div>
+          <div class="r-borrow-how-it-works__text">
+            <strong>2. Fill &amp; Review</strong>
+            <span>Complete the request form and review your details.</span>
+          </div>
+        </li>
+        <li class="r-borrow-how-it-works__arrow" aria-hidden="true"><i class="fas fa-chevron-right"></i></li>
+        <li class="r-borrow-how-it-works__step">
+          <div class="r-borrow-how-it-works__icon r-borrow-how-it-works__icon--orange" aria-hidden="true">
+            <i class="fas fa-clock"></i>
+          </div>
+          <div class="r-borrow-how-it-works__text">
+            <strong>3. Wait for Review</strong>
+            <span>The administrator will review your request.</span>
+          </div>
+        </li>
+        <li class="r-borrow-how-it-works__arrow" aria-hidden="true"><i class="fas fa-chevron-right"></i></li>
+        <li class="r-borrow-how-it-works__step">
+          <div class="r-borrow-how-it-works__icon r-borrow-how-it-works__icon--green" aria-hidden="true">
+            <i class="fas fa-check-circle"></i>
+          </div>
+          <div class="r-borrow-how-it-works__text">
+            <strong>4. Get Notified</strong>
+            <span>You will receive updates on your request status.</span>
+          </div>
+        </li>
+        <li class="r-borrow-how-it-works__arrow" aria-hidden="true"><i class="fas fa-chevron-right"></i></li>
+        <li class="r-borrow-how-it-works__step">
+          <div class="r-borrow-how-it-works__icon r-borrow-how-it-works__icon--blue" aria-hidden="true">
+            <i class="fas fa-box-open"></i>
+          </div>
+          <div class="r-borrow-how-it-works__text">
+            <strong>5. Claim &amp; Return</strong>
+            <span>Claim the item once approved and return on time.</span>
+          </div>
+        </li>
+      </ol>
+    </section>
+  </div>
+
+  <!-- Item Details modal (no photos — icon only) -->
+  <div id="rItemDetailModal" class="r-borrow-overlay" role="dialog" aria-hidden="true">
+    <div class="r-borrow-modal">
+      <div class="r-borrow-modal__header">
+        <h2>Item Details</h2>
+        <button type="button" class="r-borrow-modal__close" data-r-borrow-close="rItemDetailModal">&times;</button>
+      </div>
+      <div class="r-borrow-modal__body" id="rItemDetailBody"></div>
+      <div class="r-borrow-modal__footer">
+        <button type="button" class="btn-primary" id="rDetailBorrowBtn"><i class="fas fa-paper-plane"></i> Borrow Item</button>
+        <button type="button" class="btn-ghost" data-r-borrow-close="rItemDetailModal">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Borrow request form -->
+  <div id="rBorrowFormModal" class="r-borrow-overlay" role="dialog" aria-hidden="true" aria-labelledby="rBorrowFormTitle">
+    <div class="r-borrow-modal r-borrow-modal--form">
+      <div class="r-borrow-request-form__head">
+        <div class="r-borrow-request-form__title-wrap">
+          <span class="r-borrow-request-form__title-icon" aria-hidden="true"><i class="fas fa-clipboard-list"></i></span>
+          <h2 id="rBorrowFormTitle">Request Details</h2>
+        </div>
+        <button type="button" class="r-borrow-modal__close" data-r-borrow-close="rBorrowFormModal" aria-label="Close">&times;</button>
+      </div>
+      <div class="r-borrow-modal__body r-borrow-request-form__body">
+        <p class="r-borrow-request-form__item" id="rBorrowItemLabel"></p>
+        <form id="rBorrowForm" novalidate>
+          <input type="hidden" id="rBorrowItemId">
+
+          <fieldset class="r-borrow-request-form__section">
+            <legend>Resident Information</legend>
+            <div class="r-borrow-request-form__grid r-borrow-request-form__grid--3">
+              <div class="r-borrow-request-form__field">
+                <label for="rBorrowFullName">Full Name <span class="req">*</span></label>
+                <input type="text" id="rBorrowFullName" required placeholder="Enter your full name" autocomplete="name">
+              </div>
+              <div class="r-borrow-request-form__field">
+                <label for="rBorrowResidentCode">Resident ID <span class="req">*</span></label>
+                <input type="text" id="rBorrowResidentCode" required placeholder="Enter your resident ID">
+              </div>
+              <div class="r-borrow-request-form__field">
+                <label for="rBorrowContact">Contact Number <span class="req">*</span></label>
+                <input type="tel" id="rBorrowContact" required placeholder="Enter your contact number" autocomplete="tel">
+              </div>
+            </div>
+          </fieldset>
+
+          <fieldset class="r-borrow-request-form__section">
+            <legend>Borrow Details</legend>
+            <div class="r-borrow-request-form__grid r-borrow-request-form__grid--3">
+              <div class="r-borrow-request-form__field">
+                <label for="rBorrowQty">Quantity to Borrow <span class="req">*</span></label>
+                <input type="number" id="rBorrowQty" min="1" required placeholder="Enter quantity">
+                <p class="r-borrow-request-form__hint" id="rBorrowQtyHint">Maximum available: —</p>
+              </div>
+              <div class="r-borrow-request-form__field">
+                <label for="rBorrowDateNeeded">Pickup Date &amp; Time <span class="req">*</span></label>
+                <input type="datetime-local" id="rBorrowDateNeeded" required>
+              </div>
+              <div class="r-borrow-request-form__field">
+                <label for="rBorrowReturnDate">Expected Return Date &amp; Time <span class="req">*</span></label>
+                <input type="datetime-local" id="rBorrowReturnDate" required>
+              </div>
+            </div>
+            <div class="r-borrow-request-form__field r-borrow-request-form__field--full">
+              <label for="rBorrowPurpose">Purpose <span class="req">*</span></label>
+              <input type="text" id="rBorrowPurpose" maxlength="200" required placeholder="Enter the purpose of your borrow request">
+              <p class="r-borrow-request-form__counter"><span id="rBorrowPurposeCount">0</span> / 200 characters</p>
+            </div>
+            <div class="r-borrow-request-form__grid r-borrow-request-form__grid--2">
+              <div class="r-borrow-request-form__field">
+                <label for="rBorrowEvent">Event / Activity <span class="opt">(if applicable)</span></label>
+                <input type="text" id="rBorrowEvent" placeholder="Enter event or activity (optional)">
+              </div>
+              <div class="r-borrow-request-form__field">
+                <label for="rBorrowLocation">Location / Venue</label>
+                <input type="text" id="rBorrowLocation" placeholder="Enter location or venue">
+              </div>
+            </div>
+            <div class="r-borrow-request-form__field r-borrow-request-form__field--full">
+              <label for="rBorrowEventAt">Event Date &amp; Time <span class="opt">(if applicable)</span></label>
+              <input type="datetime-local" id="rBorrowEventAt">
+              <p class="r-borrow-request-form__hint">Enter when the activity starts. Pickup and return schedule are required above.</p>
+            </div>
+            <div class="r-borrow-request-form__field r-borrow-request-form__field--full">
+              <label for="rBorrowRemarks">Additional Notes <span class="opt">(optional)</span></label>
+              <textarea id="rBorrowRemarks" rows="3" maxlength="300" placeholder="Add any additional information…"></textarea>
+              <p class="r-borrow-request-form__counter"><span id="rBorrowRemarksCount">0</span> / 300 characters</p>
+            </div>
+          </fieldset>
+        </form>
+      </div>
+      <div class="r-borrow-modal__footer">
+        <button type="button" class="btn-ghost" data-r-borrow-close="rBorrowFormModal">Cancel</button>
+        <button type="button" class="btn-primary" id="rBorrowContinueReview">
+          <i class="fas fa-arrow-right" aria-hidden="true"></i> Continue to Review
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Review before submit -->
+  <div id="rBorrowReviewModal" class="r-borrow-overlay" role="dialog" aria-hidden="true" aria-labelledby="rBorrowReviewTitle">
+    <div class="r-borrow-modal r-borrow-modal--form">
+      <div class="r-borrow-request-form__head">
+        <div class="r-borrow-request-form__title-wrap">
+          <span class="r-borrow-request-form__title-icon" aria-hidden="true"><i class="fas fa-clipboard-check"></i></span>
+          <h2 id="rBorrowReviewTitle">Review Your Request</h2>
+        </div>
+        <button type="button" class="r-borrow-modal__close" data-r-borrow-close="rBorrowReviewModal" aria-label="Close">&times;</button>
+      </div>
+      <div class="r-borrow-modal__body">
+        <p class="r-borrow-review__lead">Please confirm that all information below is correct before submitting.</p>
+        <div class="r-borrow-review" id="rBorrowReviewBody"></div>
+      </div>
+      <div class="r-borrow-modal__footer">
+        <button type="button" class="btn-ghost" id="rBorrowBackToEdit">
+          <i class="fas fa-arrow-left" aria-hidden="true"></i> Back to Edit
+        </button>
+        <button type="button" class="btn-ghost" id="rBorrowPrintRequest">
+          <i class="fas fa-file-pdf" aria-hidden="true"></i> Download compact PDF
+        </button>
+        <button type="button" class="btn-primary" id="rBorrowConfirmSubmit">
+          <i class="fas fa-paper-plane" aria-hidden="true"></i> Submit Request
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../Shared/js/bc-borrow-inventory-api.js?v=20250826"></script>
+  <script src="../../Shared/js/bc-borrow-sync.js?v=20250821"></script>
+  <script src="../../Shared/js/bc-resident-borrow.js?v=20260930"></script>
+  <script src="../../Shared/js/bc-nav-persist.js?v=20250812"></script>
+  <script src="../../Shared/js/bc-nav-iframe-child.js"></script>
+</body>
+</html>

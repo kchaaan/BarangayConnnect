@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <title>Request Management - BarangayConnect</title>
+  <link rel="stylesheet" href="../css/A_Request-Management-style.css">
+  <link rel="stylesheet" href="../css/bc-admin-page-title.css?v=20250642">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <script src="https://kit.fontawesome.com/a2e0f1f0c1.js" crossorigin="anonymous"></script>
+  <style>
+    /* Force hide all scrollbars */
+    * {
+      scrollbar-width: none !important;
+      -ms-overflow-style: none !important;
+    }
+    *::-webkit-scrollbar {
+      display: none !important;
+    }
+    
+    /* Ensure content is not clipped */
+    body {
+      overflow-x: visible !important;
+      min-width: 100% !important;
+      padding-bottom: 1rem !important;
+    }
+    
+    .request-management-container {
+      min-width: 100% !important;
+      overflow: visible !important;
+    }
+    
+    .page-header {
+      min-width: 100% !important;
+      overflow: visible !important;
+    }
+  </style>
+</head>
+<body>
+  <div class="request-management-container">
+    <!-- Page Header -->
+    <div class="page-header">
+      <h1 class="page-title">Request Management</h1>
+    </div>
+
+    <!-- Main Cards Container -->
+    <div class="cards-container">
+      <!-- All Requests Card -->
+      <a href="#" class="management-card" onclick="showRequestDetails()">
+        <div class="card-icon">
+          <i class="fas fa-clipboard-list"></i>
+        </div>
+        <div class="card-content">
+          <h3>REQUESTS</h3>
+          <p>View every submitted request</p>
+        </div>
+      </a>
+
+      <!-- In Progress Requests Card -->
+      <a href="#" class="management-card" onclick="showInProgressRequests()">
+        <div class="card-icon">
+          <i class="fas fa-hourglass-half"></i>
+        </div>
+        <div class="card-content">
+          <h3>IN PROGRESS</h3>
+          <p>Monitor requests being processed</p>
+        </div>
+      </a>
+
+      <!-- Completed Requests Card -->
+      <a href="#" class="management-card" onclick="showCompletedRequests()">
+        <div class="card-icon">
+          <i class="fas fa-check-circle"></i>
+        </div>
+        <div class="card-content">
+          <h3>COMPLETED REQUESTS</h3>
+          <p>Review fulfilled and closed requests</p>
+        </div>
+      </a>
+    </div>
+
+  </div>
+
+  <script src="../../Shared/js/bc-nav-persist.js?v=20250638"></script>
+  <script src="../../Shared/js/bc-nav-iframe-child.js"></script>
+  <script>
+    function showRequestDetails() {
+      bcNavigatePage('A_Request.html');
+    }
+
+    function showInProgressRequests() {
+      bcNavigatePage('A_InPrgrs-Request.html');
+    }
+
+    function showCompletedRequests() {
+      bcNavigatePage('A_Cmptd-Request.html');
+    }
+  </script>
+</body>
+</html>
+

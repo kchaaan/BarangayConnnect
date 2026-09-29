@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Borrow Requests - BarangayConnect</title>
+  <link rel="stylesheet" href="../css/R_borrow-style.css?v=20250812">
+  <link rel="stylesheet" href="../../Shared/css/bc-reports-list-table.css?v=20250810">
+  <link rel="stylesheet" href="../css/bc-resident-page-title.css?v=20250620">
+  <link rel="stylesheet" href="../css/R_reports-style.css?v=20250667">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <script src="../../Shared/js/bc-session.js"></script>
+  <script src="../../Shared/js/bc-notify.js?v=20250659"></script>
+  <style>* { scrollbar-width: none !important; } *::-webkit-scrollbar { display: none !important; }
+    .borrow-print-sheet{display:none}.borrow-print-sheet h1{margin:0 0 .25rem}.borrow-print-sheet .print-meta{margin:0 0 1rem;color:#444}.borrow-print-sheet table{width:100%;border-collapse:collapse;font-size:10pt}.borrow-print-sheet th,.borrow-print-sheet td{border:1px solid #657169;padding:7px;text-align:left}.borrow-print-sheet th{background:#e8efe9}.borrow-print-sheet .signature{margin-top:2rem;display:flex;justify-content:space-between}
+    @media print{body>*{display:none!important}body>.reports-page{display:block!important;padding:0!important;box-shadow:none!important;background:#fff!important}.reports-page>*{display:none!important}.reports-page #borrowPrintSheet{display:block!important;color:#111!important;font:11pt Arial,sans-serif}.reports-page #borrowPrintSheet *{visibility:visible!important}}
+  </style>
+</head>
+<body data-r-borrow-page="my-requests">
+  <div class="reports-page r-borrow-page">
+    <header class="page-header">
+      <h1 class="page-title">My Borrow Requests</h1>
+      <p class="page-lead">Track the status of your submitted borrowing requests.</p>
+    </header>
+
+    <div class="borrow-print-sheet" id="borrowPrintSheet" aria-hidden="true"></div>
+    <section class="reports-history card-surface">
+      <div class="reports-list__toolbar">
+        <h2 class="reports-list__title">Requests List</h2>
+        <button type="button" class="btn-ghost" id="rPrintBorrowHistory"><i class="fas fa-print" aria-hidden="true"></i> Print Borrowing History</button>
+        <button type="button" class="btn-ghost" id="rRefreshBorrows">
+          <i class="fas fa-arrows-rotate" aria-hidden="true"></i> Refresh
+        </button>
+      </div>
+      <div class="reports-table-wrap r-borrow-requests-wrap">
+        <div class="reports-table r-borrow-requests-table">
+          <div class="reports-table__header" role="row">
+            <div class="reports-table__cell" role="columnheader">Request ID</div>
+            <div class="reports-table__cell" role="columnheader">Item</div>
+            <div class="reports-table__cell" role="columnheader">Qty</div>
+            <div class="reports-table__cell" role="columnheader">Date Needed</div>
+            <div class="reports-table__cell" role="columnheader">Return Date</div>
+            <div class="reports-table__cell" role="columnheader">Status</div>
+          </div>
+          <div id="rMyBorrowList" class="reports-table__body"><p style="padding:1rem">Loading…</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="r-borrow-status-guide" aria-label="Request status guide">
+      <h3>Request Status Guide</h3>
+      <div class="r-borrow-status-guide__item">
+        <i class="fas fa-clock pending" aria-hidden="true"></i>
+        <div><strong>Pending</strong><span>Waiting for barangay admin review.</span></div>
+      </div>
+      <div class="r-borrow-status-guide__item">
+        <i class="fas fa-check approved" aria-hidden="true"></i>
+        <div><strong>Approved</strong><span>You may claim the item at the barangay hall.</span></div>
+      </div>
+      <div class="r-borrow-status-guide__item">
+        <i class="fas fa-times rejected" aria-hidden="true"></i>
+        <div><strong>Rejected</strong><span>Request was not approved.</span></div>
+      </div>
+      <div class="r-borrow-status-guide__item">
+        <i class="fas fa-check-double completed" aria-hidden="true"></i>
+        <div><strong>Completed</strong><span>Item returned; transaction closed.</span></div>
+      </div>
+    </section>
+  </div>
+
+  <script src="../../Shared/js/bc-borrow-inventory-api.js?v=20250812"></script>
+  <script src="../../Shared/js/bc-borrow-sync.js?v=20250821"></script>
+  <script src="../../Shared/js/bc-resident-borrow.js?v=20250821"></script>
+  <script src="../../Shared/js/bc-nav-persist.js?v=20250812"></script>
+  <script src="../../Shared/js/bc-nav-iframe-child.js"></script>
+</body>
+</html>

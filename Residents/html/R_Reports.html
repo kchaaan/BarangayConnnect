@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <title>My Reports - BarangayConnect</title>
+  <link rel="stylesheet" href="../css/R_reports-style.css?v=20250667">
+  <link rel="stylesheet" href="../../Shared/css/bc-reports-list-table.css?v=20250668">
+  <link rel="stylesheet" href="../../Shared/css/bc-request-details-table.css?v=20250630">
+  <link rel="stylesheet" href="../../Shared/css/bc-section-divider.css?v=20250635">
+  <link rel="stylesheet" href="../../Shared/css/bc-notify.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <script src="https://kit.fontawesome.com/a2e0f1f0c1.js" crossorigin="anonymous"></script>
+  <script src="../../Shared/js/bc-notify.js?v=20250659"></script>
+  <script src="../../Shared/js/bc-address-streets.js?v=20250611"></script>
+  <style>
+    * {
+      scrollbar-width: none !important;
+      -ms-overflow-style: none !important;
+    }
+    *::-webkit-scrollbar {
+      display: none !important;
+    }
+  </style>
+  <link rel="stylesheet" href="../css/bc-resident-page-title.css?v=20250620">
+</head>
+<body>
+  <div class="reports-page">
+    <!-- Page header -->
+    <header class="page-header">
+      <h1 class="page-title">My Reports</h1>
+      <p class="page-lead">Help keep our barangay safe, clean, and informed. Share concerns anonymously — your identity is never required.</p>
+    </header>
+
+    <!-- Intro + CTA -->
+    <section class="reports-hero card-surface">
+      <div class="reports-hero__grid">
+        <div class="reports-hero__copy">
+          <h2 class="reports-hero__title">Report an issue</h2>
+          <p class="reports-hero__text">
+            Tell us about environmental problems, damaged facilities, noise, flooding, or any matter the barangay should know about.
+          </p>
+          <ul class="reports-highlights">
+            <li>
+              <span class="reports-highlights__icon" aria-hidden="true"><i class="fas fa-user-secret"></i></span>
+              <span><strong>100% anonymous</strong> — no name or contact required</span>
+            </li>
+            <li>
+              <span class="reports-highlights__icon" aria-hidden="true"><i class="fas fa-leaf"></i></span>
+              <span><strong>Environmental &amp; community</strong> — waste, drainage, pollution, safety</span>
+            </li>
+            <li>
+              <span class="reports-highlights__icon" aria-hidden="true"><i class="fas fa-user-shield"></i></span>
+              <span><strong>Handled confidentially</strong> — reviewed by barangay staff</span>
+            </li>
+          </ul>
+          <button type="button" class="btn-primary btn-primary--lg" id="openReportForm">
+            <i class="fas fa-plus" aria-hidden="true"></i>
+            Submit Report
+          </button>
+        </div>
+        <div class="reports-hero__visual" aria-hidden="true">
+          <div class="reports-hero__badge">
+            <i class="fas fa-bullhorn"></i>
+          </div>
+          <p class="reports-hero__visual-caption">Your report helps us respond faster and build a better community.</p>
+        </div>
+    </div>
+    </section>
+
+    <div class="bc-section-divider" aria-hidden="true">
+      <span class="bc-section-divider__accent"></span>
+  </div>
+
+    <!-- Submitted reports -->
+    <section class="reports-history card-surface">
+      <div class="reports-list__toolbar">
+        <h2 class="reports-list__title">Reports List</h2>
+        <div class="reports-list__controls">
+          <select id="reportStatusFilter" class="reports-status-filter" aria-label="Filter by status">
+            <option value="all">All Status</option>
+            <option value="pending">Pending</option>
+            <option value="in progress">In Progress</option>
+            <option value="resolved">Resolved</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
+          <button type="button" class="btn-ghost" id="refreshReports" title="Refresh list">
+            <i class="fas fa-arrows-rotate" aria-hidden="true"></i>
+            Refresh
+    </button>
+        </div>
+      </div>
+      <div id="reportListLoading" class="reports-state reports-state--loading" hidden>
+        <i class="fas fa-spinner fa-spin"></i>
+        <span>Loading reports…</span>
+      </div>
+      <div id="reportListEmpty" class="reports-state reports-state--empty" hidden>
+        <i class="fas fa-inbox"></i>
+        <p>No reports yet</p>
+        <span>When you submit a report, it will appear here.</span>
+      </div>
+      <div id="reportListError" class="reports-state reports-state--error" hidden>
+        <i class="fas fa-triangle-exclamation"></i>
+        <p>Could not load reports</p>
+        <span>Make sure the report service is running, then try again.</span>
+      </div>
+      <div class="reports-table-wrap" id="reportTableWrap" hidden>
+        <div class="reports-table" role="table" aria-label="Your submitted reports">
+          <div class="reports-table__header" role="row">
+            <div class="reports-table__cell" role="columnheader">Report ID</div>
+            <div class="reports-table__cell" role="columnheader">Issue</div>
+            <div class="reports-table__cell" role="columnheader">Location</div>
+            <div class="reports-table__cell" role="columnheader">Date Reported</div>
+            <div class="reports-table__cell" role="columnheader">Status</div>
+            <div class="reports-table__cell" role="columnheader">Last Update</div>
+            <div class="reports-table__cell reports-table__cell--actions" role="columnheader">Action</div>
+          </div>
+          <div id="reportList" class="reports-table__body"></div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Submit report modal (layout matches resident request forms) -->
+  <div class="modal" id="reportForm" role="dialog" aria-modal="true" aria-labelledby="reportFormTitle">
+    <div class="modal-content modal-content--form">
+      <div class="modal-header">
+        <h2 id="reportFormTitle" class="form-title">
+          <i class="fas fa-file-signature" aria-hidden="true"></i> Submit Report
+        </h2>
+        <button type="button" class="close-btn" onclick="closeReportForm()" aria-label="Close">&times;</button>
+      </div>
+
+      <form class="request-form report-modal-form" id="reportsFormEl" onsubmit="return false;">
+        <p class="form-notice">
+          <i class="fas fa-circle-info" aria-hidden="true"></i>
+          All fields marked with <span class="required">*</span> are required. Your report remains anonymous.
+        </p>
+
+        <div class="form-group">
+          <label for="reportTitle" class="form-label">
+            <i class="fas fa-heading" aria-hidden="true"></i> Issue Title <span class="required">*</span>
+          </label>
+          <input type="text" id="reportTitle" class="form-input" placeholder="Brief summary of the issue" autocomplete="off">
+        </div>
+
+        <div class="form-group">
+          <label for="reportCategory" class="form-label">
+            <i class="fas fa-list" aria-hidden="true"></i> Category <span class="required">*</span>
+          </label>
+          <select id="reportCategory" class="form-select">
+            <option value="" disabled selected>Select category...</option>
+            <option value="Garbage">Garbage</option>
+            <option value="Streetlight">Streetlight</option>
+            <option value="Road Damage">Road Damage</option>
+            <option value="Noise Complaint">Noise Complaint</option>
+            <option value="__other__">Other — specify below</option>
+          </select>
+          <div id="reportCategoryOtherWrap" class="category-other-wrap" hidden>
+            <label for="reportCategoryOther" class="form-label category-other-label">Specify category</label>
+            <input type="text" id="reportCategoryOther" name="reportCategoryOther" class="form-input" placeholder="Enter category" autocomplete="off">
+          </div>
+        </div>
+
+        <div class="form-group form-group--location">
+          <h3 class="form-subsection-title">
+            <i class="fas fa-map-marker-alt" aria-hidden="true"></i> Location <span class="required">*</span>
+          </h3>
+
+          <div class="form-group form-group--full">
+            <label for="reportLocationStreetSelect" class="form-label">
+              <i class="fas fa-road" aria-hidden="true"></i> Street <span class="required">*</span>
+            </label>
+            <select id="reportLocationStreetSelect" name="reportLocationStreet" class="form-select" required aria-label="Street">
+              <option value="" disabled selected>Select street...</option>
+            </select>
+            <div id="reportLocationStreetOtherWrap" class="street-other-wrap" hidden>
+              <label for="reportLocationStreetOther" class="form-label category-other-label">Specify street name</label>
+              <input type="text" id="reportLocationStreetOther" name="reportLocationStreetOther" class="form-input" placeholder="Enter street name" autocomplete="off">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="reportLocationBlockLot" class="form-label"><i class="fas fa-th" aria-hidden="true"></i> Block / Lot</label>
+              <input type="text" id="reportLocationBlockLot" name="reportLocationBlockLot" class="form-input" placeholder="Blk / Lot">
+            </div>
+            <div class="form-group">
+              <label for="reportLocationHouseUnit" class="form-label"><i class="fas fa-home" aria-hidden="true"></i> House No. / Unit</label>
+              <input type="text" id="reportLocationHouseUnit" name="reportLocationHouseUnit" class="form-input" placeholder="No. or unit">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="reportLocationBarangay" class="form-label"><i class="fas fa-building" aria-hidden="true"></i> Barangay <span class="required">*</span></label>
+              <input type="text" id="reportLocationBarangay" name="reportLocationBarangay" class="form-input" value="Tambo" required>
+            </div>
+            <div class="form-group">
+              <label for="reportLocationCity" class="form-label"><i class="fas fa-city" aria-hidden="true"></i> City / Municipality <span class="required">*</span></label>
+              <input type="text" id="reportLocationCity" name="reportLocationCity" class="form-input" value="Parañaque City" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="reportLocationProvince" class="form-label"><i class="fas fa-flag" aria-hidden="true"></i> Province <span class="required">*</span></label>
+              <input type="text" id="reportLocationProvince" name="reportLocationProvince" class="form-input" value="Metro Manila" required>
+            </div>
+            <div class="form-group">
+              <label for="reportLocationRegion" class="form-label"><i class="fas fa-globe-asia" aria-hidden="true"></i> Region <span class="required">*</span></label>
+              <input type="text" id="reportLocationRegion" name="reportLocationRegion" class="form-input" value="NCR" required>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="reportDescription" class="form-label">
+            <i class="fas fa-align-left" aria-hidden="true"></i> Description <span class="required">*</span>
+          </label>
+          <textarea id="reportDescription" class="form-textarea" rows="5" placeholder="Describe what happened, when you noticed it, and any other helpful details"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">
+            <i class="fas fa-upload" aria-hidden="true"></i> Upload Photo <span class="optional-tag">(optional)</span>
+          </label>
+          <div class="upload-section">
+            <div class="upload-item">
+              <label for="reportImage" class="upload-label">
+                <i class="fas fa-image" aria-hidden="true"></i> Choose file
+              </label>
+              <input type="file" id="reportImage" class="file-input" accept="image/*,.pdf">
+              <span class="file-hint">JPG, PNG, or PDF — one file only</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" onclick="closeReportForm()">
+            <i class="fas fa-times" aria-hidden="true"></i> Cancel
+          </button>
+          <button type="button" class="btn btn-primary" onclick="submitReport()">
+            <i class="fas fa-paper-plane" aria-hidden="true"></i> Submit Report
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- View report details (table layout, matches admin A_Reports) -->
+  <div id="reportDetailsModal" class="modal report-details-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="residentReportDetailTitle">
+    <div class="modal-content modal-content--details">
+      <div class="modal-header report-details-header">
+        <div>
+          <p class="modal-eyebrow">Review Report</p>
+          <h2 id="residentReportDetailTitle">Report details</h2>
+        </div>
+        <button type="button" class="close-btn" id="reportDetailsClose" aria-label="Close report details">&times;</button>
+      </div>
+      <div class="report-details-body">
+        <div id="residentReportImageSection" class="info-section-card report-image-section" hidden>
+          <div class="section-title-wrapper">
+            <h3 class="section-title">Report Image</h3>
+          </div>
+          <img id="residentReportImage" class="report-modal-image" alt="Report attachment">
+        </div>
+        <div class="info-section-card">
+          <div class="section-title-wrapper">
+            <h3 class="section-title">Report Information</h3>
+          </div>
+          <table class="bc-details-table">
+            <tbody>
+              <tr><th scope="row">Title</th><td id="rdTitle">—</td></tr>
+              <tr><th scope="row">Category</th><td id="rdCategory">—</td></tr>
+              <tr><th scope="row">Location</th><td id="rdLocation">—</td></tr>
+              <tr><th scope="row">Status</th><td id="rdStatus">—</td></tr>
+              <tr><th scope="row">Date Reported</th><td id="rdDate">—</td></tr>
+              <tr><th scope="row">Time</th><td id="rdTime">—</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <section class="notes-section">
+          <p class="section-eyebrow">Additional Details</p>
+          <div class="notes-box" id="rdDescription">No additional details provided.</div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../Shared/js/bc-reports-api.js?v=20250627"></script>
+  <script src="../../Shared/js/bc-nav-persist.js?v=20250605"></script>
+  <script src="../../Shared/js/bc-nav-iframe-child.js?v=20250605"></script>
+<script>
+    const ReportsApi = window.BarangayConnectReportsApi;
+    const CATEGORY_OTHER = '__other__';
+
+    const REPORT_LOCATION_IDS = {
+      houseUnitId: 'reportLocationHouseUnit',
+      blockLotId: 'reportLocationBlockLot',
+      streetId: 'reportLocationStreetSelect',
+      barangayId: 'reportLocationBarangay',
+      cityId: 'reportLocationCity',
+      provinceId: 'reportLocationProvince',
+      regionId: 'reportLocationRegion',
+    };
+
+    function notify(type, message, title) {
+      const n = window.bcNotify;
+      if (n && n[type]) n[type](message, { title: title || '' });
+      else window.alert(message);
+    }
+
+    function syncReportCategoryOtherField() {
+      const sel = document.getElementById('reportCategory');
+      const wrap = document.getElementById('reportCategoryOtherWrap');
+      const other = document.getElementById('reportCategoryOther');
+      if (!sel || !wrap) return;
+      const isOther = sel.value === CATEGORY_OTHER;
+      wrap.hidden = !isOther;
+      if (other) {
+        other.required = isOther;
+        if (!isOther) other.value = '';
+      }
+    }
+
+    function getReportCategoryValue() {
+      const sel = document.getElementById('reportCategory');
+      if (!sel || !sel.value) return '';
+      if (sel.value === CATEGORY_OTHER) {
+        return document.getElementById('reportCategoryOther')?.value.trim() || '';
+      }
+      return sel.value;
+    }
+
+    document.getElementById('reportCategory')?.addEventListener('change', syncReportCategoryOtherField);
+    syncReportCategoryOtherField();
+
+    function initReportLocationFields() {
+      if (window.BarangayConnectAddress) {
+        window.BarangayConnectAddress.initStreetField(
+          document.getElementById('reportLocationStreetSelect')
+        );
+      }
+    }
+
+    function getReportLocationValue() {
+      const A = window.BarangayConnectAddress;
+      if (!A) return null;
+      const street = A.getStreetValue(REPORT_LOCATION_IDS.streetId);
+      const barangay = document.getElementById('reportLocationBarangay')?.value.trim() || '';
+      const city = document.getElementById('reportLocationCity')?.value.trim() || '';
+      const province = document.getElementById('reportLocationProvince')?.value.trim() || '';
+      const region = document.getElementById('reportLocationRegion')?.value.trim() || '';
+      if (!street || !barangay || !city || !province || !region) return null;
+      return A.buildFullAddress(REPORT_LOCATION_IDS);
+    }
+
+    async function prefillReportLocationFromProfile() {
+      const residentId = localStorage.getItem('residentId');
+      if (!residentId) return;
+      try {
+        const url = new URL('../../FrontPage/php/resident_profile.php', window.location.href);
+        url.searchParams.set('id', residentId);
+        const res = await fetch(url.href);
+        if (!res.ok) return;
+        const u = await res.json();
+        if (!u || u.success === false) return;
+
+        const set = (id, val) => {
+          const el = document.getElementById(id);
+          if (el && val != null && val !== '') el.value = val;
+        };
+
+        set('reportLocationBarangay', u.barangay || 'Tambo');
+        set('reportLocationCity', u.city || 'Parañaque City');
+        set('reportLocationProvince', u.province || 'Metro Manila');
+
+        const extra =
+          typeof u.profile_extra === 'string'
+            ? (() => {
+                try {
+                  return JSON.parse(u.profile_extra);
+                } catch {
+                  return {};
+                }
+              })()
+            : u.profileExtra || {};
+
+        set('reportLocationRegion', extra.region || 'NCR');
+        set('reportLocationBlockLot', extra.blockLot);
+        set('reportLocationHouseUnit', extra.houseUnit);
+
+        const streetEl = document.getElementById('reportLocationStreetSelect');
+        if (streetEl && extra.street) {
+          window.BarangayConnectAddress?.setStreetValue(streetEl, extra.street);
+        } else if (streetEl && u.street) {
+          const match = window.BarangayConnectAddress?.STREETS?.find((s) => u.street.includes(s));
+          window.BarangayConnectAddress?.setStreetValue(streetEl, match || u.street);
+        }
+      } catch (e) {
+        console.warn('Location prefill:', e);
+      }
+    }
+
+    initReportLocationFields();
+
+    document.getElementById('openReportForm').onclick = async () => {
+      document.body.classList.add('report-modal-open');
+      const reportFormEl = document.getElementById('reportForm');
+      reportFormEl.classList.add('active');
+      reportFormEl.scrollTop = 0;
+      syncReportCategoryOtherField();
+      initReportLocationFields();
+      await prefillReportLocationFromProfile();
+      document.getElementById('reportTitle').focus();
+    };
+
+    document.getElementById('reportImage')?.addEventListener('change', function () {
+      const label = document.querySelector('label[for="reportImage"]');
+      if (!label) return;
+      const file = this.files[0];
+      if (!file) {
+        label.innerHTML = '<i class="fas fa-image" aria-hidden="true"></i> Choose file';
+        return;
+      }
+      const name = file.name.length > 32 ? file.name.slice(0, 32) + '…' : file.name;
+      label.innerHTML = '<i class="fas fa-check-circle" aria-hidden="true"></i> ' + name;
+    });
+
+    function closeReportForm() {
+      document.body.classList.remove('report-modal-open');
+      document.getElementById('reportForm').classList.remove('active');
+      syncReportCategoryOtherField();
+    }
+
+    document.getElementById('reportForm').addEventListener('click', (e) => {
+      if (e.target.id === 'reportForm') closeReportForm();
+    });
+
+    let allReports = [];
+
+    document.getElementById('refreshReports').addEventListener('click', loadReports);
+    document.getElementById('reportStatusFilter').addEventListener('change', renderReportsTable);
+
+    document.addEventListener('DOMContentLoaded', loadReports);
+
+    function setListState(state) {
+      document.getElementById('reportListLoading').hidden = state !== 'loading';
+      document.getElementById('reportListEmpty').hidden = state !== 'empty';
+      document.getElementById('reportListError').hidden = state !== 'error';
+      const wrap = document.getElementById('reportTableWrap');
+      if (wrap) wrap.hidden = state !== 'none';
+      if (state === 'none') {
+        document.getElementById('reportListLoading').hidden = true;
+        document.getElementById('reportListEmpty').hidden = true;
+        document.getElementById('reportListError').hidden = true;
+      }
+    }
+
+    function statusClass(status) {
+      const s = String(status || 'pending').toLowerCase();
+      if (s.includes('cancel')) return 'cancelled';
+      if (s.includes('complete') || s.includes('resolve')) return 'completed';
+      if (s.includes('process') || s.includes('review')) return 'processing';
+      return 'pending';
+    }
+
+    function statusFilterKey(status) {
+      return String(status || 'pending').toLowerCase();
+    }
+
+    function applyStatusFilter(list) {
+      const filter = document.getElementById('reportStatusFilter')?.value || 'all';
+      if (filter === 'all') return list;
+      return list.filter((r) => statusFilterKey(r.status) === filter);
+    }
+
+    function formatReportId(id) {
+      const n = parseInt(id, 10);
+      if (!n) return '—';
+      return 'RPT-' + String(n).padStart(4, '0');
+    }
+
+    function formatTableDate(iso) {
+      if (!iso) return '—';
+      const d = new Date(iso);
+      if (Number.isNaN(d.getTime())) return '—';
+      return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+    }
+
+    function renderReportsTable() {
+      const list = document.getElementById('reportList');
+      if (!list) return;
+      list.innerHTML = '';
+
+      const filtered = applyStatusFilter(allReports);
+      if (!filtered.length) {
+        setListState(allReports.length ? 'empty' : 'empty');
+        if (allReports.length) {
+          document.getElementById('reportListEmpty').querySelector('p').textContent = 'No reports match this filter';
+        } else {
+          document.getElementById('reportListEmpty').querySelector('p').textContent = 'No reports yet';
+        }
+        return;
+      }
+
+      setListState('none');
+      const sorted = [...filtered].sort(
+        (a, b) => new Date(b.dateSubmitted) - new Date(a.dateSubmitted)
+      );
+
+      sorted.forEach((report) => list.appendChild(createReportRow(report)));
+    }
+
+    function loadReports() {
+      setListState('loading');
+      const list = document.getElementById('reportList');
+      if (list) list.innerHTML = '';
+
+      if (!ReportsApi) {
+        setListState('error');
+        return;
+      }
+
+      fetch(ReportsApi.apiUrl('all'))
+        .then((res) => {
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          return res.json();
+        })
+        .then((activeData) =>
+          fetch(ReportsApi.apiUrl('archived'))
+            .then((res) => (res.ok ? res.json() : []))
+            .then((archivedData) => {
+              const active = Array.isArray(activeData) ? activeData : [];
+              const archived = Array.isArray(archivedData) ? archivedData : [];
+              allReports = active.concat(archived);
+              if (allReports.length === 0) {
+                setListState('empty');
+                document.getElementById('reportListEmpty').querySelector('p').textContent = 'No reports yet';
+                return;
+              }
+              renderReportsTable();
+            })
+        )
+        .catch(() => {
+          setListState('error');
+        });
+    }
+
+    document.getElementById('reportList').addEventListener('click', async function (e) {
+      const target = e.target.nodeType === Node.TEXT_NODE ? e.target.parentElement : e.target;
+
+      const viewBtn = target.closest('.view');
+      if (viewBtn) {
+        const row = viewBtn.closest('.reports-table__row');
+        const id = row.dataset.id;
+        fetch(ReportsApi.apiUrl('get', id))
+          .then((res) => res.json())
+          .then((report) => openReportDetailsModal(report))
+          .catch(() => notify('error', 'Could not load report details.', 'Error'));
+    return;
+  }
+
+      const cancelBtn = target.closest('.cancel');
+  if (cancelBtn) {
+        const row = cancelBtn.closest('.reports-table__row');
+        const id = row.dataset.id;
+        const ok = window.bcConfirm
+          ? await window.bcConfirm('Cancel this report?', { title: 'Confirm cancellation' })
+          : window.confirm('Cancel this report?');
+        if (!ok) return;
+
+        fetch(ReportsApi.apiUrl('cancel', id), { method: 'PUT' })
+          .then((res) => res.text())
+          .then((result) => {
+            if (result === 'SUCCESS') {
+              notify('success', 'Report cancelled.', 'Done');
+        loadReports();
+      } else {
+              notify('error', 'Failed to cancel report.', 'Error');
+            }
+          })
+          .catch(() => notify('error', 'Could not reach the server.', 'Error'));
+      }
+    });
+
+    function createReportRow(report) {
+      const sc = statusClass(report.status);
+      const row = document.createElement('div');
+      row.className = 'reports-table__row';
+      row.dataset.id = report.reportId;
+      row.setAttribute('role', 'row');
+
+      const canCancel = sc !== 'cancelled' && sc !== 'completed';
+      const dateReported = formatTableDate(report.dateSubmitted);
+      const lastUpdate = formatTableDate(report.dateUpdated || report.dateSubmitted);
+      const location = report.location || '—';
+      const locationShort = location.length > 42 ? location.slice(0, 42) + '…' : location;
+
+      row.innerHTML = `
+        <div class="reports-table__cell reports-table__cell--id" role="cell" data-label="Report ID">${escapeHtml(formatReportId(report.reportId))}</div>
+        <div class="reports-table__cell reports-table__cell--issue" role="cell" data-label="Issue" title="${escapeHtml(report.title)}">${escapeHtml(report.title)}</div>
+        <div class="reports-table__cell reports-table__cell--location" role="cell" data-label="Location" title="${escapeHtml(location)}">${escapeHtml(locationShort)}</div>
+        <div class="reports-table__cell" role="cell" data-label="Date Reported">${dateReported}</div>
+        <div class="reports-table__cell" role="cell" data-label="Status">
+          <span class="reports-status ${sc}">${escapeHtml(report.status)}</span>
+      </div>
+        <div class="reports-table__cell" role="cell" data-label="Last Update">${lastUpdate}</div>
+        <div class="reports-table__cell reports-table__cell--actions" role="cell" data-label="Action">
+          <button type="button" class="table-action-btn view" title="View details"><i class="fas fa-eye"></i></button>
+          ${canCancel ? '<button type="button" class="table-action-btn cancel" title="Cancel report"><i class="fas fa-ban"></i></button>' : ''}
+    </div>
+  `;
+      return row;
+    }
+
+    function escapeHtml(str) {
+      return String(str || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+function submitReport() {
+      if (!ReportsApi) {
+        notify('error', 'Report service is not configured.', 'Error');
+        return;
+      }
+
+      const title = document.getElementById('reportTitle').value.trim();
+      const category = getReportCategoryValue();
+      const location = getReportLocationValue();
+      const description = document.getElementById('reportDescription').value.trim();
+      const image = document.getElementById('reportImage').files[0];
+
+      if (!title || !description) {
+        notify('warning', 'Please fill out all required fields.', 'Missing information');
+        return;
+      }
+      if (!location) {
+        notify('warning', 'Please complete all required location fields (street, barangay, city, province, region).', {
+          title: 'Missing information',
+        });
+        return;
+      }
+      if (!document.getElementById('reportCategory').value) {
+        notify('warning', 'Please select a category.', { title: 'Missing information' });
+        return;
+      }
+      if (document.getElementById('reportCategory').value === CATEGORY_OTHER && !category) {
+        notify('warning', 'Please specify the category.', { title: 'Missing information' });
+        document.getElementById('reportCategoryOther')?.focus();
+        return;
+      }
+      if (!category) {
+        notify('warning', 'Please select a category.', { title: 'Missing information' });
+    return;
+  }
+
+      const residentUserId = parseInt(localStorage.getItem('residentId') || '0', 10) || 0;
+      const formData = new FormData();
+  formData.append(
+        'data',
+        new Blob(
+          [JSON.stringify({ title, category, location, description, residentUserId })],
+          { type: 'application/json' }
+        )
+      );
+      if (image) formData.append('image', image);
+
+      fetch(ReportsApi.submitUrl(), { method: 'POST', body: formData })
+        .then((res) => res.text())
+        .then((result) => {
+          if (result === 'SUCCESS' || (result && result.indexOf('SUCCESS') !== -1)) {
+            notify(
+              'success',
+              'Your report has been submitted. Barangay staff will review it on the admin Reports page.',
+              'Report sent'
+            );
+            document.getElementById('reportsFormEl').reset();
+            syncReportCategoryOtherField();
+            initReportLocationFields();
+      closeReportForm();
+      loadReports();
+    } else {
+            notify('error', 'Error submitting report. Please try again.', 'Submission failed');
+          }
+        })
+        .catch(() => notify('error', 'Could not reach the report service.', 'Connection error'));
+    }
+
+    function closeReportDetailsModal() {
+      const modal = document.getElementById('reportDetailsModal');
+      modal.classList.remove('active');
+      modal.setAttribute('aria-hidden', 'true');
+      document.body.classList.remove('report-detail-modal-open');
+    }
+
+    document.getElementById('reportDetailsClose')?.addEventListener('click', closeReportDetailsModal);
+    document.getElementById('reportDetailsModal')?.addEventListener('click', (e) => {
+      if (e.target.id === 'reportDetailsModal') closeReportDetailsModal();
+    });
+
+    function openReportDetailsModal(report) {
+      const d = new Date(report.dateSubmitted);
+      document.getElementById('residentReportDetailTitle').textContent = report.title || 'Report details';
+      document.getElementById('rdTitle').textContent = report.title || '—';
+      document.getElementById('rdCategory').textContent = report.category || '—';
+      document.getElementById('rdLocation').textContent = report.location || '—';
+      document.getElementById('rdStatus').textContent = report.status || '—';
+      document.getElementById('rdDate').textContent = d.toLocaleDateString();
+      document.getElementById('rdTime').textContent =
+        d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      document.getElementById('rdDescription').textContent =
+        report.description || 'No additional details provided.';
+
+      const imgSection = document.getElementById('residentReportImageSection');
+      const img = document.getElementById('residentReportImage');
+      if (report.imageBase64) {
+        img.src = `data:image/jpeg;base64,${report.imageBase64}`;
+        imgSection.hidden = false;
+      } else {
+        img.removeAttribute('src');
+        imgSection.hidden = true;
+      }
+
+      const modal = document.getElementById('reportDetailsModal');
+      modal.classList.add('active');
+      modal.removeAttribute('aria-hidden');
+      document.body.classList.add('report-detail-modal-open');
+}
+</script>
+</body>
+</html>

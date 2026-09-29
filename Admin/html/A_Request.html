@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <title>Requests - BarangayConnect</title>
+  <link rel="stylesheet" href="../css/A_Request-style.css?v=20250638">
+  <link rel="stylesheet" href="../../Shared/css/bc-admin-list-page.css?v=20250638">
+  <link rel="stylesheet" href="../css/bc-admin-page-title.css?v=20250642">
+  <link rel="stylesheet" href="../../Shared/css/bc-request-uploads.css">
+  <link rel="stylesheet" href="../../Shared/css/bc-request-details-table.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <script src="../../Shared/js/bc-notify.js?v=20250659"></script>
+  <style>
+    /* Force hide all scrollbars */
+    * {
+      scrollbar-width: none !important;
+      -ms-overflow-style: none !important;
+    }
+    *::-webkit-scrollbar {
+      display: none !important;
+    }
+    
+    /* Ensure content is not clipped */
+    body {
+      overflow-x: visible !important;
+      min-width: 100% !important;
+      padding-bottom: 2rem !important;
+    }
+    
+    .user-details-container {
+      min-width: 100% !important;
+      overflow: visible !important;
+    }
+    
+    .page-header {
+      min-width: 100% !important;
+      overflow: visible !important;
+    }
+  </style>
+  <script src="https://kit.fontawesome.com/a2e0f1f0c1.js" crossorigin="anonymous"></script>
+</head>
+
+<body>
+
+<!-- Reject Reason Modal -->
+<div id="rejectReasonModal" class="request-modal" aria-hidden="true">
+  <div class="request-modal-content" style="max-width: 500px;">
+    <button class="request-modal-close" onclick="closeRejectModal()">&times;</button>
+
+    <div class="request-modal-header">
+      <h2>Reject Request</h2>
+      <p>Please provide a reason for rejection</p>
+    </div>
+
+    <div class="request-modal-body">
+      <textarea
+        id="rejectReasonInput"
+        placeholder="Enter rejection reason..."
+        style="width:100%;min-height:120px;padding:10px;border-radius:8px;"
+      ></textarea>
+
+      <div style="margin-top:16px;text-align:right;">
+        <button onclick="closeRejectModal()">Cancel</button>
+        <button class="danger-btn" onclick="confirmReject()">Reject</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+  <div class="user-details-container">
+    <!-- Page Header -->
+    <div class="page-header">
+      <div class="header-content">
+        <button class="back-btn" onclick="goBack()" title="Back to Request Management">
+          <i class="fas fa-arrow-left"></i>
+        </button>
+        <div class="header-text">
+          <h1 class="page-title">
+            <i class="fas fa-file-alt"></i>
+            Requests
+          </h1>
+          <p class="page-subtitle">Track and review all submitted document requests and their statuses</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Search and Stats Section -->
+    <div class="search-stats-section">
+      <div class="stats-section">
+        <div class="stat-card clickable-stat" onclick="bcNavigatePage('A_Request.html')">
+          <div class="stat-icon">
+            <i class="fas fa-file-alt"></i>
+          </div>
+          <div class="stat-content">
+            <h3>Requests</h3>
+            <div class="stat-number" id="totalUsersCount">0</div>
+          </div>
+        </div>
+        
+        <div class="stat-card clickable-stat" onclick="bcNavigatePage('A_InPrgrs-Request.html')">
+          <div class="stat-icon">
+            <i class="fas fa-hourglass-half"></i>
+          </div>
+          <div class="stat-content">
+            <h3>In Progress</h3>
+            <div class="stat-number" id="activeUsersCount">0</div>
+          </div>
+        </div>
+        
+        <div class="stat-card clickable-stat" onclick="bcNavigatePage('A_Cmptd-Request.html')">
+          <div class="stat-icon">
+            <i class="fas fa-check-circle"></i>
+          </div>
+          <div class="stat-content">
+            <h3>Completed</h3>
+            <div class="stat-number" id="pendingCount">0</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="admin-list-toolbar">
+        <div class="search-group">
+          <input type="text" placeholder="Search requests..." class="search-input" aria-label="Search requests">
+          <button type="button" class="search-btn" aria-label="Search"><i class="fas fa-search"></i></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Users Table -->
+    <div class="users-table-container">
+      <div class="table-header">
+        <div class="table-cell">REQUEST ID</div>
+        <div class="table-cell">RESIDENT NAME</div>
+        <div class="table-cell">REQUEST TYPE</div>
+        <div class="table-cell">DATE SUBMITTED</div>
+        <div class="table-cell">ACTIONS</div>
+      </div>
+      
+      <div class="table-body">
+        <!-- Rows are rendered dynamically from storage -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Request Details Modal -->
+  <div id="requestDetailsModal" class="request-modal" aria-hidden="true">
+    <div class="request-modal-content" role="dialog" aria-modal="true" aria-labelledby="modalRequestTitle">
+      <button class="request-modal-close" id="requestModalClose" aria-label="Close request details">&times;</button>
+      
+      <div class="request-modal-header">
+        <div>
+          <p class="modal-eyebrow">Review Request</p>
+          <h2 id="modalRequestTitle">Review Request</h2>
+        </div>
+      </div>
+
+      <div class="request-modal-body">
+        <!-- Request Information Section -->
+        <div class="info-section-card">
+          <div class="section-title-wrapper">
+            <h3 class="section-title">Request Information</h3>
+          </div>
+          <table class="bc-details-table">
+            <tbody>
+              <tr><th scope="row">Request ID</th><td id="modalRequestId">—</td></tr>
+              <tr><th scope="row">Request Type</th><td id="modalDocumentType">—</td></tr>
+              <tr><th scope="row">Date Submitted</th><td id="modalDateSubmitted">—</td></tr>
+              <tr><th scope="row">Status</th><td id="modalStatus">—</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="info-section-card">
+          <div id="dynamicRequestDetails">
+            <!-- Filled from MySQL payload_json -->
+          </div>
+        </div>
+
+        <!-- Contact Information Section -->
+        <div class="info-section-card">
+          <div class="section-title-wrapper">
+            <h3 class="section-title">Contact Information</h3>
+          </div>
+          <table class="bc-details-table">
+            <tbody>
+              <tr><th scope="row">Contact Number</th><td id="modalResidentPhone">—</td></tr>
+              <tr><th scope="row">Email Address</th><td id="modalResidentEmail">—</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <section class="requirements-section info-section-card">
+          <div class="section-title-wrapper">
+            <h3 class="section-title">Uploaded Requirements</h3>
+          </div>
+          <div id="requirementList" class="requirement-list">
+            <!-- Filled dynamically -->
+          </div>
+        </section>
+
+        <section class="notes-section">
+          <p class="section-eyebrow">Additional Notes from Resident</p>
+          <div class="notes-box" id="residentNotes">No additional notes provided.</div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+ <script src="../../Shared/js/bc-nav-persist.js?v=20250638"></script>
+ <script src="../../Shared/js/bc-nav-iframe-child.js"></script>
+ <script src="../../Shared/js/bc-requests-api.js?v=20250656"></script>
+ <script src="../../Shared/js/bc-request-details.js?v=20250656"></script>
+ <script>
+const API_BASE = "http://localhost:8080/api/requests";
+let rejectTargetRequestId = null;
+
+function requestsApiUrl(action, id) {
+  if (window.BarangayConnectRequestsApi) {
+    return window.BarangayConnectRequestsApi.apiUrl(action, id);
+  }
+  const u = new URL('../../FrontPage/php/requests_api.php', window.location.href);
+  u.searchParams.set('action', action || 'list');
+  if (id != null && id !== '') {
+    u.searchParams.set('id', String(id));
+  }
+  return u.href;
+}
+
+async function loadAllRequests() {
+  if (window.BarangayConnectRequestsApi) {
+    try {
+      return await window.BarangayConnectRequestsApi.fetchAllRequests();
+    } catch (e) {
+      console.warn('PHP requests API:', e);
+    }
+  }
+  const response = await fetch(requestsApiUrl('list'));
+  if (!response.ok) throw new Error('Fetch failed');
+  return response.json();
+}
+/* ================================
+   ✅ ADD THIS HELPER FUNCTION HERE
+   (RIGHT AFTER API_BASE)
+================================ */
+async function updateRequestStatus(requestId, newStatus, remarks = null) {
+  try {
+    const url = requestsApiUrl('status', requestId);
+    const res = await fetch(url, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: newStatus, remarks: remarks }),
+    });
+    if (!res.ok) throw new Error('Status update failed');
+    const json = await res.json().catch(() => ({}));
+    if (json.success === false) throw new Error(json.error || 'Update failed');
+    alert(`Request marked as ${newStatus.replace('_', ' ')}`);
+    fetchRequests();
+  } catch (err) {
+    console.error(err);
+    alert('Failed to update request status.');
+  }
+}
+
+async function askConfirmSafe(message, opts) {
+  try {
+    if (typeof window.bcConfirm === 'function') {
+      return await window.bcConfirm(message, opts || {});
+    }
+  } catch (e) {
+    console.warn('bcConfirm failed, falling back to native confirm:', e);
+  }
+  return window.confirm(message);
+}
+
+function goBack() {
+  window.bcNavigatePage('A_Request-Management.html');
+}
+
+/* ================================
+   FETCH REQUESTS
+================================ */
+async function fetchRequests() {
+  try {
+    const data = await loadAllRequests();
+    renderRequests(data.filter((r) => r.status === 'pending'));
+    updateStats(data);
+  } catch (err) {
+    console.error('Failed to fetch requests:', err);
+    const tbody = document.querySelector('.table-body');
+    if (tbody) {
+      tbody.innerHTML =
+        '<p class="muted">Could not load requests. Use http://localhost/... with Apache and MySQL running.</p>';
+    }
+  }
+}
+
+/* ================================
+   RENDER TABLE
+================================ */
+function escapeHtml(str) {
+  return String(str || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function renderRequests(requests) {
+  const tbody = document.querySelector('.table-body');
+  tbody.innerHTML = '';
+
+  if (!requests.length) {
+    tbody.innerHTML = '<p class="muted">No pending requests.</p>';
+    return;
+  }
+
+  requests.forEach(req => {
+    const fullName = [req.firstName, req.middleName, req.lastName]
+      .filter(Boolean)
+      .join(' ') || '—';
+
+    const submittedDate = req.submissionDate
+      ? new Date(req.submissionDate).toLocaleDateString()
+      : '—';
+
+    tbody.insertAdjacentHTML('beforeend', `
+      <div class="table-row"
+        data-id="${req.id}"
+        data-request-id="${req.requestId}">
+        <div class="table-cell" data-label="Request ID">${escapeHtml(req.requestId)}</div>
+        <div class="table-cell" data-label="Resident">${escapeHtml(fullName)}</div>
+        <div class="table-cell" data-label="Type">${escapeHtml(req.documentType)}</div>
+        <div class="table-cell" data-label="Date">${escapeHtml(submittedDate)}</div>
+        <div class="table-cell actions" data-label="Actions">
+          <button type="button" class="view-btn" title="View request"><i class="fas fa-eye"></i></button>
+          <button type="button" class="accept-btn" title="Accept request"><i class="fas fa-check"></i></button>
+          <button type="button" class="reject-btn" title="Reject request"><i class="fas fa-times"></i></button>
+        </div>
+      </div>
+    `);
+  });
+
+  attachActionHandlers();
+}
+
+/* ================================
+   ACTION HANDLERS
+================================ */
+function attachActionHandlers() {
+  document.querySelectorAll('.view-btn').forEach(btn => {
+    btn.onclick = () => openRequestModal(btn.closest('.table-row'));
+  });
+
+  document.querySelectorAll('.accept-btn').forEach(btn => {
+    btn.onclick = async () => {
+      const row = btn.closest('.table-row');
+      const id = row.dataset.id;
+      const ok = await askConfirmSafe(
+        "Accept this request and move it to In Progress?",
+        { title: "Confirm action" }
+      );
+      if (!ok) return;
+      updateRequestStatus(id, "in_progress");
+    };
+  });
+
+  document.querySelectorAll('.reject-btn').forEach(btn => {
+  btn.onclick = () => {
+    const row = btn.closest('.table-row');
+    rejectTargetRequestId = row.dataset.id;
+    openRejectModal();
+  }
+  });
+}
+
+
+function openRejectModal() {
+  document.getElementById('rejectReasonInput').value = '';
+  const modal = document.getElementById('rejectReasonModal');
+  modal.classList.add('show');
+  modal.removeAttribute('aria-hidden');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeRejectModal() {
+  const modal = document.getElementById('rejectReasonModal');
+  modal.classList.remove('show');
+  modal.setAttribute('aria-hidden', 'true');
+  document.body.style.overflow = '';
+  rejectTargetRequestId = null;
+}
+
+async function confirmReject() {
+  const reason = document.getElementById('rejectReasonInput').value.trim();
+
+  if (!reason) {
+    alert("Rejection reason is required.");
+    return;
+  }
+
+  await updateRequestStatus(
+    rejectTargetRequestId,
+    "rejected",
+    reason
+  );
+
+  closeRejectModal();
+}
+
+
+/* ================================
+   ✅ FIXED: MODAL WITH IMAGES + DYNAMIC DETAILS
+   WHAT CHANGED:
+   1) Added "Request Details" rendering into #dynamicRequestDetails
+   2) Kept existing images logic (Option A) unchanged
+================================ */
+function openRequestModal(row) {
+  const requestId = row.dataset.id;
+  const RD = window.BarangayConnectRequestDetails;
+
+  fetch(requestsApiUrl('get', requestId))
+    .then((res) => res.json())
+    .then((req) => {
+      if (RD) {
+        RD.populateRequestModal(req);
+        RD.renderRequestFormDetails(req, document.getElementById('dynamicRequestDetails'));
+        RD.loadRequestFiles(requestId, 'requirementList', requestsApiUrl('files', requestId));
+      }
+
+      const modal = document.getElementById('requestDetailsModal');
+      modal.classList.add('show');
+      modal.removeAttribute('aria-hidden');
+      document.body.style.overflow = 'hidden';
+    })
+    .catch((err) => {
+      console.error(err);
+      alert('Could not load request details.');
+    });
+}
+
+/* ================================
+   MODAL CLOSE (UNCHANGED)
+================================ */
+document.getElementById('requestModalClose').onclick = () => {
+  const modal = document.getElementById('requestDetailsModal');
+  modal.classList.remove('show');
+  modal.setAttribute('aria-hidden', 'true');
+  document.body.style.overflow = '';
+};
+
+/* ================================
+   STATS (UNCHANGED)
+================================ */
+function updateStats(data) {
+  const pending = data.filter(r => r.status === 'pending');
+  const inProgress = data.filter(r => r.status === 'in_progress');
+  const completed = data.filter(r => r.status === 'completed');
+
+  document.getElementById('totalUsersCount').textContent = pending.length;
+  document.getElementById('activeUsersCount').textContent = inProgress.length;
+  document.getElementById('pendingCount').textContent = completed.length;
+}
+
+
+/* ================================
+   INIT (UNCHANGED)
+================================ */
+document.addEventListener('DOMContentLoaded', fetchRequests);
+</script>

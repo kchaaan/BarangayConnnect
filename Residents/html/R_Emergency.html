@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Emergency - BarangayConnect</title>
+  <link rel="stylesheet" href="../css/R_emergency-style.css?v=20260930-tel-links">
+  <link rel="stylesheet" href="../css/bc-resident-page-title.css?v=20250620">
+  <script src="https://kit.fontawesome.com/a2e0f1f0c1.js" crossorigin="anonymous"></script>
+  <script src="../../Shared/js/bc-emergency-api.js?v=20260930-tel-links"></script>
+  <style>
+    * {
+      scrollbar-width: none !important;
+      -ms-overflow-style: none !important;
+    }
+    *::-webkit-scrollbar {
+      display: none !important;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="emergency-container">
+    <div class="emergency-header">
+      <h1 class="emergency-title">Emergency</h1>
+    </div>
+
+    <div class="hotlines-section">
+      <h2 class="section-title">Emergency Hotlines</h2>
+      <div class="hotlines-grid" id="hotlinesGrid">
+        <p class="emergency-loading">Loading emergency hotlines…</p>
+      </div>
+    </div>
+
+    <div class="procedures-section">
+      <div class="section-title-wrapper">
+        <h2 class="section-title">Emergency Procedures</h2>
+      </div>
+      <div class="procedures-grid" id="proceduresGrid">
+        <p class="emergency-loading">Loading emergency procedures…</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const EmApi = window.BarangayConnectEmergencyApi;
+
+    function escapeHtml(text) {
+      return String(text == null ? '' : text)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function normalizeSteps(raw) {
+      if (Array.isArray(raw)) return raw;
+      if (typeof raw === 'string') {
+        try {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed)) return parsed;
+        } catch (e) { /* ignore */ }
+      }
+      return [];
+    }
+
+    async function loadEmergencyContacts() {
+      const grid = document.getElementById('hotlinesGrid');
+      if (!grid || !EmApi) return;
+
+      try {
+        const contacts = await EmApi.fetchContacts();
+        if (!contacts.length) {
+          grid.innerHTML = '<p class="emergency-loading">No emergency hotlines available.</p>';
+          return;
+        }
+
+        grid.innerHTML = contacts.map(function (c) {
+          const criticalClass = c.isCritical ? ' critical' : '';
+          return (
+            '<div class="hotline-card' + criticalClass + '">' +
+              '<div class="hotline-icon"><i class="fas ' + escapeHtml(c.icon || 'fa-phone') + '"></i></div>' +
+              '<div class="hotline-content">' +
+                '<h3 class="hotline-name">' + escapeHtml(c.serviceName) + '</h3>' +
+                '<div class="hotline-number">' + EmApi.renderPhoneLinks(c.contactNumber, c.serviceName) + '</div>' +
+                '<p class="hotline-description">' + escapeHtml(c.description || '') + '</p>' +
+                '<div class="hotline-actions">' + EmApi.renderCallButtons(c.contactNumber, c.serviceName) + '</div>' +
+              '</div>' +
+            '</div>'
+          );
+        }).join('');
+      } catch (error) {
+        console.error('Error loading contacts:', error);
+        grid.innerHTML = '<p class="emergency-loading">Could not load emergency hotlines.</p>';
+      }
+    }
+
+    async function loadEmergencyProcedures() {
+      const grid = document.getElementById('proceduresGrid');
+      if (!grid || !EmApi) return;
+
+      try {
+        const procedures = await EmApi.fetchProcedures();
+        if (!procedures.length) {
+          grid.innerHTML = '<p class="emergency-loading">No emergency procedures available.</p>';
+          return;
+        }
+
+        grid.innerHTML = procedures.map(function (p) {
+          const steps = normalizeSteps(p.steps);
+          return (
+            '<div class="procedure-card">' +
+              '<div class="procedure-icon"><i class="fas ' + escapeHtml(p.icon || 'fa-exclamation-circle') + '"></i></div>' +
+              '<h3 class="procedure-title">' + escapeHtml(p.title) + '</h3>' +
+              '<ol class="procedure-steps">' +
+                steps.map(function (s) { return '<li>' + escapeHtml(s) + '</li>'; }).join('') +
+              '</ol>' +
+            '</div>'
+          );
+        }).join('');
+      } catch (error) {
+        console.error('Error loading procedures:', error);
+        grid.innerHTML = '<p class="emergency-loading">Could not load emergency procedures.</p>';
+      }
+    }
+
+    function refreshEmergencyData() {
+      loadEmergencyContacts();
+      loadEmergencyProcedures();
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+      refreshEmergencyData();
+      setInterval(refreshEmergencyData, 15000);
+    });
+  </script>
+</body>
+</html>
