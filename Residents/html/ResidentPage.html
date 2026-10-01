@@ -7,14 +7,31 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>BarangayConnect - Resident Portal</title>
-  <link rel="stylesheet" href="../css/resident-style.css?v=20250816" />
+  <link rel="stylesheet" href="../css/resident-style.css?v=20261001-profile-responsive" />
   <link rel="stylesheet" href="../../Shared/css/bc-portal-mobile-nav.css?v=20250818" />
   <link rel="stylesheet" href="../../Shared/css/bc-brand-logo.css?v=20260930" />
   <link rel="stylesheet" href="../../Shared/css/bc-section-divider.css?v=20250635" />
-  <link rel="stylesheet" href="../../Shared/css/bc-chatbot-widget.css?v=20250721" />
   <script src="https://kit.fontawesome.com/a2e0f1f0c1.js" crossorigin="anonymous"></script>
   <script src="../../Shared/js/bc-notify.js?v=20250659"></script>
   <style>
+    body.resident-session-checking > :not(#residentSessionLoading) { visibility: hidden !important; }
+    #residentSessionLoading { position: fixed; inset: 0; z-index: 2147483000; display: grid; place-items: center; padding: 1rem; background: #f3f7f2; color: #244a31; font: 600 0.95rem/1.5 system-ui, sans-serif; }
+    #residentSessionLoading[hidden] { display: none !important; }
+    .resident-session-loading-card { display: flex; align-items: center; gap: .8rem; padding: 1rem 1.25rem; border: 1px solid #d5e3d2; border-radius: 12px; background: #fff; box-shadow: 0 8px 28px #173b2418; }
+    .resident-session-loading-spinner { width: 1.15rem; height: 1.15rem; border: 3px solid #d8e5d5; border-top-color: #39744a; border-radius: 50%; animation: residentSessionSpin .75s linear infinite; }
+    @keyframes residentSessionSpin { to { transform: rotate(360deg); } }
+    @media (prefers-reduced-motion: reduce) { .resident-session-loading-spinner { animation-duration: 2.5s; } }
+    .profile-qr-section { margin: 1.25rem 0; padding: 1.25rem; border: 1px solid #d5e3d2; border-radius: 14px; background: #f7faf6; }
+    .profile-qr-section h3 { margin: 0 0 .45rem; color: #365b3d; }
+    .profile-qr-section p { margin: .4rem 0 .9rem; color: #536653; font-size: .88rem; line-height: 1.5; }
+    .profile-qr-actions { display: flex; flex-wrap: wrap; gap: .6rem; margin-top: .9rem; }
+    .profile-qr-actions button { border: 1px solid #cbdcc7; border-radius: 8px; padding: .65rem .9rem; background: #fff; color: #365b3d; font: inherit; font-weight: 600; cursor: pointer; }
+    .profile-qr-actions button:hover { background: #eaf2e7; }
+    .profile-qr-code { display: grid; place-items: center; width: 100%; min-height: 0; }
+    .profile-qr-code:not(:empty) { width: min(320px, 100%); aspect-ratio: 1; min-height: 0; margin: .75rem auto; padding: 10px; border: 1px solid #dce7d8; border-radius: 10px; background: #fff; }
+    .profile-qr-code img, .profile-qr-code canvas { display: block; width: 100%; max-width: 300px; height: auto; image-rendering: pixelated; }
+    .profile-qr-status { margin: .35rem 0 !important; color: #365b3d !important; text-align: center; font-size: .82rem !important; }
+    .profile-qr-warning { color: #7a4b0c !important; }
     /* Global scrollbar hiding for all elements */
     * {
       scrollbar-width: none !important; /* Firefox */
@@ -36,7 +53,10 @@
     }
   </style>
 </head>
-<body class="admin-body">
+<body class="admin-body resident-session-checking">
+  <div id="residentSessionLoading" role="status" aria-live="polite">
+    <div class="resident-session-loading-card"><span class="resident-session-loading-spinner" aria-hidden="true"></span><span>Checking your secure session…</span></div>
+  </div>
 
   <!-- Admin Header -->
   <header class="admin-header">
@@ -64,7 +84,7 @@
             <i class="fas fa-user-edit"></i>
             <span>Update Profile</span>
           </a>
-          <a href="#" class="settings-item" onclick="logout()">
+          <a href="#" class="settings-item" onclick="event.preventDefault(); logout()">
             <i class="fas fa-sign-out-alt"></i>
             <span>Log out</span>
           </a>
@@ -101,26 +121,26 @@
         <nav class="sidebar-nav">
           <ul class="nav-list">
             <li class="nav-item active">
-              <a href="#" class="nav-link" data-section="dashboard">
+        <a href="#" class="nav-link" data-section="dashboard" title="Home">
                 <i class="fas fa-home"></i>
                 <span>Home</span>
               </a>
             </li>
             <li class="nav-item">
-              <a href="#" class="nav-link" data-section="reports">
+              <a href="#" class="nav-link" data-section="reports" title="Reports">
                 <i class="fas fa-file-invoice"></i>
                 <span>Reports</span>
               </a>
             </li>
             <li class="nav-item">
-              <a href="#" class="nav-link" data-section="requests">
+              <a href="#" class="nav-link" data-section="requests" title="Requests">
                 <i class="fas fa-file-alt"></i>
                 <span>Requests</span>
               </a>
             </li>
 
             <li class="nav-group is-expanded" data-nav-group="borrow">
-              <button type="button" class="nav-group-toggle" aria-expanded="true" aria-controls="nav-submenu-resident-borrow">
+              <button type="button" class="nav-group-toggle" title="Borrow Items" aria-expanded="true" aria-controls="nav-submenu-resident-borrow">
                 <i class="fas fa-box-open"></i>
                 <span>Borrow Items</span>
                 <i class="fas fa-chevron-down nav-group-chevron" aria-hidden="true"></i>
@@ -136,19 +156,19 @@
             </li>
 
             <li class="nav-item">
-              <a href="#" class="nav-link" data-section="transparency">
+              <a href="#" class="nav-link" data-section="transparency" title="Transparency">
                 <i class="fas fa-balance-scale"></i>
                 <span>Transparency</span>
               </a>
             </li>
             <li class="nav-item">
-              <a href="#" class="nav-link" data-section="announcements">
+              <a href="#" class="nav-link" data-section="announcements" title="Announcements">
                 <i class="fas fa-bullhorn"></i>
                 <span>Announcements</span>
               </a>
             </li>
             <li class="nav-item">
-              <a href="#" class="nav-link" data-section="emergency">
+              <a href="#" class="nav-link" data-section="emergency" title="Emergency">
                 <i class="fas fa-phone"></i>
                 <span>Emergency</span>
               </a>
@@ -165,7 +185,7 @@
       <div class="main-content">
         <!-- Content sections will be loaded dynamically -->
         <div id="dashboard-section" class="content-section active">
-          <iframe src="R_Home-Dashboard.html?v=20250710" data-bc-default-src="R_Home-Dashboard.html" frameborder="0" title="Home"></iframe>
+          <iframe src="R_Home-Dashboard.html?v=20261001-dashboard-refresh" data-bc-default-src="R_Home-Dashboard.html" frameborder="0" title="Home"></iframe>
         </div>
 
         <div id="announcements-section" class="content-section">
@@ -189,7 +209,7 @@
         </div>
 
         <div id="transparency-section" class="content-section">
-          <iframe src="R_Transparency.html?v=20250663" data-bc-default-src="R_Transparency.html" frameborder="0" title="Transparency"></iframe>
+          <iframe src="R_Transparency.html?v=20261001-pdf-report" data-bc-default-src="R_Transparency.html" frameborder="0" title="Transparency"></iframe>
         </div>
 
 
@@ -341,7 +361,7 @@
             </div>
             <div class="form-group">
               <label><i class="fas fa-phone"></i> Emergency Contact Number</label>
-              <input type="tel" id="emergencyNumber" name="emergencyNumber" placeholder="Enter emergency contact number" required>
+              <input type="tel" id="emergencyNumber" name="emergencyNumber" placeholder="09XXXXXXXXX" inputmode="numeric" autocomplete="tel" maxlength="11" minlength="11" pattern="09[0-9]{9}" title="Enter an 11-digit Philippine mobile number beginning with 09." required>
             </div>
           </div>
 
@@ -359,6 +379,22 @@
           </div>
         </div>
 
+        <section class="profile-qr-section" aria-labelledby="residentQrHeading">
+          <h3 id="residentQrHeading"><i class="fas fa-qrcode" aria-hidden="true"></i> Resident Information QR Code</h3>
+          <p class="profile-qr-warning">Scanning opens a sign-in-protected, printable resident record with the barangay logo and scan time. Share the code only with authorized barangay staff.</p>
+          <p>To open it on a phone, BarangayConnect must be hosted at an address the phone can reach. Localhost works only on this computer.</p>
+          <button type="button" class="save-btn" id="residentQrGenerate"><i class="fas fa-qrcode" aria-hidden="true"></i> Generate QR Code</button>
+          <div id="residentQrResult" hidden>
+            <div id="residentQrCode" class="profile-qr-code" role="img" aria-label="Resident information QR code"></div>
+            <p id="residentQrStatus" class="profile-qr-status" role="status" aria-live="polite" hidden></p>
+            <p>After sign-in, the QR opens the resident details in a print-ready page.</p>
+            <div class="profile-qr-actions">
+              <button type="button" id="residentQrDownload"><i class="fas fa-download" aria-hidden="true"></i> Download QR</button>
+              <button type="button" id="residentQrPrint"><i class="fas fa-print" aria-hidden="true"></i> Print / Save Resident PDF</button>
+            </div>
+          </div>
+        </section>
+
         <!-- Form Actions -->
         <div class="form-actions">
           <button type="button" class="cancel-btn" onclick="closeUpdateProfile()">Cancel</button>
@@ -370,22 +406,33 @@
     </div>
   </div>
 
- <script src="../../Shared/js/bc-session.js"></script>
+  <script src="../../Shared/js/bc-session.js?v=20261001-logout-notice"></script>
   <script src="../../Shared/js/bc-nav-persist.js?v=20260930"></script>
  <script src="../../Shared/js/resident-store.js"></script>
- <script src="../../Shared/js/bc-resident-profile-api.js?v=20250720"></script>
+ <script src="../../Shared/js/bc-resident-profile-api.js?v=20261001-supabase-profile"></script>
+ <script src="../../Shared/js/vendor/qrcode.min.js?v=20261001-local5"></script>
+ <script src="../../Shared/js/bc-resident-qr.js?v=20261001-qrfix7"></script>
  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" crossorigin="anonymous"></script>
- <script src="../../Shared/js/bc-admin-sidebar-gsap.js?v=20250817"></script>
+ <script src="../../Shared/js/bc-admin-sidebar-gsap.js?v=20261001-smooth-nav"></script>
  <script>
 
     /* Role access is verified against the PHP Supabase session before portal initialization. */
     (async function verifySupabaseResidentSession() {
       const S=window.BarangayConnectSession;
       const front=S?S.frontPageUrl():'../../FrontPage/html/Front.html';
-      document.documentElement.style.visibility='hidden';
+      let session=null;
       try {
-        const response=await fetch('../../FrontPage/php/supabase_session.php',{credentials:'same-origin',cache:'no-store'});
-        const session=response.ok?await response.json():null;
+        for (const delay of [0,180,420]) {
+          if(delay) await new Promise(resolve=>setTimeout(resolve,delay));
+          const controller=new AbortController();
+          const timeout=setTimeout(()=>controller.abort(),2500);
+          try {
+            const response=await fetch(`../../FrontPage/php/supabase_session.php?_=${Date.now()}`,{credentials:'same-origin',cache:'no-store',signal:controller.signal});
+            session=response.ok?await response.json():null;
+            if(session?.authenticated && session.role==='resident') break;
+          } catch(e) { /* retry a short-lived connection failure or timed-out request */ }
+          finally { clearTimeout(timeout); }
+        }
         if(!session||!session.authenticated||session.role!=='resident') throw new Error('Resident session required');
         const profile=session.resident||{};
         const user={id:session.id,residentId:session.residentId,firstname:profile.first_name||'Resident',firstName:profile.first_name||'Resident',lastName:profile.last_name||'',status:'ACTIVE'};
@@ -397,11 +444,17 @@
         localStorage.setItem('residentLastname',user.lastName);
         const greeting=document.getElementById('user-greeting'); if(greeting) greeting.textContent=`Hello, ${user.firstname}!`;
         const idline=document.getElementById('user-id-line'); if(idline) idline.textContent=`ID: ${user.residentId||'—'}`;
-        document.documentElement.style.visibility='visible';
+        document.body.classList.remove('resident-session-checking');
+        document.getElementById('residentSessionLoading')?.remove();
       } catch(e) {
         if(S) S.clearResidentSession();
         ['residentId','residentCode','residentPortal','residentFirstname','residentLastname'].forEach(k=>localStorage.removeItem(k));
-        window.location.replace(front);
+        const panel=document.createElement('main');
+        panel.setAttribute('role','alert');
+        panel.style.cssText='min-height:100vh;display:grid;place-content:center;padding:24px;text-align:center;background:#f3f7f2;color:#243b2c;font:16px/1.5 system-ui,sans-serif';
+        panel.innerHTML='<section style="max-width:440px;padding:32px;background:#fff;border:1px solid #d7e3d4;border-radius:16px;box-shadow:0 12px 36px #173b241c"><h1 style="margin:0 0 12px;font-size:24px">Session could not be verified</h1><p style="margin:0 0 22px">Your sign-in may have expired or the secure session could not be reached. Please sign in again to continue.</p><a style="display:inline-block;padding:11px 20px;border-radius:9px;background:#5f8058;color:#fff;text-decoration:none;font-weight:700" href="'+front+'">Return to sign in</a></section>';
+        document.body.replaceChildren(panel);
+        document.body.classList.remove('resident-session-checking');
       }
     })();
 
@@ -442,18 +495,25 @@
       if (!settingsDropdown.contains(event.target)) settingsMenu.classList.remove('show');
     });
 
-    function logout() {
-      fetch('../../FrontPage/php/supabase_logout.php',{method:'POST',credentials:'same-origin'}).catch(function(){});
-      if (window.BarangayConnectSession) {
-        window.BarangayConnectSession.clearResidentSession();
-        window.location.replace(window.BarangayConnectSession.frontPageUrl());
-      } else {
-        localStorage.removeItem("residentId");
-        localStorage.removeItem("residentCode");
-        localStorage.removeItem("residentPortal");
-        localStorage.removeItem("residentFirstname");
-        localStorage.removeItem("residentLastname");
-        window.location.href = '../../FrontPage/html/Front.html';
+    async function logout() {
+      try {
+        const response = await fetch('../../FrontPage/php/supabase_logout.php', { method: 'POST', credentials: 'same-origin', cache: 'no-store' });
+        const result = await response.json();
+        if (!response.ok || !result.success) throw new Error('Server logout failed');
+        if (window.BarangayConnectSession) {
+          window.BarangayConnectSession.clearAdminSession();
+          window.BarangayConnectSession.clearResidentSession();
+          window.location.replace(window.BarangayConnectSession.frontPageUrl());
+        } else {
+          localStorage.removeItem("residentId");
+          localStorage.removeItem("residentCode");
+          localStorage.removeItem("residentPortal");
+          localStorage.removeItem("residentFirstname");
+          localStorage.removeItem("residentLastname");
+          window.location.replace('../../FrontPage/html/Front.html');
+        }
+      } catch (error) {
+        window.alert('Logout could not finish. Please check your connection and try again.');
       }
     }
 
@@ -465,6 +525,12 @@
 
     function normalizeSelectValue(value) {
       return String(value || '').trim().toLowerCase();
+    }
+
+    function normalizePhMobile(value) {
+      const digits = String(value || '').replace(/\D/g, '');
+      const international = digits.match(/^63(9\d{9})$/);
+      return international ? `0${international[1]}` : digits.slice(0, 11);
     }
 
     function setSelectValue(id, value) {
@@ -504,9 +570,16 @@
       document.getElementById('street').value = u.street || u.houseStreet || '';
       document.getElementById('postalCode').value = u.postalCode || '';
       document.getElementById('emergencyName').value = u.emergencyName || '';
-      document.getElementById('emergencyNumber').value = u.emergencyNumber || '';
+      document.getElementById('emergencyNumber').value = normalizePhMobile(u.emergencyNumber || '');
       setSelectValue('emergencyRelationship', u.emergencyRelationship || '');
     }
+
+    const emergencyNumberInput = document.getElementById('emergencyNumber');
+    emergencyNumberInput.addEventListener('input', function () {
+      const normalized = normalizePhMobile(this.value);
+      if (this.value !== normalized) this.value = normalized;
+      this.setCustomValidity(/^09\d{9}$/.test(normalized) ? '' : 'Enter an 11-digit Philippine mobile number beginning with 09.');
+    });
 
     async function openUpdateProfile() {
       document.getElementById('settingsMenu').classList.remove('show');
@@ -567,6 +640,15 @@
 
     document.getElementById('updateProfileForm').addEventListener('submit', async function(e) {
         e.preventDefault();
+
+        const emergencyPhone = document.getElementById('emergencyNumber');
+        emergencyPhone.value = normalizePhMobile(emergencyPhone.value);
+        if (!/^09\d{9}$/.test(emergencyPhone.value)) {
+            emergencyPhone.setCustomValidity('Enter an 11-digit Philippine mobile number beginning with 09.');
+            emergencyPhone.reportValidity();
+            return;
+        }
+        emergencyPhone.setCustomValidity('');
 
         const requiredFields = ['firstName', 'lastName', 'email', 'mobile', 'dateOfBirth', 'gender', 'placeOfBirth', 'civilStatus', 'citizenship', 'religion', 'street', 'postalCode', 'emergencyName', 'emergencyNumber', 'emergencyRelationship'];
         let isValid = true;
@@ -761,16 +843,4 @@
     })();
 
 </script>
-  <script src="../../Shared/js/bc-chatbot-api.js?v=20250714"></script>
-  <script src="../../Shared/js/bc-chatbot-widget.js?v=20250718"></script>
-  <script>
-    window.addEventListener('load', function () {
-      if (window.BarangayConnectChatbotWidget) {
-        window.BarangayConnectChatbotWidget.init({
-          userRole: 'resident',
-          title: 'Barangay Assistant',
-        });
-      }
-    });
-  </script>
   <script src="../../Shared/js/bc-admin-header-weather.js?v=20250671"></script>

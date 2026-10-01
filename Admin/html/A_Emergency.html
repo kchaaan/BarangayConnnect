@@ -15,7 +15,7 @@
 
   <script src="https://kit.fontawesome.com/a2e0f1f0c1.js" crossorigin="anonymous"></script>
   <script src="../../Shared/js/bc-notify.js?v=20250659"></script>
-  <script src="../../Shared/js/bc-emergency-api.js?v=20250711"></script>
+  <script src="../../Shared/js/bc-emergency-api.js?v=20261001-active-contact-filter"></script>
 </head>
 
 <body>
@@ -171,8 +171,12 @@ function notify(type, message, title) {
 function getIconClass(name) {
   const s = String(name || '').toLowerCase();
   if (s.includes('medical') || s.includes('ambulance')) return 'fa-ambulance';
+  if (s.includes('health center')) return 'fa-first-aid';
+  if (s.includes('mobile')) return 'fa-mobile-alt';
   if (s.includes('fire')) return 'fa-fire';
   if (s.includes('police')) return 'fa-shield-alt';
+  if (s.includes('maynilad')) return 'fa-tint';
+  if (s.includes('meralco')) return 'fa-bolt';
   if (s.includes('barangay')) return 'fa-building';
   if (s.includes('red cross') || s.includes('redcross')) return 'fa-heart';
   if (s.includes('public works')) return 'fa-tools';
@@ -222,7 +226,7 @@ let confirmCallback = null;
 
 async function getEmergencyContacts() {
   if (!EmApi) return [];
-  return EmApi.fetchContacts();
+  return EmApi.fetchContacts(undefined, { includeInactive: true });
 }
 
 async function getEmergencyProcedures() {

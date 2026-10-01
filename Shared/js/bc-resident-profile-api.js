@@ -1,5 +1,5 @@
 /**
- * Resident profile API (XAMPP / MySQL).
+ * Authenticated resident profile API (Supabase-backed).
  */
 (function (global) {
   const XAMPP_HTTP_BASE =
@@ -11,19 +11,19 @@
 
   function profileUrl(fromHref) {
     if (isFileProtocol()) {
-      return XAMPP_HTTP_BASE + 'FrontPage/php/resident_profile.php';
+      return XAMPP_HTTP_BASE + 'FrontPage/php/supabase_resident_profile.php';
     }
-    return new URL('../../FrontPage/php/resident_profile.php', fromHref || global.location.href).href;
+    return new URL('../../FrontPage/php/supabase_resident_profile.php', fromHref || global.location.href).href;
   }
 
   function apiUrl(residentId, fromHref) {
-    const u = new URL(profileUrl(fromHref));
-    u.searchParams.set('id', String(residentId));
-    return u.href;
+    // The endpoint takes the resident identity from the signed server session;
+    // never trust a client-supplied profile ID for reads or updates.
+    return profileUrl(fromHref);
   }
 
   async function fetchProfile(residentId, fromHref) {
-    const res = await fetch(apiUrl(residentId, fromHref), { cache: 'no-store' });
+    const res = await fetch(apiUrl(residentId, fromHref), { credentials: 'same-origin', cache: 'no-store' });
     const data = await res.json().catch(function () {
       return {};
     });
@@ -36,6 +36,7 @@
   async function updateProfile(residentId, body, fromHref) {
     const res = await fetch(apiUrl(residentId, fromHref), {
       method: 'POST',
+      credentials: 'same-origin',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
     });

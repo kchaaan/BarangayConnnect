@@ -5,6 +5,8 @@
  * Response: plain text SUCCESS (legacy UI) or JSON if Accept: application/json
  */
 require_once __DIR__ . '/reports_lib.php';
+require_once __DIR__ . '/supabase_client.php';
+require_once __DIR__ . '/requests_lib.php';
 
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: POST, OPTIONS');
@@ -21,6 +23,8 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
+$reportSession = bc_sb_require_role(['resident']);
+
 $conn = bc_db_connect();
 if (!$conn) {
     http_response_code(500);
@@ -29,6 +33,16 @@ if (!$conn) {
 }
 
 bc_ensure_reports_table($conn);
+
+$residentCode = trim((string) ($reportSession['resident']['resident_id'] ?? ''));
+$reportOwner = $residentCode !== '' ? bc_resolve_resident_owner($conn, $residentCode) : null;
+$residentUserId = (int) ($reportOwner['pk'] ?? 0);
+if ($residentUserId <= 0) {
+    http_response_code(403);
+    echo 'ERROR';
+    $conn->close();
+    exit;
+}
 
 $rawData = $_POST['data'] ?? '';
 if ($rawData === '' && isset($_FILES['data'])) {
@@ -56,7 +70,6 @@ if ($title === '' || $category === '' || $location === '' || $description === ''
 }
 
 $status = 'Pending';
-$residentUserId = (int) ($payload['residentUserId'] ?? 0);
 $stmt = $conn->prepare(
     'INSERT INTO community_reports (title, category, location, description, status, resident_user_id)
      VALUES (?, ?, ?, ?, ?, ?)'

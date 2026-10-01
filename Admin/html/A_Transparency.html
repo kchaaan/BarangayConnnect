@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Transparency - BarangayConnect</title>
-  <link rel="stylesheet" href="../css/A_transparency-style.css?v=20250722">
+  <link rel="stylesheet" href="../css/A_transparency-style.css?v=20261001-pdf-report">
   <link rel="stylesheet" href="../css/bc-admin-page-title.css?v=20250642">
   <style>
     * { scrollbar-width: none !important; -ms-overflow-style: none !important; }
@@ -13,6 +13,7 @@
   <script src="https://kit.fontawesome.com/a2e0f1f0c1.js" crossorigin="anonymous"></script>
   <script src="../../Shared/js/bc-notify.js?v=20250659"></script>
   <script src="../../Shared/js/bc-transparency-api.js?v=20250722"></script>
+  <script src="../../Shared/js/bc-transparency-print.js?v=20261001"></script>
 </head>
 
 <body>
@@ -284,13 +285,13 @@
     }
 
     container.innerHTML = filtered.map(i => `
-      <div class="item-card" data-id="${i.id}">
-        <div class="item-header">
-          <div class="item-title">
-            <h4>${i.name}</h4>
-            <span class="item-type-badge ${i.type.toLowerCase()}">${i.type}</span>
+        <div class="item-card" data-id="${i.id}">
+          <div class="item-header">
+            <div class="item-title">
+            <h4>${escapeHtml(i.name)}</h4>
+            <span class="item-type-badge ${escapeHtml(String(i.type || '').toLowerCase())}">${escapeHtml(i.type)}</span>
           </div>
-          <span class="status-badge ${i.status.toLowerCase()}">${i.status}</span>
+          <span class="status-badge ${escapeHtml(String(i.status || '').toLowerCase())}">${escapeHtml(i.status)}</span>
         </div>
 
         <div class="item-body">
@@ -317,18 +318,20 @@
             }%"></div>
           </div>
 
-          ${i.description ? `<p class="item-description">${i.description}</p>` : ""}
+          ${i.description ? `<p class="item-description">${escapeHtml(i.description)}</p>` : ""}
         </div>
 
         <div class="item-actions">
-          <label class="action-icon upload">
-            <input hidden type="file" class="upload-input" data-id="${i.id}" accept="application/pdf">
+          <label class="action-icon upload" title="Upload a supporting PDF" aria-label="Upload a supporting PDF">
+            <input hidden type="file" class="upload-input" data-id="${i.id}" accept=".pdf,application/pdf">
             <i class="fas fa-file-upload"></i>
           </label>
 
+          <button type="button" class="action-icon pdf-export" data-id="${i.id}" title="Print or save report as PDF" aria-label="Print or save ${escapeHtml(i.name)} report as PDF"><i class="fas fa-file-pdf"></i></button>
+
           ${i.documents && i.documents.length > 0 
             ? i.documents.map(d => 
-                `<a href="${fileUrl(d.filePath)}" class="action-icon view" target="_blank" rel="noopener">
+                `<a href="${escapeHtml(fileUrl(d.filePath))}" class="action-icon view" title="Open uploaded supporting PDF" aria-label="Open uploaded supporting PDF" target="_blank" rel="noopener">
                    <i class="fas fa-file-pdf"></i>
                  </a>`
               ).join("")
@@ -350,6 +353,14 @@
   // ============================================================
   function bindActions() {
 
+    qsa(".pdf-export").forEach(btn =>
+      btn.onclick = () => {
+        const item = items.find(i => String(i.id) === btn.dataset.id);
+        if (window.BCTransparencyPrint) window.BCTransparencyPrint.printItem(item);
+        else notify("error", "The PDF report tool did not load. Please reopen this page.", "PDF unavailable");
+      }
+    );
+
     qsa(".edit").forEach(btn =>
       btn.onclick = () => {
         const item = items.find(i => i.id == btn.dataset.id);
@@ -364,8 +375,15 @@
           : window.confirm("Delete this item?");
         if (!ok) return;
 
-        await fetch(TransparencyApi.apiUrl("item", btn.dataset.id), { method: "DELETE" });
-        loadItems();
+        try {
+          const res = await fetch(TransparencyApi.apiUrl("item", btn.dataset.id), { method: "DELETE" });
+          if (!res.ok) throw new Error("HTTP " + res.status);
+          await loadItems();
+          notify("success", "Project or program deleted.", "Deleted");
+        } catch (err) {
+          console.error(err);
+          notify("error", "Could not delete this item. Check your connection and permissions.", "Delete failed");
+        }
       }
     );
 
@@ -374,15 +392,33 @@
         let file = e.target.files[0];
         if (!file) return;
 
+        if (!/\.pdf$/i.test(file.name)) {
+          notify("error", "Choose a PDF file to upload.", "PDF files only");
+          input.value = "";
+          return;
+        }
+
         const fd = new FormData();
         fd.append("file", file);
 
-        await fetch(TransparencyApi.apiUrl("document", input.dataset.id), {
-          method: "POST",
-          body: fd
-        });
-
-        loadItems();
+        const label = input.closest("label");
+        if (label) label.classList.add("is-loading");
+        try {
+          const res = await fetch(TransparencyApi.apiUrl("document", input.dataset.id), {
+            method: "POST",
+            body: fd
+          });
+          const result = await res.json().catch(() => ({}));
+          if (!res.ok || result.success === false) throw new Error(result.error || "HTTP " + res.status);
+          await loadItems();
+          notify("success", "Supporting PDF uploaded and saved.", "Upload complete");
+        } catch (err) {
+          console.error(err);
+          notify("error", err.message || "Could not upload the PDF. Check your connection and permissions.", "Upload failed");
+        } finally {
+          if (label) label.classList.remove("is-loading");
+          input.value = "";
+        }
       }
     );
 
@@ -439,6 +475,8 @@
       endDate: qs("#itemEnd").value || null
     };
 
+    const saveButton = qs('#itemForm button[type="submit"]');
+    if (saveButton) saveButton.disabled = true;
     try {
       const url = editingId
         ? TransparencyApi.apiUrl("item", editingId)
@@ -455,12 +493,23 @@
 
       closeModal();
       notify("success", editingId ? "Item updated." : "Item added.", "Saved");
-      loadItems();
+      await loadItems();
     } catch (err) {
       console.error(err);
       notify("error", "Could not save item. Check Apache/MySQL in XAMPP.", "Save failed");
+    } finally {
+      if (saveButton) saveButton.disabled = false;
     }
   };
+
+  function escapeHtml(value) {
+    return String(value == null ? "" : value)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/\"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  }
 
 
   // ============================================================

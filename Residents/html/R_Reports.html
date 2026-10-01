@@ -516,38 +516,58 @@
       sorted.forEach((report) => list.appendChild(createReportRow(report)));
     }
 
+    let reportsLoadController = null;
+
     function loadReports() {
+      if (reportsLoadController) reportsLoadController.abort();
+      reportsLoadController = new AbortController();
+      const controller = reportsLoadController;
+      const timeoutId = window.setTimeout(() => controller.abort(), 12000);
       setListState('loading');
       const list = document.getElementById('reportList');
       if (list) list.innerHTML = '';
 
       if (!ReportsApi) {
+        window.clearTimeout(timeoutId);
         setListState('error');
         return;
       }
 
-      fetch(ReportsApi.apiUrl('all'))
-        .then((res) => {
-          if (!res.ok) throw new Error('HTTP ' + res.status);
-          return res.json();
+      Promise.all([
+        fetch(ReportsApi.apiUrl('all'), { signal: controller.signal }),
+        fetch(ReportsApi.apiUrl('archived'), { signal: controller.signal }),
+      ])
+        .then(async ([activeResponse, archivedResponse]) => {
+          if (!activeResponse.ok || !archivedResponse.ok) {
+            throw new Error('Reports service returned an error.');
+          }
+          const [activeData, archivedData] = await Promise.all([
+            activeResponse.json(),
+            archivedResponse.json(),
+          ]);
+          const active = Array.isArray(activeData) ? activeData : [];
+          const archived = Array.isArray(archivedData) ? archivedData : [];
+          allReports = active.concat(archived);
+          if (allReports.length === 0) {
+            setListState('empty');
+            document.getElementById('reportListEmpty').querySelector('p').textContent = 'No reports yet';
+            return;
+          }
+          renderReportsTable();
         })
-        .then((activeData) =>
-          fetch(ReportsApi.apiUrl('archived'))
-            .then((res) => (res.ok ? res.json() : []))
-            .then((archivedData) => {
-              const active = Array.isArray(activeData) ? activeData : [];
-              const archived = Array.isArray(archivedData) ? archivedData : [];
-              allReports = active.concat(archived);
-              if (allReports.length === 0) {
-                setListState('empty');
-                document.getElementById('reportListEmpty').querySelector('p').textContent = 'No reports yet';
-                return;
-              }
-              renderReportsTable();
-            })
-        )
         .catch(() => {
+          if (controller.signal.aborted && reportsLoadController !== controller) return;
           setListState('error');
+          const detail = document.querySelector('#reportListError span');
+          if (detail) {
+            detail.textContent = controller.signal.aborted
+              ? 'Loading timed out. Start MySQL in XAMPP, then use Refresh.'
+              : 'Could not reach the reports database. Start MySQL in XAMPP, then use Refresh.';
+          }
+        })
+        .finally(() => {
+          window.clearTimeout(timeoutId);
+          if (reportsLoadController === controller) reportsLoadController = null;
         });
     }
 

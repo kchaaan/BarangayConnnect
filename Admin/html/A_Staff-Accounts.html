@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <title>Staff Accounts | BarangayConnect</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    :root{font-family:Arial,sans-serif;color:#263d2b;background:#f2f7f2;font-synthesis:none}
+    *{box-sizing:border-box}
+    body{margin:0;padding:clamp(18px,4vw,44px)}
+    main{max-width:980px;margin:auto}
+    .top{display:flex;align-items:center;gap:14px;margin-bottom:24px}
+    .top a{color:#557a53;text-decoration:none;font-weight:700}
+    h1{margin:0;font-size:clamp(24px,4vw,34px);color:#385a3c}
+    .intro{margin:8px 0 22px;color:#526653;line-height:1.5}
+    .notice{border:1px solid #d9c78a;background:#fff9e6;border-radius:10px;padding:14px 16px;margin-bottom:22px;line-height:1.5}
+    #status{min-height:24px;margin:12px 0;color:#365d3b;font-weight:700}
+    #status.error{color:#a22b24}
+    #accounts{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+    .account{background:#fff;border:1px solid #dce7dc;border-radius:14px;padding:20px;box-shadow:0 5px 16px #2038200d}
+    .account h2{font-size:18px;margin:0 0 4px;color:#385a3c}
+    .account .name{color:#667866;font-size:14px;margin-bottom:16px}
+    label{display:block;font-size:14px;font-weight:700;margin:12px 0 6px}
+    input{width:100%;min-height:44px;border:1px solid #bacdb8;border-radius:8px;padding:10px 12px;font:inherit;color:#203124;background:#fff}
+    input:focus{outline:3px solid #78a96c55;border-color:#61865c}
+    button{width:100%;margin-top:16px;min-height:44px;border:0;border-radius:8px;background:#5f8159;color:#fff;font-weight:700;font-size:15px;cursor:pointer}
+    button:disabled{opacity:.65;cursor:wait}
+    .empty{background:#fff;border:1px solid #dce7dc;border-radius:12px;padding:20px}
+    @media(max-width:520px){body{padding:16px}.account{padding:16px}}
+  </style>
+</head>
+<body>
+  <main>
+    <div class="top">
+      <a href="AdminPage.html#section=dashboard" aria-label="Return to admin dashboard"><i class="fas fa-arrow-left" aria-hidden="true"></i> Dashboard</a>
+    </div>
+    <h1><i class="fas fa-user-shield" aria-hidden="true"></i> Staff Accounts</h1>
+    <p class="intro">Set a new password for an active admin account. Passwords are sent directly to Supabase Auth and are not emailed or saved in this page.</p>
+    <div class="notice"><strong>Manual recovery:</strong> These username accounts do not have a working mailbox. If an admin forgets a password, an active SuperAdmin must set a new one here. Use a new passphrase with at least 15 characters.</div>
+    <p id="status" role="status" aria-live="polite">Loading active admin accounts…</p>
+    <section id="accounts" aria-label="Active admin accounts"></section>
+  </main>
+  <script>
+    (() => {
+      'use strict';
+      const endpoint = '../../FrontPage/php/superadmin_staff_accounts.php';
+      const status = document.getElementById('status');
+      const accounts = document.getElementById('accounts');
+      let csrfToken = '';
+
+      function setStatus(message, isError = false) {
+        status.textContent = message;
+        status.classList.toggle('error', isError);
+      }
+
+      function addField(form, labelText, name, autocomplete) {
+        const id = `${form.dataset.accountId}-${name}`;
+        const label = document.createElement('label');
+        label.htmlFor = id;
+        label.textContent = labelText;
+        const input = document.createElement('input');
+        input.id = id;
+        input.name = name;
+        input.type = 'password';
+        input.autocomplete = autocomplete;
+        input.minLength = 15;
+        input.maxLength = 128;
+        input.required = true;
+        form.append(label, input);
+        return input;
+      }
+
+      function createCard(account) {
+        const card = document.createElement('article');
+        card.className = 'account';
+        const title = document.createElement('h2');
+        title.textContent = account.username || 'Admin account';
+        const name = document.createElement('div');
+        name.className = 'name';
+        name.textContent = account.fullName || 'Administrator';
+        const form = document.createElement('form');
+        form.dataset.accountId = account.id;
+        form.noValidate = false;
+        const password = addField(form, 'New password', 'password', 'new-password');
+        const confirmPassword = addField(form, 'Confirm new password', 'confirmPassword', 'new-password');
+        const button = document.createElement('button');
+        button.type = 'submit';
+        button.textContent = 'Set password';
+        form.append(button);
+        form.addEventListener('submit', async event => {
+          event.preventDefault();
+          if (!form.reportValidity()) return;
+          if (password.value !== confirmPassword.value) {
+            setStatus('The passwords do not match.', true);
+            confirmPassword.focus();
+            return;
+          }
+          button.disabled = true;
+          setStatus(`Updating password for ${account.username}…`);
+          try {
+            const response = await fetch(endpoint, {
+              method: 'POST',
+              credentials: 'same-origin',
+              cache: 'no-store',
+              headers: {'Content-Type': 'application/json', 'X-BC-CSRF': csrfToken},
+              body: JSON.stringify({action: 'reset-password', id: account.id, password: password.value, confirmPassword: confirmPassword.value})
+            });
+            const result = await response.json().catch(() => ({}));
+            if (!response.ok || !result.success) throw new Error(result.error || 'Could not update the password.');
+            form.reset();
+            setStatus(`Password updated for ${account.username}. Keep the new password private.`);
+          } catch (error) {
+            setStatus(error.message || 'Could not update the password.', true);
+          } finally {
+            button.disabled = false;
+          }
+        });
+        card.append(title, name, form);
+        return card;
+      }
+
+      async function loadAccounts() {
+        try {
+          const response = await fetch(`${endpoint}?action=list`, {credentials: 'same-origin', cache: 'no-store'});
+          const result = await response.json().catch(() => ({}));
+          if (response.status === 401 || response.status === 403) throw new Error('Log in as the active SuperAdmin to manage admin passwords.');
+          if (!response.ok || !result.success) throw new Error(result.error || 'Could not load admin accounts.');
+          csrfToken = result.csrfToken || '';
+          const active = (result.accounts || []).filter(account => account.status === 'active' && account.id && account.username);
+          accounts.replaceChildren();
+          if (!active.length) {
+            const empty = document.createElement('div');
+            empty.className = 'empty';
+            empty.textContent = 'No active admin accounts are available.';
+            accounts.append(empty);
+            setStatus('No active admins found.');
+            return;
+          }
+          active.forEach(account => accounts.append(createCard(account)));
+          setStatus('Only active admin accounts are listed.');
+        } catch (error) {
+          accounts.replaceChildren();
+          setStatus(error.message || 'Staff account service is unavailable.', true);
+        }
+      }
+
+      loadAccounts();
+    })();
+  </script>
+</body>
+</html>

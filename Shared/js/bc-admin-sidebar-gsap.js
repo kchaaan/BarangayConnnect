@@ -308,6 +308,8 @@
 
     var willCollapse = !isCollapsed();
     var lbl = labelEls();
+    var sidebarHeader = sidebar.querySelector('.sidebar-header');
+    var sidebarNav = sidebar.querySelector('.sidebar-nav');
     animating = true;
 
     if (activeTween) activeTween.kill();
@@ -319,6 +321,12 @@
         sidebar.classList.toggle('collapsed', willCollapse);
         gsap.set(sidebar, { clearProps: 'width,boxShadow' });
         gsap.set(adminMain, { clearProps: 'width,marginLeft' });
+        if (sidebarHeader) {
+          gsap.set(sidebarHeader, {
+            clearProps: 'height,paddingTop,paddingRight,paddingBottom,paddingLeft,marginBottom,overflow',
+          });
+        }
+        if (sidebarNav) gsap.set(sidebarNav, { clearProps: 'paddingTop' });
         if (willCollapse) {
           gsap.set(lbl, { opacity: 0, x: -14 });
         } else {
@@ -334,6 +342,16 @@
     activeTween = tl;
 
     if (willCollapse) {
+      var expandedHeaderStyle = sidebarHeader ? global.getComputedStyle(sidebarHeader) : null;
+      var headerCollapseFrom = sidebarHeader ? {
+        height: sidebarHeader.getBoundingClientRect().height,
+        paddingTop: expandedHeaderStyle.paddingTop,
+        paddingRight: expandedHeaderStyle.paddingRight,
+        paddingBottom: expandedHeaderStyle.paddingBottom,
+        paddingLeft: expandedHeaderStyle.paddingLeft,
+        marginBottom: expandedHeaderStyle.marginBottom,
+      } : null;
+
       tl.to(lbl, {
         opacity: 0,
         x: -14,
@@ -354,13 +372,57 @@
         duration: 0.52,
       }, 0.08);
 
+      if (sidebarHeader && headerCollapseFrom) {
+        gsap.set(sidebarHeader, { ...headerCollapseFrom, overflow: 'hidden' });
+        tl.to(sidebarHeader, {
+          height: 0,
+          paddingTop: 0,
+          paddingRight: 0,
+          paddingBottom: 0,
+          paddingLeft: 0,
+          marginBottom: 0,
+          duration: 0.44,
+          ease: 'power2.inOut',
+        }, 0.04);
+      }
+      if (sidebarNav) {
+        tl.to(sidebarNav, { paddingTop: 60, duration: 0.44, ease: 'power2.inOut' }, 0.04);
+      }
+
       tl.add(function () {
         sidebar.classList.add('collapsed');
       }, 0.3);
     } else {
+      var currentW = sidebar.offsetWidth || COLLAPSED;
       sidebar.classList.remove('collapsed');
 
-      var currentW = sidebar.offsetWidth || COLLAPSED;
+      var expandedHeaderTarget = null;
+      var expandedNavPadding = 0;
+      if (sidebarHeader) {
+        var targetStyle = global.getComputedStyle(sidebarHeader);
+        expandedHeaderTarget = {
+          height: sidebarHeader.getBoundingClientRect().height,
+          paddingTop: targetStyle.paddingTop,
+          paddingRight: targetStyle.paddingRight,
+          paddingBottom: targetStyle.paddingBottom,
+          paddingLeft: targetStyle.paddingLeft,
+          marginBottom: targetStyle.marginBottom,
+        };
+        gsap.set(sidebarHeader, {
+          height: 0,
+          paddingTop: 0,
+          paddingRight: 0,
+          paddingBottom: 0,
+          paddingLeft: 0,
+          marginBottom: 0,
+          overflow: 'hidden',
+        });
+      }
+      if (sidebarNav) {
+        expandedNavPadding = parseFloat(global.getComputedStyle(sidebarNav).paddingTop) || 0;
+        gsap.set(sidebarNav, { paddingTop: 60 });
+      }
+
       gsap.set(lbl, { opacity: 0, x: -14 });
       gsap.set(sidebar, { width: currentW });
       gsap.set(adminMain, { marginLeft: currentW, width: mainWidth(currentW) });
@@ -384,6 +446,18 @@
         stagger: 0.038,
         ease: 'power2.out',
       }, 0.2);
+
+      if (sidebarHeader && expandedHeaderTarget) {
+        tl.to(sidebarHeader, {
+          ...expandedHeaderTarget,
+          overflow: 'hidden',
+          duration: 0.44,
+          ease: 'power2.out',
+        }, 0);
+      }
+      if (sidebarNav) {
+        tl.to(sidebarNav, { paddingTop: expandedNavPadding, duration: 0.44, ease: 'power2.inOut' }, 0);
+      }
     }
   }
 

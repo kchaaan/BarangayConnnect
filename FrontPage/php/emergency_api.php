@@ -3,6 +3,8 @@ declare(strict_types=1);
 require_once __DIR__ . '/emergency_lib.php';
 
 header('Content-Type: application/json; charset=utf-8');
+header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+header('Pragma: no-cache');
 header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { http_response_code(204); exit; }
@@ -46,7 +48,8 @@ try {
     if ($method === 'GET' && in_array($action, ['contacts', 'procedures'], true)) {
         if ($action === 'contacts') {
             $query = ['select' => '*', 'order' => 'sort_order.asc,name.asc'];
-            if (!$admin) $query['active'] = 'eq.true';
+            $includeInactive = $admin && filter_var($_GET['include_inactive'] ?? false, FILTER_VALIDATE_BOOLEAN);
+            if (!$includeInactive) $query['active'] = 'eq.true';
             $result = bc_sb_rest('emergency_contacts', 'GET', $query);
             $rows = is_array($result['data']) ? $result['data'] : [];
             echo json_encode(array_map('bc_emergency_contact_row_to_api', $rows), JSON_UNESCAPED_UNICODE);

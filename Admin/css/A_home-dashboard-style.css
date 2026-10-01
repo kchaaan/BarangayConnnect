@@ -1064,3 +1064,100 @@ body::-webkit-scrollbar {
     align-items: flex-start;
   }
 }
+
+/* Dashboard refresh: clearer hierarchy and layouts sized for the portal iframe. */
+body {
+  padding: clamp(.8rem, 2vw, 1.4rem);
+  color: #233b2b;
+  background: #f3f7f2;
+}
+
+.dashboard-header {
+  margin-bottom: 1rem;
+  padding: .15rem 0 .25rem;
+}
+
+.dashboard-title {
+  margin: 0 0 .2rem;
+  font-size: clamp(1.8rem, 3vw, 2.35rem);
+}
+
+.dashboard-subtitle { color: #66766b; font-size: .96rem; }
+.dashboard-meta { margin: .35rem 0 0; color: #7c897f; font-size: .76rem; }
+
+.dashboard-greeting-banner {
+  min-height: 112px;
+  margin-bottom: 1.15rem;
+  padding: 1rem 1.35rem;
+  background: linear-gradient(110deg, #fff 0%, #f5faf3 54%, #eaf4e8 100%);
+  border-color: #dce8da;
+  box-shadow: 0 8px 22px rgba(35, 73, 43, .055);
+}
+
+.dashboard-greeting-banner__text { width: auto; max-width: 58%; }
+.dashboard-greeting-banner__title { color: #244a32; font-size: clamp(1.08rem, 1.8vw, 1.35rem); }
+.dashboard-greeting-banner__subtitle { color: #69786d; }
+
+.summary-cards { gap: .9rem; margin-bottom: 1.15rem; }
+.summary-card {
+  min-height: 108px;
+  padding: 1rem 1.1rem;
+  background: #fff;
+  border-color: #e1e9df;
+  border-radius: 13px;
+  box-shadow: 0 4px 14px rgba(25, 60, 35, .045);
+}
+.summary-card__label { color: #526257; }
+.summary-card__value { color: #1d3f2a; }
+.summary-card__hint { color: #78857c; }
+
+.dashboard-overview { gap: .9rem; margin-bottom: 1.2rem; }
+.overview-card {
+  padding: 1.1rem 1.2rem;
+  border-color: #e1e9df;
+  border-radius: 13px;
+  background: #fff;
+  box-shadow: 0 4px 14px rgba(25, 60, 35, .045);
+}
+.overview-card__title { color: #244a32; }
+.overview-link { color: #42694a; }
+.overview-activity-item { padding: .45rem 0; border-bottom: 1px solid #f0f3ef; }
+.overview-activity-item:last-child { border-bottom: 0; }
+
+body[data-role="admin"] .summary-cards { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+body[data-role="admin"] .dashboard-overview { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+body[data-role="admin"] .overview-card--announcements,
+body[data-role="superadmin"] .overview-card--announcements { min-height: 190px; }
+
+.summary-card--active .summary-card__icon { background: #edf4ff; color: #4978ca; }
+.summary-card--total .summary-card__icon { background: #edf5ed; color: #54855a; }
+
+@media (max-width: 900px) {
+  .summary-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  body[data-role="admin"] .summary-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .dashboard-overview { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .overview-card--announcements { grid-column: 1 / -1; }
+  .overview-card:not(.overview-card--activity) .overview-card__body { flex-direction: row; align-items: center; text-align: left; }
+  .overview-card:not(.overview-card--activity) .overview-legend { width: auto; }
+}
+
+@media (max-width: 560px) {
+  body { padding: .75rem; }
+  .dashboard-title { font-size: 1.7rem; }
+  .dashboard-subtitle { font-size: .82rem; }
+  .dashboard-greeting-banner { min-height: 0; padding: .95rem; }
+  .dashboard-greeting-banner__text { max-width: 100%; }
+  .dashboard-greeting-banner__art { height: 52px; }
+  .dashboard-greeting-banner__art img { height: 52px; min-height: 52px; }
+  .summary-cards, body[data-role="admin"] .summary-cards { grid-template-columns: 1fr; gap: .65rem; }
+  body[data-role="admin"] .dashboard-overview { grid-template-columns: 1fr; }
+  .summary-card { min-height: 88px; padding: .8rem .9rem; }
+  .summary-card__icon { width: 40px; height: 40px; }
+  .summary-card__value { font-size: 1.65rem; }
+  .dashboard-overview { grid-template-columns: 1fr; gap: .75rem; }
+  .overview-card, .overview-card--announcements { grid-column: auto; padding: .95rem; }
+  .overview-card__body, .overview-card:not(.overview-card--activity) .overview-card__body { flex-direction: row; text-align: left; }
+  .overview-chart-wrap { width: 104px; height: 104px; }
+  .overview-card:not(.overview-card--activity) .overview-legend { width: auto; }
+  .overview-legend__item { font-size: .72rem; }
+}

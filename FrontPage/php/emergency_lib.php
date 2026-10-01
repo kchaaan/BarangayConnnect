@@ -5,7 +5,7 @@ require_once __DIR__ . '/supabase_client.php';
 function bc_emergency_icon_for_service(string $name): string
 {
     $s = strtolower(trim($name));
-    foreach ([['medical', 'fa-ambulance'], ['ambulance', 'fa-ambulance'], ['fire', 'fa-fire'], ['police', 'fa-shield-alt'], ['barangay', 'fa-building'], ['red cross', 'fa-heart'], ['public works', 'fa-tools']] as [$needle, $icon]) {
+    foreach ([['medical', 'fa-ambulance'], ['ambulance', 'fa-ambulance'], ['health center', 'fa-first-aid'], ['mobile', 'fa-mobile-alt'], ['fire', 'fa-fire'], ['police', 'fa-shield-alt'], ['maynilad', 'fa-tint'], ['meralco', 'fa-bolt'], ['barangay', 'fa-building'], ['red cross', 'fa-heart'], ['public works', 'fa-tools']] as [$needle, $icon]) {
         if (str_contains($s, $needle)) return $icon;
     }
     return 'fa-phone';

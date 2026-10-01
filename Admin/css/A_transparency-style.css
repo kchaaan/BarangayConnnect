@@ -387,6 +387,28 @@ body {
   color: #b91c1c;
 }
 
+.action-icon.pdf-export {
+  color: #b42318;
+  background: #fff7f6;
+}
+
+.action-icon.pdf-export:hover {
+  background: #fdecea;
+  border-color: #f9c7c0;
+  color: #991b1b;
+}
+
+.action-icon.is-loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.primary-btn:disabled {
+  cursor: wait;
+  opacity: 0.65;
+  transform: none;
+}
+
 /* Modal */
 .modal-overlay {
   display: none;

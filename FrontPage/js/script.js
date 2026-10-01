@@ -106,6 +106,65 @@ document.addEventListener('DOMContentLoaded', () => {
     invalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
 
+  function getPasswordStrength(password) {
+    const value = String(password || '');
+    if (!value) return 'empty';
+
+    const normalized = value.toLowerCase();
+    const commonPatterns = [
+      'password', 'qwerty', 'letmein', 'welcome', 'admin', 'barangay', 'tambo',
+      'iloveyou', '123456', '654321', '111111'
+    ];
+    const hasCommonPattern = commonPatterns.some((pattern) => normalized.includes(pattern));
+    const sequenceText = normalized.replace(/[^a-z0-9]/g, '');
+    let sequenceRun = 1;
+    let sequenceDirection = 0;
+    let hasLongSequence = /(?:qwerty|asdfgh|zxcvbn|qwert|asdf|zxcv)/i.test(value);
+    for (let i = 1; i < sequenceText.length && !hasLongSequence; i += 1) {
+      const previous = sequenceText[i - 1];
+      const current = sequenceText[i];
+      const sameCharacterType = /[a-z]/.test(previous) === /[a-z]/.test(current);
+      const difference = current.charCodeAt(0) - previous.charCodeAt(0);
+      if (sameCharacterType && Math.abs(difference) === 1 && (!sequenceDirection || difference === sequenceDirection)) {
+        sequenceDirection = difference;
+        sequenceRun += 1;
+        if (sequenceRun >= 4) hasLongSequence = true;
+      } else {
+        sequenceDirection = 0;
+        sequenceRun = 1;
+      }
+    }
+    const isMostlyRepeated = value.length >= 4 && new Set(value).size <= Math.max(2, Math.floor(value.length / 4));
+    const groups = [/[a-z]/.test(value), /[A-Z]/.test(value), /\d/.test(value), /[^a-zA-Z0-9]/.test(value)]
+      .filter(Boolean).length;
+    const uniqueCharacters = new Set(normalized).size;
+    const words = normalized.trim().split(/\s+/).filter((word) => word.length >= 3);
+    const isLongPassphrase = value.length >= 16 && words.length >= 3 && new Set(words).size >= 3;
+
+    if (value.length < 8 || hasCommonPattern || hasLongSequence || isMostlyRepeated) return 'weak';
+    if ((value.length >= 12 && groups >= 3 && uniqueCharacters >= 8) || isLongPassphrase) return 'strong';
+    if (value.length >= 8 && groups >= 2 && uniqueCharacters >= 6) return 'medium';
+    return 'weak';
+  }
+
+  function updateRegisterPasswordStrength() {
+    const input = document.getElementById('regPassword');
+    const meter = document.getElementById('regPasswordStrength');
+    if (!input || !meter) return;
+
+    const level = getPasswordStrength(input.value);
+    meter.dataset.level = level;
+    const label = meter.querySelector('.password-strength__label');
+    if (label) {
+      label.textContent = ({
+        empty: 'Password strength',
+        weak: 'Very Weak',
+        medium: 'Medium',
+        strong: 'Very Strong'
+      })[level];
+    }
+  }
+
   function hideAppAlert() {
     document.getElementById('customAlert')?.classList.remove('show');
   }
@@ -185,6 +244,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const cpw = document.getElementById('regConfirmPassword');
     if (pw) pw.type = 'password';
     if (cpw) cpw.type = 'password';
+    updateRegisterPasswordStrength();
     const showPw = document.getElementById('showRegPassword');
     if (showPw) showPw.checked = false;
 
@@ -718,8 +778,13 @@ document.addEventListener('DOMContentLoaded', () => {
   registerBtn?.addEventListener('click', () => {
     document.getElementById('registerModal')?.style.setProperty('display', 'block');
     resetRegisterWizard();
-    const pendingEmail = sessionStorage.getItem('bcPendingSignupEmail');
-    if (pendingEmail) showRegistrationOtp(pendingEmail);
+    const pendingOtp = sessionStorage.getItem('bcPendingRegistration');
+    const legacyPendingEmail = sessionStorage.getItem('bcPendingSignupEmail');
+    if (pendingOtp) {
+      try { showRegistrationOtp(JSON.parse(pendingOtp)); } catch { sessionStorage.removeItem('bcPendingRegistration'); }
+    } else if (legacyPendingEmail) {
+      showRegistrationOtp({ method: 'email', target: legacyPendingEmail, email: legacyPendingEmail, phone: '' });
+    }
   });
 
   function closeRegisterModal() {
@@ -826,18 +891,51 @@ document.addEventListener('DOMContentLoaded', () => {
   // RESIDENT REGISTRATION LOGIC
   // ===============================
   const registerForm = document.getElementById('registerForm');
-  let pendingRegistrationEmail = '';
+  let pendingRegistrationOtp = { method: 'email', target: '', email: '', phone: '' };
 
-  function showRegistrationOtp(email) {
-    pendingRegistrationEmail = email;
-    sessionStorage.setItem('bcPendingSignupEmail', email);
+  const verificationMethodSelect = document.getElementById('regVerificationMethod');
+  const verificationMethodNote = document.getElementById('regVerificationMethodNote');
+  fetch(phpApiUrl('registration_methods.php'), { credentials: 'same-origin', cache: 'no-store' })
+    .then((response) => response.json())
+    .then((methods) => {
+      const smsOption = verificationMethodSelect?.querySelector('option[value="sms"]');
+      if (smsOption && methods?.sms === true) {
+        smsOption.disabled = false;
+        smsOption.textContent = 'Mobile number (SMS)';
+        if (verificationMethodNote) verificationMethodNote.textContent = 'Choose where you want to receive your six-digit verification code.';
+      }
+    })
+    .catch(() => {});
+
+  verificationMethodSelect?.addEventListener('change', () => {
+    if (!verificationMethodNote) return;
+    verificationMethodNote.textContent = verificationMethodSelect.value === 'sms'
+      ? 'A text-message code will be sent to the mobile number above.'
+      : 'A verification code will be sent to the email address above.';
+  });
+
+  function showRegistrationOtp(details) {
+    pendingRegistrationOtp = typeof details === 'string'
+      ? { method: 'email', target: details, email: details, phone: '' }
+      : { method: details.method || 'email', target: details.target || details.email || '', email: details.email || '', phone: details.phone || '' };
+    sessionStorage.setItem('bcPendingRegistration', JSON.stringify(pendingRegistrationOtp));
+    sessionStorage.setItem('bcPendingSignupEmail', pendingRegistrationOtp.email || '');
     registerForm.dataset.stage = 'otp';
     const wizard = registerForm.querySelector('.register-wizard');
     if (wizard) wizard.hidden = true;
     const otpPanel = document.getElementById('registerOtpPanel');
     if (otpPanel) otpPanel.hidden = false;
-    const emailLabel = document.getElementById('registerOtpEmail');
-    if (emailLabel) emailLabel.textContent = email;
+    const destinationLabel = document.getElementById('registerOtpDestination');
+    if (destinationLabel) destinationLabel.textContent = pendingRegistrationOtp.target;
+    const title = document.getElementById('registerOtpTitle');
+    if (title) title.textContent = pendingRegistrationOtp.method === 'sms' ? 'Verify your mobile number' : 'Verify your email';
+    const codeLabel = document.querySelector('label[for="registerOtpCode"]');
+    if (codeLabel) codeLabel.textContent = pendingRegistrationOtp.method === 'sms' ? 'SMS verification code' : 'Email verification code';
+    const resendButton = document.getElementById('registerOtpResendBtn');
+    if (resendButton) {
+      resendButton.disabled = false;
+      resendButton.textContent = 'Resend code';
+    }
     const code = document.getElementById('registerOtpCode');
     if (code) {
       code.value = '';
@@ -857,7 +955,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const button = document.getElementById('registerOtpVerifyBtn');
     const token = (code?.value || '').replace(/\D/g, '');
     if (!/^\d{6}$/.test(token)) {
-      setRegisterOtpMessage('Enter the six-digit code from your email.');
+      setRegisterOtpMessage(`Enter the six-digit code from your ${pendingRegistrationOtp.method === 'sms' ? 'text message' : 'email'}.`);
       code?.focus();
       return;
     }
@@ -868,7 +966,7 @@ document.addEventListener('DOMContentLoaded', () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'same-origin',
-        body: JSON.stringify({ email: pendingRegistrationEmail, token })
+        body: JSON.stringify({ method: pendingRegistrationOtp.method, target: pendingRegistrationOtp.target, token })
       });
       const result = await response.json().catch(() => null);
       if (!response.ok || !result?.success) {
@@ -881,11 +979,12 @@ document.addEventListener('DOMContentLoaded', () => {
       localStorage.setItem('residentFirstname', String(result.firstName || ''));
       localStorage.setItem('residentLastname', String(result.lastName || ''));
       sessionStorage.removeItem('bcPendingSignupEmail');
+      sessionStorage.removeItem('bcPendingRegistration');
       if (typeof recordActivity === 'function') {
-        recordActivity('REGISTER', 'RESIDENT', pendingRegistrationEmail, result.fullName || '', { status: 'ACTIVE' });
+        recordActivity('REGISTER', 'RESIDENT', pendingRegistrationOtp.target, result.fullName || '', { status: 'ACTIVE' });
       }
       closeRegisterModal();
-      showAppAlert('Your email is verified and your BarangayConnect account is registered. You can now sign in.', 'Registered successfully');
+      showAppAlert('Your contact is verified and your BarangayConnect account is registered. You can now sign in.', 'Registered successfully');
     } catch (error) {
       setRegisterOtpMessage('Could not reach the verification service. Your code is still here; try again.');
     } finally {
@@ -907,7 +1006,7 @@ document.addEventListener('DOMContentLoaded', () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'same-origin',
-        body: JSON.stringify({ email: pendingRegistrationEmail })
+        body: JSON.stringify({ method: pendingRegistrationOtp.method, target: pendingRegistrationOtp.target })
       });
       const result = await response.json().catch(() => null);
       if (!response.ok || !result?.success) {
@@ -915,7 +1014,9 @@ document.addEventListener('DOMContentLoaded', () => {
         button.disabled = false;
         return;
       }
-      setRegisterOtpMessage('A new code was requested. Check your inbox and spam folder.', true);
+      setRegisterOtpMessage(pendingRegistrationOtp.method === 'sms'
+        ? 'A new code was requested. Check your text messages.'
+        : 'A new code was requested. Check your inbox and spam folder.', true);
       let remaining = 60;
       button.textContent = `Resend in ${remaining}s`;
       const timer = window.setInterval(() => {
@@ -1019,6 +1120,7 @@ document.addEventListener('DOMContentLoaded', () => {
   registerForm?.addEventListener('input', (e) => {
     const t = e.target;
     if (!t.matches('#registerForm input, #registerForm select, #registerForm textarea')) return;
+    if (t.id === 'regPassword') updateRegisterPasswordStrength();
     clearRegisterFieldError(t);
   });
 
@@ -1127,6 +1229,7 @@ document.addEventListener('DOMContentLoaded', () => {
     phpBody.append('civil_status', civilStatus || '');
     phpBody.append('contact_number', phone);
     phpBody.append('email', email);
+    phpBody.append('verification_method', verificationMethodSelect?.value || 'email');
     phpBody.append('house_street', street);
     phpBody.append('barangay', barangay);
     phpBody.append('city', city);
@@ -1160,7 +1263,12 @@ document.addEventListener('DOMContentLoaded', () => {
         /* not JSON — PHP may be missing or returned an error page */
       }
       if (phpJson && phpJson.success) {
-        showRegistrationOtp(phpJson.email || email);
+        showRegistrationOtp({
+          method: phpJson.verification_method || 'email',
+          target: phpJson.verification_target || phpJson.email || email,
+          email: phpJson.email || email,
+          phone: phpJson.phone || phone
+        });
         return;
       }
       if (phpJson && phpJson.error) {

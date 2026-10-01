@@ -1,20 +1,21 @@
 -- Run once in Supabase SQL Editor to seed the homepage and Admin Emergency Contacts.
--- Safe to rerun: rows are matched by name, and all eight are kept active and ordered.
--- Government hotline sources:
--- https://ehotlines.e.gov.ph/
--- https://www.spd.ncrpo.pnp.gov.ph/wp-content/uploads/2024/04/RA8353-2.pdf
--- https://www.dpwh.gov.ph/dpwh/node/39534
+-- Safe to rerun: rows are matched by name, and all seven are kept active and ordered.
+-- Local Barangay Tambo contact numbers supplied by the project owner.
+
+-- Hide the replaced defaults when refreshing an existing installation.
+update public.emergency_contacts
+set active = false, updated_at = now()
+where lower(trim(name)) in ('red cross', 'public works', 'mmda hotline', 'fire department', 'police station', 'maynilad', 'meralco', 'dswd disaster response unit');
 
 with desired_contacts(name, organization, contact_number, description, icon, is_critical, sort_order) as (
   values
-    ('Medical Emergency', 'National Emergency Hotline', '911', 'Unified 911 for police, fire, medical, and disaster response.', 'fa-ambulance', true, 1),
-    ('Fire Department', 'Bureau of Fire Protection', '(02) 8426-0219 / (02) 8426-0246', 'Fire and rescue services.', 'fa-fire', true, 2),
-    ('Police Station', 'Parañaque City Police Station', '0956-346-7827 / 0998-598-7926', 'Parañaque City Police Station hotline.', 'fa-shield-alt', true, 3),
-    ('Red Cross', 'Philippine Red Cross', '143', 'Disaster relief and emergency assistance.', 'fa-heart', true, 4),
-    ('Public Works', 'Department of Public Works and Highways', '165-02', 'DPWH hotline for public works and infrastructure concerns.', 'fa-tools', false, 5),
-    ('NDRRMC', 'National Disaster Risk Reduction and Management Council', '(02) 8911-5061 to 65 local 100', 'National disaster coordination and response.', 'fa-house-damage', true, 6),
-    ('MMDA Hotline', 'Metro Manila Development Authority', '136', 'Metro Manila assistance and response hotline.', 'fa-road', true, 7),
-    ('DSWD Disaster Response Unit', 'Department of Social Welfare and Development', '(02) 8856-3665 / (02) 8852-8081', 'Disaster response assistance.', 'fa-hands-helping', true, 8)
+    ('Emergency', 'National Emergency Hotline', '911', 'Unified 911 for police, fire, medical, and disaster response.', 'fa-ambulance', true, 1),
+    ('Barangay Landline', 'Barangay Tambo', '(02) 8654-0596', 'Call Barangay Tambo landline for local assistance.', 'fa-building', true, 2),
+    ('Barangay Mobile (Globe)', 'Barangay Tambo', '0977 723-2933', 'Call Barangay Tambo mobile hotline for local assistance.', 'fa-mobile-alt', true, 3),
+    ('Police Station - Tambo/Solaire', 'Parañaque City Police Station', '(02) 8887-1437', 'Police Station hotline serving Tambo/Solaire.', 'fa-shield-alt', true, 4),
+    ('Parañaque Fire Central', 'Bureau of Fire Protection', '(02) 8826-9131 / (02) 8826-3176', 'Parañaque Fire Central emergency and rescue hotlines.', 'fa-fire', true, 5),
+    ('Barangay Health Center', 'Barangay Tambo', '(02) 8403-4910', 'Barangay Health Center hotline.', 'fa-first-aid', true, 6),
+    ('NDRRMC', 'National Disaster Risk Reduction and Management Council', '(02) 8911-5061 to 65 local 100', 'National disaster coordination and response.', 'fa-house-damage', true, 7)
 ), inserted as (
   insert into public.emergency_contacts(name, organization, contact_number, description, icon, is_critical, sort_order, active)
   select d.name, d.organization, d.contact_number, d.description, d.icon, d.is_critical, d.sort_order, true

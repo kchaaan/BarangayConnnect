@@ -3,29 +3,39 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>BarangayConnect - Home</title>
-  <link rel="stylesheet" href="../css/front-style.css?v=20260930-emergency-contacts"/>
+  <link rel="stylesheet" href="../css/front-style.css?v=20261001-nonblocking-fonts"/>
   <script src="../../Shared/js/bc-announcements-api.js?v=20250710"></script>
-  <script src="../../Shared/js/bc-emergency-api.js?v=20260930-tel-links"></script>
+  <script src="../../Shared/js/bc-emergency-api.js?v=20261001-active-contact-filter"></script>
   <script src="../../Shared/js/bc-feedback-api.js?v=20250712"></script>
-  <script src="../../Shared/js/bc-chatbot-api.js?v=20250714"></script>
-  <script src="../../Shared/js/bc-chatbot-widget.js?v=20250718"></script>
   <link rel="stylesheet" href="../../Shared/css/bc-brand-logo.css?v=20260930"/>
-  <link rel="stylesheet" href="../../Shared/css/bc-chatbot-widget.css?v=20250721"/>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" media="print" onload="this.media='all'" />
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" /></noscript>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" media="print" onload="this.media='all'" />
+  <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" /></noscript>
   <script src="../../Shared/js/bc-notify.js?v=20250659"></script>
 </head>
 <body>
   <!-- Header with Register/Login on top right -->
   <header class="homepage-header">
     <div class="header-left">
-      <h1>
-        <span class="brand-logo">
-          <img src="../../Shared/images/barangay-tambo-seal.jpg" alt="Barangay Tambo official seal" width="180" height="180" />
-        </span>
-        <span>BarangayConnect</span>
-      </h1>
-      <p>Tambo, Parañaque City</p>
+      <span class="brand-logo header-brand-logo">
+        <img src="../../Shared/images/barangay-tambo-seal.jpg" alt="Barangay Tambo official seal" width="180" height="180" />
+      </span>
+      <div class="header-brand-copy">
+        <h1>BarangayConnect</h1>
+        <p>Tambo, Parañaque City</p>
+      </div>
     </div>
+    <nav class="header-nav" aria-label="Main navigation">
+      <a href="#home">Home</a>
+      <a href="#services">Services</a>
+      <a href="#community-announcements">Announcements</a>
+      <a href="#emergency-contacts">Emergency</a>
+      <a href="#faqs">FAQ</a>
+    </nav>
     <div class="header-right">
       <button id="registerBtn" class="header-action-btn register-btn">
         <i class="fas fa-user-plus"></i> Register
@@ -34,7 +44,29 @@
         <i class="fas fa-sign-in-alt"></i> Login
       </button>
     </div>
+    <button type="button" class="mobile-menu-toggle" id="mobileMenuToggle" aria-expanded="false" aria-controls="mobileNavDrawer">
+      <i class="fas fa-bars" aria-hidden="true"></i><span>Menu</span>
+    </button>
   </header>
+
+  <button type="button" id="mobileNavBackdrop" class="mobile-nav-backdrop" aria-label="Close navigation menu" hidden></button>
+  <aside id="mobileNavDrawer" class="mobile-nav-drawer" aria-label="On this page" aria-hidden="true" hidden>
+    <div class="mobile-nav-drawer__header">
+      <span>On this page</span>
+      <button type="button" id="mobileNavClose" class="mobile-nav-drawer__close" aria-label="Close menu"><i class="fas fa-xmark" aria-hidden="true"></i></button>
+    </div>
+    <nav class="mobile-nav-drawer__links" aria-label="Page sections">
+      <a href="#home">Home</a>
+      <a href="#services">Services</a>
+      <a href="#community-announcements">Announcements</a>
+      <a href="#emergency-contacts">Emergency</a>
+      <a href="#faqs">FAQ</a>
+    </nav>
+    <div class="mobile-nav-drawer__actions">
+      <button type="button" id="mobileRegisterBtn" class="header-action-btn register-btn"><i class="fas fa-user-plus" aria-hidden="true"></i> Register</button>
+      <button type="button" id="mobileLoginBtn" class="header-action-btn login-btn"><i class="fas fa-sign-in-alt" aria-hidden="true"></i> Login</button>
+    </div>
+  </aside>
 
   <div id="bcSessionBar" class="bc-session-bar" role="navigation" aria-label="Logged-in shortcuts" hidden>
     <span id="bcSessionBarText" class="bc-session-bar__text"></span>
@@ -62,7 +94,7 @@
 
   <main class="homepage-main">
     <!-- Introduction Section -->
-    <section class="introduction-section">
+    <section class="introduction-section" id="home">
       <div class="intro-content">
         <h2 class="intro-title">Welcome to <span>BarangayConnect</span></h2>
         <p class="intro-description">
@@ -175,7 +207,7 @@
 
      <!-- Emergency Numbers -->
 <div class="emergency-content-section">
-  <h4 class="subsection-title">Emergency Numbers</h4>
+  <h3 class="section-title emergency-subsection-title">Emergency Numbers</h3>
 
   <!-- ✅ This will be filled dynamically -->
   <div class="emergency-grid" id="emergencyGrid">
@@ -185,7 +217,7 @@
 
 <!-- Barangay Contacts -->
 <div class="contacts-content-section">
-  <h4 class="subsection-title">Barangay Contacts</h4>
+  <h3 class="section-title contacts-subsection-title">Barangay Contacts</h3>
 
   <!-- ✅ This will be filled dynamically -->
   <div class="contacts-grid" id="barangayContactsGrid">
@@ -197,7 +229,7 @@
 
 
     <!-- FAQs & Feedback Section -->
-    <section class="homepage-section faqs-section">
+    <section class="homepage-section faqs-section" id="faqs">
       <div class="section-header">
         <h3 class="section-title">
           <i class="fas fa-circle-question"></i>
@@ -717,7 +749,7 @@
 
             <div class="register-field-row register-field-row--2">
               <div class="register-field-col">
-                <label for="regMobile">Mobile Number <span aria-hidden="true">*</span></label>
+              <label for="regMobile">Mobile Number <span aria-hidden="true">*</span></label>
                 <input type="text" id="regMobile" name="phone" inputmode="numeric" autocomplete="tel" maxlength="11" pattern="[0-9]{11}" placeholder="09XXXXXXXXX (11 digits)" title="Enter exactly 11 digits, numbers only" required />
               </div>
               <div class="register-field-col">
@@ -725,7 +757,14 @@
                 <input type="email" id="regEmail" name="email" placeholder="name@example.com" autocomplete="email" required />
               </div>
             </div>
-            <p class="register-otp-note">Registration codes are sent to your email. SMS verification is unavailable until a phone-message provider is configured.</p>
+            <div class="register-field-full register-verification-method">
+              <label for="regVerificationMethod">Send verification code to</label>
+              <select id="regVerificationMethod" name="verificationMethod">
+                <option value="email">Email address</option>
+                <option value="sms" disabled>Mobile number (SMS setup required)</option>
+              </select>
+              <p id="regVerificationMethodNote" class="register-otp-note">Email verification is available. SMS will be enabled after a provider is configured.</p>
+            </div>
 
             <div class="register-field-full">
               <label for="regEmploymentStatus">Current Employment Status <span aria-hidden="true">*</span></label>
@@ -884,6 +923,10 @@
                     <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
                   </button>
                 </div>
+                <div class="password-strength" id="regPasswordStrength" data-level="empty" aria-live="polite" aria-atomic="true">
+                  <div class="password-strength__track" aria-hidden="true"><span></span></div>
+                  <span class="password-strength__label">Password strength</span>
+                </div>
               </div>
               <div class="register-field-col">
                 <label for="regConfirmPassword">Confirm Password</label>
@@ -905,10 +948,10 @@
           </div>
         </div>
         <section id="registerOtpPanel" class="register-otp-panel" aria-labelledby="registerOtpTitle" hidden>
-          <h3 id="registerOtpTitle" class="register-step-title">Verify your email</h3>
-          <p class="register-step-sub">We sent a six-digit verification code to <strong id="registerOtpEmail"></strong>. Enter it below to finish creating your account.</p>
+          <h3 id="registerOtpTitle" class="register-step-title">Verify your contact</h3>
+          <p class="register-step-sub">We sent a six-digit verification code to <strong id="registerOtpDestination"></strong>. Enter it below to finish creating your account.</p>
           <div class="register-field-full">
-            <label for="registerOtpCode">Email verification code</label>
+            <label for="registerOtpCode">Verification code</label>
             <input type="text" id="registerOtpCode" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" placeholder="6-digit code" aria-describedby="registerOtpMessage" />
             <p id="registerOtpMessage" class="register-otp-message" role="status" aria-live="polite"></p>
           </div>
@@ -922,7 +965,7 @@
   </div>
 
 
-  <div id="privacyNoticeGate" class="privacy-gate" role="dialog" aria-modal="true" aria-labelledby="privacyNoticeTitle" aria-describedby="privacyNoticeIntro"><div class="privacy-gate__panel"><p class="privacy-gate__eyebrow">BarangayConnect · Tambo, Parañaque City</p><h2 id="privacyNoticeTitle">Data Privacy Notice</h2><p id="privacyNoticeIntro" class="privacy-gate__lead">Your privacy matters. Please read this notice before continuing.</p><div class="privacy-gate__body"><h3>Why we collect information</h3><p>Information supports account verification, service requests and reports, borrowing, announcements, and authorized resident services.</p><h3>Information collected</h3><p>Depending on the service, this may include your name, contact details, address, account credentials, request details, and documents or images you submit.</p><h3>How information is used and protected</h3><p>Information is used for barangay administration and service delivery, and should be available only to personnel with a work-related need. The barangay should apply appropriate access controls and security safeguards. Submit only information needed for your request.</p><h3>Your rights and privacy concerns</h3><p>You may request access or correction, raise a concern, or ask how information is handled by contacting the Barangay Tambo office. Ask the barangay for its current Data Protection Officer contact details. Applicable data privacy rights remain available to you.</p><p class="privacy-gate__disclaimer">For the official privacy policy and current privacy contact details, contact the barangay office.</p></div><button type="button" id="privacyNoticeAcknowledge" class="privacy-gate__button">I Understand</button></div></div>
+  <div id="privacyNoticeGate" class="privacy-gate" role="dialog" aria-modal="true" aria-labelledby="privacyNoticeTitle" aria-describedby="privacyNoticeIntro" hidden><div class="privacy-gate__panel"><p class="privacy-gate__eyebrow">BarangayConnect · Tambo, Parañaque City</p><h2 id="privacyNoticeTitle">Data Privacy Notice</h2><p id="privacyNoticeIntro" class="privacy-gate__lead">Your privacy matters. Please read this notice before continuing.</p><div class="privacy-gate__body"><h3>Why we collect information</h3><p>Information supports account verification, service requests and reports, borrowing, announcements, and authorized resident services.</p><h3>Information collected</h3><p>Depending on the service, this may include your name, contact details, address, account credentials, request details, and documents or images you submit.</p><h3>How information is used and protected</h3><p>Information is used for barangay administration and service delivery, and should be available only to personnel with a work-related need. The barangay should apply appropriate access controls and security safeguards. Submit only information needed for your request.</p><h3>Your rights and privacy concerns</h3><p>You may request access or correction, raise a concern, or ask how information is handled by contacting the Barangay Tambo office. Ask the barangay for its current Data Protection Officer contact details. Applicable data privacy rights remain available to you.</p><p class="privacy-gate__disclaimer">For the official privacy policy and current privacy contact details, contact the barangay office.</p></div><button type="button" id="privacyNoticeAcknowledge" class="privacy-gate__button">I Understand</button></div></div>
   <!-- Login Modal -->
   <div id="loginModal" class="modal">
     <div class="modal-content">
@@ -939,9 +982,39 @@
             <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
           </button>
         </div>
-        <div id="turnstileWidget" class="cf-turnstile" aria-label="Human verification"></div>
+        <section class="login-captcha" aria-label="Human verification">
+          <div class="login-captcha__robot-row" id="loginRobotCheckRow">
+            <button type="button" class="login-captcha__robot-check" id="loginRobotCheck" aria-pressed="false">
+              <span class="login-captcha__robot-box" aria-hidden="true">
+                <i class="fas fa-spinner fa-spin" id="loginRobotSpinner" hidden></i>
+                <i class="fas fa-check" id="loginRobotCheckmark" hidden></i>
+                <i class="fas fa-xmark" id="loginRobotErrorIcon" hidden></i>
+              </span>
+              <span>I'm not a robot</span>
+            </button>
+          </div>
+          <p class="login-captcha__label" id="loginCaptchaLabel" hidden>CAPTCHA · Enter the code shown</p>
+          <div class="login-captcha__challenge-row" id="loginCaptchaChallengeRow" hidden>
+            <img id="loginCaptchaImage" class="login-captcha__image" alt="CAPTCHA code" hidden />
+            <span id="loginCaptchaPlaceholder" class="login-captcha__placeholder">Enter your username and password</span>
+            <button type="button" id="refreshLoginCaptcha" class="login-captcha__refresh" aria-label="Generate a new CAPTCHA" title="New code" disabled>
+              <i class="fas fa-rotate" id="loginCaptchaRefreshIcon" aria-hidden="true"></i>
+              <i class="fas fa-spinner fa-spin" id="loginCaptchaRefreshSpinner" aria-hidden="true" hidden></i>
+            </button>
+          </div>
+          <div class="login-captcha__digits" id="loginCaptchaDigits" role="group" aria-label="Enter the 6-character CAPTCHA code" aria-describedby="loginCaptchaStatus" hidden>
+            <input class="login-captcha__digit" type="text" inputmode="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="1" aria-label="CAPTCHA character 1 of 6" disabled />
+            <input class="login-captcha__digit" type="text" inputmode="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="1" aria-label="CAPTCHA character 2 of 6" disabled />
+            <input class="login-captcha__digit" type="text" inputmode="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="1" aria-label="CAPTCHA character 3 of 6" disabled />
+            <input class="login-captcha__digit" type="text" inputmode="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="1" aria-label="CAPTCHA character 4 of 6" disabled />
+            <input class="login-captcha__digit" type="text" inputmode="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="1" aria-label="CAPTCHA character 5 of 6" disabled />
+            <input class="login-captcha__digit" type="text" inputmode="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="1" aria-label="CAPTCHA character 6 of 6" disabled />
+          </div>
+          <input id="loginCaptchaAnswer" type="hidden" disabled />
+          <p id="loginCaptchaStatus" class="login-captcha__status" role="status" aria-live="polite">Check the box to continue.</p>
+        </section>
         <p id="unifiedLoginError" class="unified-login-error" role="alert" aria-live="polite"></p>
-        <button type="submit" class="form-btn" id="unifiedLoginSubmit">Login</button>
+        <button type="submit" class="form-btn" id="unifiedLoginSubmit" disabled>Login</button>
         <p class="forgot-password"><a href="#" id="forgotPasswordLink">Forgot Password?</a></p>
       </form>
     </div>
@@ -1072,16 +1145,116 @@
 
   <script src="../../Shared/js/activity-log.js"></script>
   <script src="../../Shared/js/resident-store.js"></script>
-  <script src="../../Shared/js/bc-session.js"></script>
+  <script src="../../Shared/js/bc-session.js?v=20261001-logout-notice"></script>
   <script src="../../Shared/js/bc-nav-persist.js"></script>
-  <script src="../js/script.js?v=20250735"></script>
+  <script src="../js/script.js?v=20261001-registration-password-strength"></script>
   <script src="../js/password-visibility.js?v=20260929-1"></script>
-  <script src="../js/supabase-login.js?v=20260929-2" defer></script>
+  <script src="../js/supabase-login.js?v=20261001-resident-print-return" defer></script>
   <script src="../js/supabase-recovery.js?v=20260930-1" defer></script>
   
   <!-- Homepage Sections JavaScript -->
   <script>
 document.addEventListener("DOMContentLoaded", () => {
+
+  // Smooth section navigation with a moving active state in the fixed header.
+  const headerNav = document.querySelector(".header-nav");
+  const navLinks = Array.from(document.querySelectorAll('.header-nav a[href^="#"], .mobile-nav-drawer__links a[href^="#"]'));
+  const navSections = navLinks
+    .map((link) => document.getElementById(decodeURIComponent(link.hash.slice(1))))
+    .filter(Boolean);
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const mobileMenuToggle = document.getElementById("mobileMenuToggle");
+  const mobileNavDrawer = document.getElementById("mobileNavDrawer");
+  const mobileNavBackdrop = document.getElementById("mobileNavBackdrop");
+  let mobileMenuCloseTimer = null;
+
+  function closeMobileMenu(restoreFocus = false) {
+    if (!mobileNavDrawer || mobileNavDrawer.hidden) return;
+    mobileNavDrawer.classList.remove("is-open");
+    mobileNavBackdrop?.classList.remove("is-open");
+    mobileNavDrawer.setAttribute("aria-hidden", "true");
+    mobileMenuToggle?.setAttribute("aria-expanded", "false");
+    document.body.classList.remove("bc-mobile-menu-open");
+    clearTimeout(mobileMenuCloseTimer);
+    mobileMenuCloseTimer = setTimeout(() => {
+      mobileNavDrawer.hidden = true;
+      if (mobileNavBackdrop) mobileNavBackdrop.hidden = true;
+      if (restoreFocus) mobileMenuToggle?.focus();
+    }, reducedMotion ? 0 : 240);
+  }
+
+  function openMobileMenu() {
+    if (!mobileNavDrawer || !mobileNavBackdrop) return;
+    clearTimeout(mobileMenuCloseTimer);
+    mobileNavDrawer.hidden = false;
+    mobileNavBackdrop.hidden = false;
+    mobileNavDrawer.setAttribute("aria-hidden", "false");
+    mobileMenuToggle?.setAttribute("aria-expanded", "true");
+    document.body.classList.add("bc-mobile-menu-open");
+    requestAnimationFrame(() => {
+      mobileNavDrawer.classList.add("is-open");
+      mobileNavBackdrop.classList.add("is-open");
+    });
+    document.getElementById("mobileNavClose")?.focus();
+  }
+
+  mobileMenuToggle?.addEventListener("click", () => {
+    if (mobileMenuToggle.getAttribute("aria-expanded") === "true") closeMobileMenu(true);
+    else openMobileMenu();
+  });
+  document.getElementById("mobileNavClose")?.addEventListener("click", () => closeMobileMenu(true));
+  mobileNavBackdrop?.addEventListener("click", () => closeMobileMenu(true));
+  mobileNavDrawer?.querySelectorAll('a[href^="#"]').forEach((link) => {
+    link.addEventListener("click", () => closeMobileMenu());
+  });
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && mobileMenuToggle?.getAttribute("aria-expanded") === "true") closeMobileMenu(true);
+  });
+  document.getElementById("mobileRegisterBtn")?.addEventListener("click", () => {
+    closeMobileMenu();
+    document.getElementById("registerBtn")?.click();
+  });
+  document.getElementById("mobileLoginBtn")?.addEventListener("click", () => {
+    closeMobileMenu();
+    document.getElementById("loginBtn")?.click();
+  });
+
+  function setActiveNavLink(sectionId) {
+    navLinks.forEach((link) => {
+      const active = link.hash === `#${sectionId}`;
+      link.classList.toggle("is-active", active);
+      if (active) link.setAttribute("aria-current", "location");
+      else link.removeAttribute("aria-current");
+    });
+  }
+
+  navLinks.forEach((link) => {
+    link.addEventListener("click", (event) => {
+      const target = document.getElementById(decodeURIComponent(link.hash.slice(1)));
+      if (!target) return;
+      event.preventDefault();
+      setActiveNavLink(target.id);
+      if (window.location.hash !== link.hash) history.pushState(null, "", link.hash);
+      target.scrollIntoView({ behavior: reducedMotion ? "auto" : "smooth", block: "start" });
+    });
+  });
+
+  if ("IntersectionObserver" in window && navSections.length) {
+    const sectionVisibility = new Map();
+    const navObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) sectionVisibility.set(entry.target.id, entry.intersectionRatio);
+        else sectionVisibility.delete(entry.target.id);
+      });
+      const visibleSections = Array.from(sectionVisibility.entries())
+        .sort((a, b) => b[1] - a[1]);
+      if (visibleSections[0]) setActiveNavLink(visibleSections[0][0]);
+    }, { rootMargin: `-${Math.min(160, parseInt(getComputedStyle(document.documentElement).getPropertyValue("--header-height"), 10) || 96)}px 0px -45% 0px`, threshold: [0.05, 0.2, 0.45, 0.7] });
+    navSections.forEach((section) => navObserver.observe(section));
+  }
+
+  if (window.location.hash) setActiveNavLink(decodeURIComponent(window.location.hash.slice(1)));
+  else if (window.scrollY < 8) setActiveNavLink("home");
 
   // ===============================
   // SESSION BAR — stay on home page; choose Resident or Admin portal
@@ -1126,14 +1299,23 @@ document.addEventListener("DOMContentLoaded", () => {
       admLink.hidden = false;
     }
 
-    document.getElementById("bcLogoutResident")?.addEventListener("click", () => {
-      S.clearResidentSession();
-      window.location.reload();
-    });
-    document.getElementById("bcLogoutAdmin")?.addEventListener("click", () => {
-      S.clearAdminSession();
-      window.location.reload();
-    });
+    async function logoutFromFront(role) {
+      const button = document.getElementById(role === "admin" ? "bcLogoutAdmin" : "bcLogoutResident");
+      if (button) button.disabled = true;
+      try {
+        const response = await fetch("../php/supabase_logout.php", { method: "POST", credentials: "same-origin", cache: "no-store" });
+        const result = await response.json();
+        if (!response.ok || !result.success) throw new Error("Could not end the sign-in session.");
+        S.clearAdminSession();
+        S.clearResidentSession();
+        window.location.reload();
+      } catch (error) {
+        if (button) button.disabled = false;
+        window.alert("Logout did not finish. Please try again while connected.");
+      }
+    }
+    document.getElementById("bcLogoutResident")?.addEventListener("click", () => logoutFromFront("resident"));
+    document.getElementById("bcLogoutAdmin")?.addEventListener("click", () => logoutFromFront("admin"));
     const logoutRes = document.getElementById("bcLogoutResident");
     const logoutAdm = document.getElementById("bcLogoutAdmin");
     if (logoutRes) logoutRes.hidden = !hasRes;
@@ -1159,6 +1341,43 @@ document.addEventListener("DOMContentLoaded", () => {
   // HEADER: gradual glass (transparent + blur) as user scrolls; solid at top
   // ===============================
   const pageHeader = document.querySelector(".homepage-header");
+  const compactHeaderQuery = window.matchMedia("(max-width: 850px)");
+  function syncHeaderHeight() {
+    if (!pageHeader) return;
+
+    // Let the responsive stylesheet own the compact header height. An inline
+    // value measured before device emulation settles overrides the mobile CSS
+    // and can leave the page looking desktop-sized until a refresh.
+    if (compactHeaderQuery.matches) {
+      document.documentElement.style.removeProperty("--header-height");
+      return;
+    }
+
+    const height = Math.round(pageHeader.getBoundingClientRect().height);
+    if (height > 0) document.documentElement.style.setProperty("--header-height", `${height}px`);
+  }
+  let headerHeightRaf = null;
+  function scheduleHeaderHeightSync() {
+    if (headerHeightRaf !== null) cancelAnimationFrame(headerHeightRaf);
+    headerHeightRaf = requestAnimationFrame(() => {
+      headerHeightRaf = null;
+      syncHeaderHeight();
+    });
+  }
+  scheduleHeaderHeightSync();
+  if (pageHeader && "ResizeObserver" in window) {
+    new ResizeObserver(scheduleHeaderHeightSync).observe(pageHeader);
+  }
+  window.addEventListener("resize", scheduleHeaderHeightSync, { passive: true });
+  window.addEventListener("orientationchange", scheduleHeaderHeightSync, { passive: true });
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener("resize", scheduleHeaderHeightSync, { passive: true });
+  }
+  if (compactHeaderQuery.addEventListener) {
+    compactHeaderQuery.addEventListener("change", scheduleHeaderHeightSync);
+  } else {
+    compactHeaderQuery.addListener(scheduleHeaderHeightSync);
+  }
   const HEADER_SCROLL_RANGE = 200;
   let headerScrollRaf = null;
   function applyHeaderScrollProgress() {
@@ -1208,15 +1427,14 @@ document.addEventListener("DOMContentLoaded", () => {
   // MODAL OPEN
   // ===============================
   const privacyGate = document.getElementById("privacyNoticeGate");
-  // Acknowledge for this browser tab/session only so residents see the notice again on a new visit.
-  const privacyKey = "bcPrivacyNoticeAcknowledged_session_v2";
-  if (privacyGate && sessionStorage.getItem(privacyKey) !== "1" && !window.BC_PASSWORD_RECOVERY) {
+  // Show the privacy notice on every Home page load, including after a refresh.
+  if (privacyGate && !window.BC_PASSWORD_RECOVERY) {
+    privacyGate.hidden = false;
     document.body.classList.add("privacy-gate-open");
     Array.from(document.body.children).forEach((node) => { if (node !== privacyGate) node.inert = true; });
     const acknowledge = document.getElementById("privacyNoticeAcknowledge");
     acknowledge?.focus();
     acknowledge?.addEventListener("click", () => {
-      sessionStorage.setItem(privacyKey, "1");
       privacyGate.hidden = true;
       Array.from(document.body.children).forEach((node) => { node.inert = false; });
       document.body.classList.remove("privacy-gate-open");
@@ -1312,14 +1530,18 @@ document.addEventListener("DOMContentLoaded", () => {
   // ===============================
   const AnnApi = window.BarangayConnectAnnouncementsApi;
   let allAnnouncements = [];
+  let announcementsLoading = false;
 
   async function loadAnnouncements() {
-    if (!AnnApi) return;
+    if (!AnnApi || announcementsLoading) return;
+    announcementsLoading = true;
     try {
       allAnnouncements = await AnnApi.fetchPublished();
       renderAnnouncements();
     } catch {
       console.error("Failed to load announcements");
+    } finally {
+      announcementsLoading = false;
     }
   }
 
@@ -1381,15 +1603,17 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   loadAnnouncements();
-  setInterval(loadAnnouncements, 5000);
+  setInterval(() => { if (!document.hidden) loadAnnouncements(); }, 60000);
 
   // ===============================
   // EMERGENCY CONTACTS (BACKEND)
   // ===============================
   const EmApi = window.BarangayConnectEmergencyApi;
+  let emergencyContactsLoading = false;
 
   async function loadEmergencyContacts() {
-    if (!EmApi) return;
+    if (!EmApi || emergencyContactsLoading) return;
+    emergencyContactsLoading = true;
     try {
       const contacts = await EmApi.fetchContacts();
 
@@ -1440,11 +1664,13 @@ document.addEventListener("DOMContentLoaded", () => {
       const barangayGrid = document.getElementById("barangayContactsGrid");
       if (emergencyGrid) emergencyGrid.innerHTML = '<p class="emergency-load-error" role="alert">Emergency contacts could not be loaded. Check the server and Supabase connection, then refresh.</p>';
       if (barangayGrid) barangayGrid.innerHTML = '<p class="emergency-load-error" role="alert">Barangay contacts could not be loaded. Check the server and Supabase connection, then refresh.</p>';
+    } finally {
+      emergencyContactsLoading = false;
     }
   }
 
   loadEmergencyContacts();
-  setInterval(loadEmergencyContacts, 15000);
+  setInterval(() => { if (!document.hidden) loadEmergencyContacts(); }, 120000);
 
   // ===============================
   // FAQ ACCORDION
@@ -1499,10 +1725,4 @@ document.addEventListener("DOMContentLoaded", () => {
 
 });
 
-  if (window.BarangayConnectChatbotWidget) {
-    window.BarangayConnectChatbotWidget.init({
-      userRole: 'guest',
-      title: 'Barangay Assistant',
-    });
-  }
 </script>

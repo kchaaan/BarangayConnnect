@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <title>Resident Information | BarangayConnect</title>
+  <style>
+    :root { color-scheme: light; --green:#5f7f58; --line:#dce7d8; --ink:#243329; --muted:#5f6d5b; }
+    * { box-sizing:border-box; }
+    body { margin:0; padding:24px; background:#f3f6f2; color:var(--ink); font:15px/1.5 Arial,sans-serif; }
+    .sheet { width:min(850px,100%); min-height:900px; margin:0 auto; padding:42px 48px; background:#fff; border:1px solid var(--line); box-shadow:0 8px 30px #173b2417; }
+    header { display:flex; align-items:center; gap:12px; padding-bottom:14px; border-bottom:3px solid var(--green); }
+    .seal { width:54px; height:54px; flex:0 0 54px; border:1px solid var(--line); border-radius:50%; object-fit:cover; }
+    .brand { color:var(--green); font-weight:700; letter-spacing:.06em; text-transform:uppercase; }
+    .place { color:var(--muted); font-size:13px; }
+    time { margin-left:auto; color:var(--muted); font-size:12px; text-align:right; }
+    h1 { margin:20px 0 5px; font-size:25px; }
+    .lead { margin:0 0 18px; color:var(--muted); font-size:13px; }
+    h2 { margin:18px 0 9px; padding-bottom:6px; border-bottom:1px solid var(--line); font-size:16px; }
+    .grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
+    .field { min-height:54px; padding:8px 10px; border:1px solid var(--line); border-radius:6px; break-inside:avoid; }
+    .field span { display:block; margin-bottom:4px; color:var(--muted); font-size:10px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; }
+    .field strong { display:block; overflow-wrap:anywhere; font-size:13px; }
+    .wide { grid-column:1/-1; }
+    .footer { margin-top:18px; padding-top:10px; border-top:1px solid var(--line); color:var(--muted); font-size:10px; }
+    .actions { display:flex; justify-content:center; gap:10px; margin:18px auto 0; }
+    button,a.action { min-height:44px; display:inline-flex; align-items:center; justify-content:center; padding:10px 16px; border:1px solid var(--green); border-radius:8px; background:var(--green); color:#fff; font:inherit; font-weight:700; text-decoration:none; cursor:pointer; }
+    .notice { margin:18px auto; padding:14px 16px; border:1px solid var(--line); border-radius:10px; background:#f7faf6; color:var(--ink); text-align:center; }
+    .notice[hidden], #record[hidden], .actions[hidden] { display:none !important; }
+    @media (max-width:600px) {
+      body { padding:0; background:#fff; }
+      .sheet { width:100%; min-height:100vh; padding:20px 16px; border:0; box-shadow:none; }
+      header { gap:9px; }
+      .seal { width:44px; height:44px; flex-basis:44px; }
+      .brand { font-size:13px; }
+      .place { font-size:11px; }
+      time { max-width:120px; font-size:10px; }
+      h1 { font-size:21px; }
+      .grid { grid-template-columns:1fr; }
+      .wide { grid-column:auto; }
+      .actions { flex-direction:column; }
+    }
+    @media print {
+      @page { size:A4; margin:0; }
+      body { padding:0; background:#fff; }
+      .sheet { width:100%; min-height:297mm; margin:0; padding:14mm 16mm; border:0; box-shadow:none; }
+      .actions,.notice { display:none !important; }
+      .field { break-inside:avoid; }
+    }
+  </style>
+</head>
+<body>
+  <main class="sheet">
+    <header>
+      <img class="seal" src="../../Shared/images/barangay-tambo-seal.jpg" alt="Barangay Tambo seal">
+      <div><div class="brand">BarangayConnect</div><div class="place">Barangay Tambo, Parañaque City</div></div>
+      <time id="printedAt">Generated when opened</time>
+    </header>
+    <div id="notice" class="notice" role="status" aria-live="polite">Checking sign-in and loading resident details…</div>
+    <section id="record" hidden>
+      <h1>Resident Information</h1>
+      <p class="lead">Official resident profile print view. Personal information; share only with authorized barangay staff.</p>
+      <h2>Personal information</h2><div id="personalFields" class="grid"></div>
+      <h2>Address and contact</h2><div id="contactFields" class="grid"></div>
+      <h2>Emergency contact</h2><div id="emergencyFields" class="grid"></div>
+      <p class="footer">BarangayConnect resident record · Please verify details with the Barangay Tambo office.</p>
+    </section>
+    <div id="actions" class="actions" hidden><button type="button" onclick="window.print()">Print / Save as PDF</button></div>
+  </main>
+  <script>
+    (async function () {
+      const notice = document.getElementById('notice');
+      const residentCode = new URLSearchParams(location.search).get('resident') || '';
+      const frontUrl = new URL('../../FrontPage/html/Front.html', location.href);
+      frontUrl.searchParams.set('return_to', location.href);
+      const showSignIn = function (message) {
+        notice.textContent = message;
+        const link = document.createElement('a');
+        link.className = 'action'; link.href = frontUrl.href; link.textContent = 'Sign in to view this record';
+        const actions = document.getElementById('actions');
+        actions.replaceChildren(link); actions.hidden = false;
+      };
+      if (!residentCode) { notice.textContent = 'This resident QR link is incomplete.'; return; }
+      try {
+        const sessionResponse = await fetch('../../FrontPage/php/supabase_session.php', { credentials:'same-origin', cache:'no-store' });
+        const session = sessionResponse.ok ? await sessionResponse.json() : null;
+        if (!session || !session.authenticated) { showSignIn('Sign in to BarangayConnect before viewing this protected resident PDF page.'); return; }
+        if (!['resident','admin','superadmin'].includes(session.role)) { notice.textContent = 'Your account is not allowed to view resident profiles.'; return; }
+        const url = new URL('../../FrontPage/php/resident_qr_profile.php', location.href);
+        url.searchParams.set('resident', residentCode);
+        const response = await fetch(url.href, { credentials:'same-origin', cache:'no-store' });
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok || !result.success || !result.profile) {
+          if (response.status === 401) { showSignIn('Please sign in again to view this protected resident PDF page.'); return; }
+          throw new Error(result.error || 'Could not load this resident profile.');
+        }
+        const p = result.profile;
+        const fullName = [p.firstName,p.middleName,p.lastName,p.suffix].filter(Boolean).join(' ');
+        const address = p.address || 'Not provided';
+        const groups = [
+          ['personalFields', [['Resident ID',p.residentId],['Full name',fullName],['Date of birth',p.dateOfBirth],['Age',p.age],['Gender',p.gender],['Place of birth',p.placeOfBirth],['Civil status',p.civilStatus],['Citizenship',p.citizenship],['Religion',p.religion]]],
+          ['contactFields', [['Address',address,'wide'],['Mobile number',p.mobile],['Email',p.email]]],
+          ['emergencyFields', [['Emergency contact',p.emergencyName],['Emergency number',p.emergencyNumber],['Relationship',p.emergencyRelationship]]],
+        ];
+        for (const [containerId, fields] of groups) {
+          const container = document.getElementById(containerId);
+          for (const [label,value,className] of fields) {
+            const card = document.createElement('div'); card.className = 'field' + (className ? ' ' + className : '');
+            const caption = document.createElement('span'); caption.textContent = label;
+            const detail = document.createElement('strong'); detail.textContent = value == null || value === '' ? 'Not provided' : String(value);
+            card.append(caption,detail); container.append(card);
+          }
+        }
+        document.getElementById('printedAt').textContent = 'Printed ' + new Intl.DateTimeFormat('en-PH',{dateStyle:'medium',timeStyle:'short'}).format(new Date());
+        document.getElementById('record').hidden = false;
+        document.getElementById('actions').hidden = false;
+        notice.hidden = true;
+        document.title = fullName ? fullName + ' | BarangayConnect Resident Record' : 'Resident Record | BarangayConnect';
+      } catch (error) {
+        notice.textContent = error && error.message ? error.message : 'Could not load this resident profile.';
+      }
+    })();
+  </script>
+</body>
+</html>

@@ -22,6 +22,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit;
 }
 
+// Public/resident pages may read published transparency data. Only the
+// SuperAdmin may change budgets, projects, or supporting documents.
+if (in_array(strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET')), ['POST', 'PUT', 'PATCH', 'DELETE'], true)) {
+    require_once __DIR__ . '/supabase_client.php';
+    bc_sb_require_role(['superadmin']);
+}
+
 $conn = bc_db_connect();
 if (!$conn) {
     http_response_code(500);

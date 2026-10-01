@@ -387,6 +387,17 @@ body {
   color: #b91c1c;
 }
 
+.action-icon.pdf-export {
+  color: #b42318;
+  background: #fff7f6;
+}
+
+.action-icon.pdf-export:hover {
+  background: #fdecea;
+  border-color: #f9c7c0;
+  color: #991b1b;
+}
+
 /* Modal */
 .modal-overlay {
   display: none;

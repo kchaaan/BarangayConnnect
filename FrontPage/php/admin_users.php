@@ -165,7 +165,7 @@ function bc_admin_update_resident(array $body): never
 }
 
 // Profile and resident data are restricted to authenticated staff accounts.
-bc_sb_require_role(['admin']);
+bc_sb_require_role(['superadmin']);
 $method = strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET'));
 $action = $method === 'GET' ? trim((string) ($_GET['action'] ?? '')) : '';
 $body = [];

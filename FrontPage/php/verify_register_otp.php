@@ -9,19 +9,23 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
 }
 $body = json_decode((string) file_get_contents('php://input'), true);
 if (!is_array($body)) bc_regotp_json(400, ['success' => false, 'error' => 'Invalid verification request.']);
-$email = strtolower(trim((string) ($body['email'] ?? '')));
+$method = (string) ($body['method'] ?? 'email');
+$target = trim((string) ($body['target'] ?? ''));
 $token = preg_replace('/\D/', '', (string) ($body['token'] ?? '')) ?? '';
-if (!filter_var($email, FILTER_VALIDATE_EMAIL) || !preg_match('/^\d{6}$/', $token)) {
-    bc_regotp_json(422, ['success' => false, 'error' => 'Enter the six-digit code sent to your email.']);
+if (!in_array($method, ['email', 'sms'], true) || !preg_match('/^\d{6}$/', $token)
+    || ($method === 'email' && !filter_var($target, FILTER_VALIDATE_EMAIL))
+    || ($method === 'sms' && !preg_match('/^\+63\d{10}$/', $target))) {
+    bc_regotp_json(422, ['success' => false, 'error' => 'Enter the six-digit code sent to your selected contact.']);
 }
 bc_sb_session_start();
 $pending = $_SESSION['bc_pending_registration'] ?? null;
-if (!is_array($pending) || strtolower((string) ($pending['email'] ?? '')) !== $email
+if (!is_array($pending) || ($pending['verification_method'] ?? 'email') !== $method
+    || (string) ($pending['verification_target'] ?? $pending['email'] ?? '') !== $target
     || (int) ($pending['created_at'] ?? 0) < time() - 86400) {
     unset($_SESSION['bc_pending_registration']);
     bc_regotp_json(400, ['success' => false, 'error' => 'This registration session expired. Start the registration again to receive a new code.']);
 }
-$limit = bc_regotp_rate_limit('verify', $email, 5, 900);
+$limit = bc_regotp_rate_limit('verify', $target, 5, 900);
 if (!$limit['allowed']) {
     header('Retry-After: ' . $limit['retry_after']);
     bc_regotp_json(429, ['success' => false, 'error' => 'Too many incorrect attempts. Request a new code and try again later.']);
@@ -30,19 +34,21 @@ if (!$limit['allowed']) {
 try {
     $auth = is_array($pending['verified_auth'] ?? null) ? $pending['verified_auth'] : null;
     if (!$auth) {
-        $verified = bc_sb_request('auth/v1/verify', 'POST', [
-            'type' => 'email',
-            'email' => $email,
-            'token' => $token,
-        ], null, false);
+        $verifyPayload = ['type' => $method === 'sms' ? 'sms' : 'email', 'token' => $token];
+        $verifyPayload[$method === 'sms' ? 'phone' : 'email'] = $target;
+        $verified = bc_sb_request('auth/v1/verify', 'POST', $verifyPayload, null, false);
         $auth = is_array($verified['data'] ?? null) ? $verified['data'] : [];
         $pending['verified_auth'] = $auth;
         $_SESSION['bc_pending_registration'] = $pending;
     }
     $user = is_array($auth['user'] ?? null) ? $auth['user'] : [];
     $userId = (string) ($user['id'] ?? '');
-    if ($userId === '' || $userId !== (string) ($pending['user_id'] ?? '')) {
-        throw new RuntimeException('Email verification did not match the pending registration.');
+    $verifiedIdentity = $method === 'sms'
+        ? (string) ($user['phone'] ?? '')
+        : strtolower((string) ($user['email'] ?? ''));
+    $expectedIdentity = $method === 'sms' ? $target : strtolower($target);
+    if ($userId === '' || $userId !== (string) ($pending['user_id'] ?? '') || $verifiedIdentity !== $expectedIdentity) {
+        throw new RuntimeException('Contact verification did not match the pending registration.');
     }
 
     $pendingProfile = $pending['profile'] ?? null;
@@ -53,7 +59,7 @@ try {
     foreach ([
         'username' => (string) ($pendingProfile['username'] ?? ''),
         'phone' => (string) ($pendingProfile['phone'] ?? ''),
-        'email' => $email,
+        'email' => (string) ($pending['email'] ?? ''),
     ] as $column => $value) {
         $duplicate = bc_sb_rest('profiles', 'GET', [
             $column => 'eq.' . $value,
@@ -104,17 +110,17 @@ try {
             'expires_at' => time() + (int) ($auth['expires_in'] ?? 3600),
             'user_id' => $userId,
             'role' => 'resident',
-            'email' => $email,
+            'email' => (string) ($pending['email'] ?? ''),
             'full_name' => (string) ($profile['full_name'] ?? 'BarangayConnect resident'),
             'username' => (string) ($profile['username'] ?? ''),
             'resident' => $resident,
         ];
     }
-    bc_regotp_clear_rate_limit('verify', $email);
+    bc_regotp_clear_rate_limit('verify', $target);
     unset($_SESSION['bc_pending_registration']);
     bc_regotp_json(200, [
         'success' => true,
-        'message' => 'Registration successful. Your email has been verified.',
+        'message' => 'Registration successful. Your contact has been verified.',
         'id' => $userId,
         'residentId' => (string) ($resident['resident_id'] ?? ''),
         'firstName' => (string) ($resident['first_name'] ?? ''),

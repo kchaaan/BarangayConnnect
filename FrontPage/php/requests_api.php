@@ -6,6 +6,7 @@
  */
 require_once __DIR__ . '/requests_lib.php';
 require_once __DIR__ . '/notifications_lib.php';
+require_once __DIR__ . '/supabase_client.php';
 
 header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: *');
@@ -15,6 +16,21 @@ header('Access-Control-Allow-Headers: Content-Type');
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(204);
     exit;
+}
+
+$requestAction = trim((string) ($_GET['action'] ?? ''));
+$requestMethod = strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET'));
+if ($requestMethod === 'GET' && $requestAction === 'my') {
+    $requestSession = bc_sb_require_role(['resident']);
+    $requestedResidentId = trim((string) ($_GET['resident_id'] ?? ''));
+    $ownResidentId = trim((string) ($requestSession['resident']['resident_id'] ?? ''));
+    if ($requestedResidentId === '' || $ownResidentId === '' || !hash_equals($ownResidentId, $requestedResidentId)) {
+        http_response_code(403);
+        echo json_encode(['success' => false, 'error' => 'You may only view your own requests.']);
+        exit;
+    }
+} elseif ($requestMethod !== 'OPTIONS') {
+    bc_sb_require_role(['admin']);
 }
 
 $conn = bc_db_connect();

@@ -29,8 +29,10 @@
     return u.href;
   }
 
-  async function fetchContacts(fromHref) {
-    const res = await fetch(apiUrl('contacts', null, fromHref));
+  async function fetchContacts(fromHref, options) {
+    const includeInactive = Boolean(options && options.includeInactive);
+    const params = includeInactive ? { include_inactive: 'true' } : null;
+    const res = await fetch(apiUrl('contacts', params, fromHref), { cache: 'no-store' });
     if (!res.ok) throw new Error('Failed to load emergency contacts (' + res.status + ')');
     return res.json();
   }

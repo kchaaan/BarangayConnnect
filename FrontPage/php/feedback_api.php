@@ -9,6 +9,7 @@
  * PUT  ?action=read&id=          marks feedback as read (admin inbox only)
  */
 require_once __DIR__ . '/feedback_lib.php';
+require_once __DIR__ . '/supabase_client.php';
 
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, PUT, OPTIONS');
@@ -47,6 +48,12 @@ bc_ensure_feedback_table($conn);
 $action = trim($_GET['action'] ?? '');
 $id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
 $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+
+// Residents and public visitors may submit feedback. Reading the inbox and
+// marking entries read is reserved for the SuperAdmin.
+if (($method === 'GET' && in_array($action, ['list', 'get'], true)) || ($method === 'PUT' && $action === 'read')) {
+    bc_sb_require_role(['superadmin']);
+}
 
 if ($method === 'GET' && $action === 'list') {
     header('Content-Type: application/json; charset=utf-8');

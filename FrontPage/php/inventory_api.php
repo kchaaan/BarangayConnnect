@@ -7,6 +7,7 @@
  * DELETE ?action=delete&id=
  */
 require_once __DIR__ . '/inventory_lib.php';
+require_once __DIR__ . '/supabase_client.php';
 
 header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: *');
@@ -30,6 +31,16 @@ bc_ensure_inventory_tables($conn);
 $action = trim($_GET['action'] ?? '');
 $id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
 $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+
+// Admins may maintain inventory quantities. Creating categories and deleting
+// items are system-level changes reserved for the SuperAdmin.
+if ($method === 'POST' && $action === 'category') {
+    bc_sb_require_role(['superadmin']);
+} elseif ($method === 'DELETE' && $action === 'delete') {
+    bc_sb_require_role(['superadmin']);
+} elseif (in_array($method, ['POST', 'PUT'], true)) {
+    bc_sb_require_role(['admin']);
+}
 
 if ($method === 'GET' && $action === 'list') {
     $status = trim($_GET['status'] ?? 'all');

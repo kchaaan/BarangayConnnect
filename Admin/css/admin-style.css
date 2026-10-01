@@ -1555,3 +1555,42 @@ html, body {
 .admin-body.bc-sidebar-gsap .sidebar-toggle:active {
   transform: scale(0.94);
 }
+
+/* Compact desktop icon rail: keep navigation just below the toggle divider. */
+@media (min-width: 901px) {
+  .modern-sidebar.collapsed .sidebar-content { padding-top: 16px; }
+  .modern-sidebar.collapsed .sidebar-header {
+    min-height: 0;
+    height: 0;
+    overflow: hidden;
+    padding: 0;
+    margin: 0;
+  }
+  .modern-sidebar.collapsed .sidebar-nav { padding: 60px 10px 0; }
+  .modern-sidebar.collapsed .nav-list { padding-bottom: 12px; }
+  .modern-sidebar.collapsed .nav-item,
+  .modern-sidebar.collapsed .nav-group { margin-bottom: 7px; }
+  .modern-sidebar.collapsed .nav-link,
+  .modern-sidebar.collapsed .nav-group-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 44px;
+    margin: 0 auto;
+    padding: 0;
+    gap: 0;
+    border-radius: 12px;
+  }
+  .modern-sidebar.collapsed .nav-link span { display: none; }
+  .modern-sidebar.collapsed .nav-link i,
+  .modern-sidebar.collapsed .nav-group-toggle i:first-child {
+    width: auto;
+    margin: 0;
+    font-size: 17px;
+  }
+  .modern-sidebar.collapsed .nav-group-chevron,
+  .modern-sidebar.collapsed .nav-submenu { display: none !important; }
+  .modern-sidebar.collapsed .nav-link:hover,
+  .modern-sidebar.collapsed .nav-group-toggle:hover { transform: none; }
+}

@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Home Dashboard - BarangayConnect</title>
-  <link rel="stylesheet" href="../css/R_home-dashboard-style.css?v=20250731">
+  <link rel="stylesheet" href="../css/R_home-dashboard-style.css?v=20261001-dashboard-align">
   <link rel="stylesheet" href="../css/bc-resident-page-title.css?v=20250696">
   <script src="../../Shared/js/bc-reports-api.js?v=20250688"></script>
   <script src="../../Shared/js/bc-session.js?v=20250654"></script>
@@ -14,7 +14,7 @@
   <script src="../../Shared/js/bc-transparency-api.js?v=20260929"></script>
   <script src="https://kit.fontawesome.com/a2e0f1f0c1.js" crossorigin="anonymous"></script>
   <style>
-    .dashboard-transparency{margin:1.5rem 0 2rem;padding:1.25rem;border:1px solid #dce8dc;border-radius:16px;background:#fff;box-shadow:0 8px 24px rgba(25,65,40,.06)}.dashboard-transparency__heading{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap}.dashboard-transparency__eyebrow{margin:0 0 .2rem;color:#267247;text-transform:uppercase;letter-spacing:.08em;font-size:.75rem;font-weight:700}.dashboard-transparency h2{margin:0;color:#173d2a}.dashboard-transparency__hint{color:#58665d}.dashboard-transparency__link{border:0;border-radius:8px;padding:.7rem 1rem;color:#fff;background:#21643d;font-weight:700;cursor:pointer}.dashboard-transparency__frame{display:block;width:100%;min-height:580px;border:0;border-radius:10px;background:#f8faf8}@media(max-width:640px){.dashboard-transparency{padding:.9rem}.dashboard-transparency__frame{min-height:720px}}
+    .dashboard-transparency{margin:0;padding:.9rem;border:1px solid #dce8dc;border-radius:14px;background:#fff;box-shadow:0 6px 18px rgba(25,65,40,.05)}.dashboard-transparency__heading{display:flex;align-items:center;justify-content:space-between;gap:.75rem;min-height:32px;flex-wrap:wrap}.dashboard-transparency__eyebrow{display:none}.dashboard-transparency h2{margin:0;color:#244a32;font-size:1.05rem}.dashboard-transparency__hint{margin:.25rem 0 .45rem;color:#58665d;font-size:.78rem}.dashboard-transparency__link{border:0;border-radius:8px;padding:.6rem .8rem;color:#fff;background:#21643d;font-weight:700;cursor:pointer}.dashboard-transparency__frame{display:block;width:100%;height:460px;border:0;border-radius:10px;background:#f8faf8}@media(max-width:640px){.dashboard-transparency{padding:.9rem}.dashboard-transparency__frame{height:620px}}
     * {
       scrollbar-width: none !important;
       -ms-overflow-style: none !important;
@@ -30,6 +30,7 @@
     <div class="welcome-section">
       <h1 class="dashboard-title">Dashboard</h1>
       <p class="dashboard-subtitle">Here's what's happening in your barangay today</p>
+      <p class="dashboard-meta" id="dashboardDate"></p>
     </div>
   </div>
 
@@ -57,8 +58,8 @@
       </div>
       <div class="summary-card__body">
         <h3 class="summary-card__label">My Reports</h3>
-        <p class="summary-card__value" id="reportsValue">0</p>
-        <p class="summary-card__hint">This month</p>
+        <p class="summary-card__value" id="reportsValue">—</p>
+        <p class="summary-card__hint">Submitted this month</p>
       </div>
     </button>
 
@@ -68,8 +69,8 @@
       </div>
       <div class="summary-card__body">
         <h3 class="summary-card__label">My Requests</h3>
-        <p class="summary-card__value" id="requestsValue">0</p>
-        <p class="summary-card__hint">Pending &amp; in progress</p>
+        <p class="summary-card__value" id="requestsValue">—</p>
+        <p class="summary-card__hint">Open service &amp; borrowing requests</p>
       </div>
     </button>
 
@@ -80,7 +81,7 @@
       </div>
       <div class="summary-card__body">
         <h3 class="summary-card__label">Notifications</h3>
-        <p class="summary-card__value" id="notifValue">0</p>
+        <p class="summary-card__value" id="notifValue">—</p>
         <div class="summary-card__status-bar">
           <span class="summary-card__hint" id="notifHint">All caught up</span>
           <span class="summary-card__view-all" id="notifViewAllCard" aria-hidden="true">
@@ -91,19 +92,45 @@
     </button>
   </div>
 
-  <!-- Latest Announcements -->
-  <section class="dashboard-overview" aria-label="Latest announcements">
-    <article class="overview-card overview-card--activity overview-card--announcements">
-      <h3 class="overview-card__title">Latest Announcements</h3>
-      <div class="overview-activity-list" id="announcementsList"></div>
-      <button type="button" class="overview-link" id="viewAllAnnouncements">
-        Go to Announcements <i class="fas fa-arrow-right" aria-hidden="true"></i>
+  <section class="dashboard-quick-actions" aria-label="Quick actions">
+    <div class="dashboard-quick-actions__intro">
+      <p class="dashboard-quick-actions__eyebrow">Get started</p>
+      <h2>What would you like to do?</h2>
+      <p>Open a service, report a concern, or check your requests.</p>
+    </div>
+    <div class="dashboard-quick-actions__links">
+      <button type="button" class="dashboard-quick-action" data-dashboard-action="requests">
+        <span class="dashboard-quick-action__icon"><i class="fas fa-file-alt" aria-hidden="true"></i></span>
+        <span><strong>Request a service</strong><small>Start a barangay request</small></span>
+        <i class="fas fa-arrow-right" aria-hidden="true"></i>
       </button>
-    </article>
+      <button type="button" class="dashboard-quick-action" data-dashboard-action="reports">
+        <span class="dashboard-quick-action__icon"><i class="fas fa-flag" aria-hidden="true"></i></span>
+        <span><strong>Report an issue</strong><small>Tell us about a concern</small></span>
+        <i class="fas fa-arrow-right" aria-hidden="true"></i>
+      </button>
+      <button type="button" class="dashboard-quick-action" data-dashboard-action="borrow">
+        <span class="dashboard-quick-action__icon"><i class="fas fa-box-open" aria-hidden="true"></i></span>
+        <span><strong>Borrow an item</strong><small>Browse available items</small></span>
+        <i class="fas fa-arrow-right" aria-hidden="true"></i>
+      </button>
+    </div>
   </section>
 
+  <div class="dashboard-content-grid">
+    <!-- Latest Announcements -->
+    <section class="dashboard-overview" aria-label="Latest announcements">
+      <article class="overview-card overview-card--activity overview-card--announcements">
+        <h3 class="overview-card__title">Latest Announcements</h3>
+        <div class="overview-activity-list" id="announcementsList"></div>
+        <button type="button" class="overview-link" id="viewAllAnnouncements">
+          Go to Announcements <i class="fas fa-arrow-right" aria-hidden="true"></i>
+        </button>
+      </article>
+    </section>
 
-  <section class="dashboard-transparency" aria-labelledby="dashboardTransparencyTitle"><div class="dashboard-transparency__heading"><div><p class="dashboard-transparency__eyebrow">Public records</p><h2 id="dashboardTransparencyTitle">Barangay Transparency</h2></div><button type="button" class="dashboard-transparency__link" onclick="navigateToPortalSection('transparency','R_Transparency.html')">View all records <span aria-hidden="true">→</span></button></div><p class="dashboard-transparency__hint">Current projects, programs, and budget information</p><iframe class="dashboard-transparency__frame" src="R_Transparency.html?embed=dashboard" title="Transparency records" loading="lazy"></iframe></section>
+    <section class="dashboard-transparency" aria-labelledby="dashboardTransparencyTitle"><div class="dashboard-transparency__heading"><div><p class="dashboard-transparency__eyebrow">Public records</p><h2 id="dashboardTransparencyTitle">Barangay Transparency</h2></div><button type="button" class="dashboard-transparency__link" onclick="navigateToPortalSection('transparency','R_Transparency.html')">View all records <span aria-hidden="true">→</span></button></div><p class="dashboard-transparency__hint">Budget summary and latest projects</p><iframe class="dashboard-transparency__frame" src="R_Transparency.html?embed=dashboard" title="Transparency records summary" loading="lazy"></iframe></section>
+  </div>
   <!-- Notifications floating popup -->
   <div class="notif-popup" id="notifPopup" hidden aria-hidden="true">
     <div class="notif-popup__backdrop" id="notifPopupBackdrop"></div>
@@ -130,7 +157,7 @@
     function setSummaryCardValue(elementId, value) {
       var el = document.getElementById(elementId);
       if (!el) return;
-      el.textContent = value != null ? String(value) : '0';
+      el.textContent = value != null && Number.isFinite(Number(value)) ? Number(value).toLocaleString('en-US') : '—';
     }
 
     function getTimeGreeting() {
@@ -148,16 +175,18 @@
 
     function initDashboardGreeting() {
       var el = document.getElementById('dashboardGreetingTitle');
-      if (!el) return;
-      el.textContent = getTimeGreeting() + ', ' + getResidentDisplayName() + '!';
+      if (el) el.textContent = getTimeGreeting() + ', ' + getResidentDisplayName() + '!';
+      var date = document.getElementById('dashboardDate');
+      if (date) date.textContent = 'Today · ' + new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }) + ' · Dashboard updates automatically';
     }
 
     function requestStatusKey(status) {
-      var s = String(status || 'pending').toLowerCase();
-      if (s === 'completed') return 'completed';
-      if (s === 'rejected') return 'rejected';
-      if (s === 'in_progress' || s.indexOf('progress') !== -1) return 'in_progress';
-      return 'pending';
+      var s = String(status || '').trim().toLowerCase().replace(/_/g, ' ');
+      if (s === 'pending') return 'pending';
+      if (['completed', 'rejected', 'cancelled', 'canceled', 'returned', 'closed', 'damaged', 'lost', 'damaged/lost'].indexOf(s) !== -1) return 'completed';
+      if (s === 'in progress' || s.indexOf('progress') !== -1 || s === 'processing') return 'in_progress';
+      if (['approved', 'released', 'borrowed', 'overdue'].indexOf(s) !== -1) return 'in_progress';
+      return 'other';
     }
 
     function getResidentId() {
@@ -191,22 +220,24 @@
     async function fetchActiveRequestsCount() {
       var Api = window.BarangayConnectRequestsApi;
       var rid = getResidentId();
-      if (!Api || !rid) return 0;
+      if (!Api || !rid) return null;
 
       try {
-        var tokens = new Set();
-        if (rid) tokens.add(String(rid).trim());
-        var code = localStorage.getItem('residentCode');
-        if (code) tokens.add(String(code).trim());
-
-        var data = await Api.fetchMyRequests(rid);
-        var mine = Array.isArray(data)
-          ? data.filter(function (req) { return requestBelongsToResident(req, tokens); })
-          : [];
-        return countPendingAndInProgressRequests(mine);
+        var borrowUrl = new URL('../../FrontPage/php/borrow_api.php', window.location.href);
+        borrowUrl.searchParams.set('action', 'my');
+        var residentCode = localStorage.getItem('residentCode') || rid;
+        var results = await Promise.all([
+          Api.fetchMyRequests(residentCode),
+          fetch(borrowUrl.href, { cache: 'no-store', credentials: 'same-origin' }).then(function (response) {
+            if (!response.ok) throw new Error('Borrow requests unavailable');
+            return response.json();
+          }),
+        ]);
+        if (!Array.isArray(results[0]) || !Array.isArray(results[1])) return null;
+        return countPendingAndInProgressRequests(results[0].concat(results[1]));
       } catch (e) {
         console.warn('Requests KPI unavailable:', e);
-        return 0;
+        return null;
       }
     }
 
@@ -305,11 +336,23 @@
       }
     }
 
+    document.querySelectorAll('[data-dashboard-action]').forEach(function (button) {
+      button.addEventListener('click', function () {
+        var action = button.getAttribute('data-dashboard-action');
+        if (action === 'borrow') {
+          navigateToPortalSection('borrow', 'R_Borrow-Available-Items.html');
+        } else {
+          navigateToPortalSection(action);
+        }
+      });
+    });
+
     async function loadNotificationCounts(residentId) {
       var NotifApi = window.BarangayConnectNotificationsApi;
       if (!NotifApi || !residentId) {
-        setSummaryCardValue('notifValue', 0);
-        updateNotifHint({ totalUnread: 0, urgentUnread: 0, normalUnread: 0 });
+        setSummaryCardValue('notifValue', null);
+        var unavailableHint = document.getElementById('notifHint');
+        if (unavailableHint) unavailableHint.textContent = 'Sign in to view updates';
         return null;
       }
       try {
@@ -320,8 +363,9 @@
         return counts;
       } catch (e) {
         console.warn('Notification counts unavailable:', e);
-        setSummaryCardValue('notifValue', 0);
-        updateNotifHint({ totalUnread: 0, urgentUnread: 0, normalUnread: 0 });
+        setSummaryCardValue('notifValue', null);
+        var unavailableHint = document.getElementById('notifHint');
+        if (unavailableHint) unavailableHint.textContent = 'Updates unavailable';
         return null;
       }
     }
@@ -491,17 +535,13 @@
 
     async function fetchMyReportsThisMonth() {
       var ReportsApi = window.BarangayConnectReportsApi;
-      if (!ReportsApi) return 0;
+      if (!ReportsApi) return null;
 
       try {
-        var results = await Promise.all([
-          fetch(ReportsApi.apiUrl('all')),
-          fetch(ReportsApi.apiUrl('archived')),
-        ]);
-
-        var active = results[0].ok ? await results[0].json() : [];
-        var archived = results[1].ok ? await results[1].json() : [];
-        var reports = (Array.isArray(active) ? active : []).concat(Array.isArray(archived) ? archived : []);
+        var response = await fetch(ReportsApi.apiUrl('mine'), { cache: 'no-store', credentials: 'same-origin' });
+        if (!response.ok) throw new Error('Reports could not be loaded');
+        var reports = await response.json();
+        if (!Array.isArray(reports)) throw new Error('Invalid report data');
         var now = new Date();
 
         return reports.filter(function (report) {
@@ -511,7 +551,7 @@
         }).length;
       } catch (e) {
         console.warn('Reports KPI unavailable:', e);
-        return 0;
+        return null;
       }
     }
 
@@ -625,8 +665,7 @@
       window.setInterval(function () {
         var residentId = getResidentId();
         if (!residentId) return;
-        loadNotificationCounts(residentId);
-        loadNotificationsList(residentId);
+        loadDashboardData();
       }, 45000);
     });
   </script>

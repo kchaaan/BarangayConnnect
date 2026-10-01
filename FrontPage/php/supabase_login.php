@@ -20,24 +20,51 @@ function bc_login_resident_metadata(array $authUser, string $email): ?array {
   if(str_starts_with($digits,'639'))$contact='0'.substr($digits,2);
   return ['first_name'=>$first,'middle_name'=>trim((string)($metadata['middle_name']??'')),'last_name'=>$last,'username'=>$username,'phone'=>$phone,'contact_number'=>$contact,'email'=>$email];
 }
-if(bc_login_throttled()){http_response_code(429);echo json_encode(['success'=>false,'error'=>'Too many login attempts. Try again in 15 minutes.']);exit;}
-$identifier=trim((string)($_POST['identifier']??'')); $password=(string)($_POST['password']??''); $captcha=(string)($_POST['cf-turnstile-response']??'');
-if ($identifier==='' || $password==='') bc_login_out(400,['success'=>false,'error'=>'Enter your username/email and password.']);
-if (!bc_sb_verify_turnstile($captcha,(string)($_SERVER['REMOTE_ADDR']??''))) bc_login_out(400,['success'=>false,'error'=>'Please complete the CAPTCHA verification.']);
+$identifier=trim((string)($_POST['identifier']??'')); $password=(string)($_POST['password']??''); $captchaToken=(string)($_POST['captcha-verification']??'');
+if ($identifier==='' || $password==='') bc_login_out(400,['success'=>false,'code'=>'missing_credentials','error'=>'Enter your username/email and password.']);
+bc_sb_session_start();
+$expectedCaptchaHash=(string)($_SESSION['bc_login_captcha_token_hash']??'');
+$expectedCaptchaContext=(string)($_SESSION['bc_login_captcha_context']??'');
+$captchaVerifiedAt=(int)($_SESSION['bc_login_captcha_verified_at']??0);
+unset($_SESSION['bc_login_captcha_token_hash'],$_SESSION['bc_login_captcha_context'],$_SESSION['bc_login_captcha_verified_at']);
+$submittedCaptchaContext=hash('sha256',strtolower($identifier));
+if ($captchaToken==='' || $expectedCaptchaHash==='' || $captchaVerifiedAt<time()-300 || !hash_equals($expectedCaptchaHash,hash('sha256',$captchaToken)) || !hash_equals($expectedCaptchaContext,$submittedCaptchaContext)) bc_login_out(400,['success'=>false,'code'=>'captcha_invalid','error'=>'CAPTCHA verification expired or is invalid. Enter the new code to continue.']);
+if(bc_login_throttled()){http_response_code(429);echo json_encode(['success'=>false,'code'=>'rate_limited','error'=>'Too many login attempts. Try again in 15 minutes.']);exit;}
 $authAttempted=false;
 try {
   $email=$identifier;
-  if (!filter_var($email,FILTER_VALIDATE_EMAIL)) {
+  $phoneFallback='';
+  if (filter_var($email,FILTER_VALIDATE_EMAIL)) {
+    $lookup=bc_sb_rest('profiles','GET',['email'=>'eq.'.$email,'select'=>'id,email,phone','limit'=>'1']);
+  } else {
+    $lookup=bc_sb_rest('profiles','GET',['username'=>'eq.'.$identifier,'select'=>'id,email,phone','limit'=>'1']);
+  }
+  $loginProfile=$lookup['data'][0]??null;
+  if(is_array($loginProfile)){
+    $phoneFallback=(string)($loginProfile['phone']??'');
+    if(!filter_var($email,FILTER_VALIDATE_EMAIL)&&!empty($loginProfile['email']))$email=(string)$loginProfile['email'];
+  }
+  if (!filter_var($email,FILTER_VALIDATE_EMAIL) && !$phoneFallback) {
+    // A username may identify a phone-auth account; its phone number is used below.
     $lookup=bc_sb_rest('profiles','GET',['username'=>'eq.'.$identifier,'select'=>'id,email,phone','limit'=>'1']);
     $found=$lookup['data'][0]??null;
-    if(is_array($found)){if(!empty($found['email']))$email=(string)$found['email'];elseif(!empty($found['phone']))$email='tel:'.(string)$found['phone'];}
+    if(is_array($found)){if(!empty($found['email']))$email=(string)$found['email'];if(!empty($found['phone']))$phoneFallback=(string)$found['phone'];}
   }
-  if (!filter_var($email,FILTER_VALIDATE_EMAIL) && !str_starts_with($email,'tel:')) bc_login_out(401,['success'=>false,'error'=>'Invalid login credentials. If you are using a username, try the email address used to register.']);
-  $credentials=str_starts_with($email,'tel:')?['phone'=>substr($email,4),'password'=>$password]:['email'=>$email,'password'=>$password];
+  if (!filter_var($email,FILTER_VALIDATE_EMAIL) && !$phoneFallback) bc_login_out(401,['success'=>false,'code'=>'invalid_credentials','error'=>'Incorrect username/email or password. Check your sign-in details and try again.']);
+  $credentials=filter_var($email,FILTER_VALIDATE_EMAIL)?['email'=>$email,'password'=>$password]:['phone'=>$phoneFallback,'password'=>$password];
   $authAttempted=true;
-  $auth=bc_sb_request('auth/v1/token?grant_type=password','POST',$credentials,null,false);
+  try {
+    $auth=bc_sb_request('auth/v1/token?grant_type=password','POST',$credentials,null,false);
+  } catch (Throwable $authError) {
+    if (!filter_var($email,FILTER_VALIDATE_EMAIL) || $phoneFallback==='' || $phoneFallback===($credentials['phone']??'')) throw $authError;
+    try {
+      $auth=bc_sb_request('auth/v1/token?grant_type=password','POST',['phone'=>$phoneFallback,'password'=>$password],null,false);
+    } catch (Throwable $phoneAuthError) {
+      throw $authError;
+    }
+  }
   $authData=$auth['data']; $authUser=is_array($authData['user']??null)?$authData['user']:[]; $userId=(string)($authUser['id']??'');
-  if ($userId==='') bc_login_out(401,['success'=>false,'error'=>'Invalid login credentials.']);
+  if ($userId==='') bc_login_out(401,['success'=>false,'code'=>'invalid_credentials','error'=>'Incorrect username/email or password. Check your sign-in details and try again.']);
   $r=bc_sb_rest('profiles','GET',['id'=>'eq.'.$userId,'select'=>'id,role,status,full_name,email,phone,username','limit'=>'1']);
   $profile=$r['data'][0]??null;
   $residentData=bc_login_resident_metadata($authUser,$email);
@@ -65,6 +92,6 @@ try {
   bc_login_out(200,['success'=>true,'role'=>$profile['role'],'id'=>$userId,'residentId'=>$resident['resident_id']??'','firstname'=>$resident['first_name']??'','lastname'=>$resident['last_name']??'','username'=>$profile['username']??'','fullName'=>$profile['full_name']??'BarangayConnect user','privacyAcknowledged'=>false]);
 } catch (Throwable $e) {
   error_log('BarangayConnect Supabase login: '.$e->getMessage());
-  if($authAttempted && in_array($e->getCode(),[400,401],true))bc_login_out(401,['success'=>false,'error'=>'Invalid login credentials. Use the registered email and the exact password set during signup.']);
-  bc_login_out(503,['success'=>false,'error'=>'Login service is unavailable. Check the Supabase server configuration.']);
+  if($authAttempted && in_array($e->getCode(),[400,401],true))bc_login_out(401,['success'=>false,'code'=>'invalid_credentials','error'=>'Incorrect username/email or password. Check your sign-in details and try again.']);
+  bc_login_out(503,['success'=>false,'code'=>'login_unavailable','error'=>'Login service is unavailable. Check the Supabase server configuration.']);
 }
