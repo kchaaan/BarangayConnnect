@@ -60,6 +60,22 @@
     return image ? image.src : '';
   }
 
+  function addQuietZone(container) {
+    const source = container.querySelector('canvas');
+    if (!source) return false;
+    const quietZone = Math.ceil(source.width * 0.12);
+    const padded = global.document.createElement('canvas');
+    padded.width = source.width + quietZone * 2;
+    padded.height = source.height + quietZone * 2;
+    const context = padded.getContext('2d');
+    if (!context) return false;
+    context.fillStyle = '#ffffff';
+    context.fillRect(0, 0, padded.width, padded.height);
+    context.drawImage(source, quietZone, quietZone);
+    container.replaceChildren(padded);
+    return true;
+  }
+
   function loadQrLibrary() {
     if (typeof global.QRCode === 'function') return Promise.resolve();
     if (global._bcQrLoadPromise) return global._bcQrLoadPromise;
@@ -164,13 +180,15 @@
           text: qrText(info),
           width: 300,
           height: 300,
-          minimumTypeNumber: 1,
           colorDark: '#173b24',
           colorLight: '#ffffff',
           correctLevel: global.QRCode.CorrectLevel?.L ?? 1,
         });
         if (!container.querySelector('canvas, svg, img, table')) {
           throw new Error('QR encoder did not create an image.');
+        }
+        if (container.querySelector('canvas') && !addQuietZone(container)) {
+          throw new Error('Could not add the QR quiet zone.');
         }
         if (status) status.textContent = 'QR ready. Sign-in is required; a phone needs the site hosted at a reachable HTTPS address (localhost works only on this computer).';
       } catch (error) {
