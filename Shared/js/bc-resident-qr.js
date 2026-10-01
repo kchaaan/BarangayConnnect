@@ -164,7 +164,7 @@
           text: qrText(info),
           width: 300,
           height: 300,
-          minimumTypeNumber: 30,
+          minimumTypeNumber: 1,
           colorDark: '#173b24',
           colorLight: '#ffffff',
           correctLevel: global.QRCode.CorrectLevel?.L ?? 1,
