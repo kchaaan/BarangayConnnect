@@ -468,7 +468,7 @@
       <span class="close" data-close="registerModal" aria-label="Close">&times;</span>
       <h2 id="registerModalTitle">Register</h2>
 
-      <form id="registerForm" novalidate>
+      <form id="registerForm" autocomplete="off" novalidate>
         <div class="register-wizard" data-current-step="1">
           <div class="register-progress" aria-label="Registration progress">
             <div class="register-progress__top">
@@ -496,17 +496,17 @@
             <div class="register-field-row register-field-row--3">
               <div class="register-field-col">
                 <label for="regFirstName">First Name <span aria-hidden="true">*</span></label>
-                <input type="text" id="regFirstName" name="firstname" placeholder="First name" autocomplete="given-name" required />
+                <input type="text" id="regFirstName" name="firstname" placeholder="First name" autocomplete="off" required />
               </div>
               <div class="register-field-col">
                 <label for="regMiddleName">Middle Name</label>
                 <div id="regMiddleWrap" class="reg-middle-wrap">
-                  <input type="text" id="regMiddleName" name="middlename" placeholder="Middle name" autocomplete="additional-name" />
+                  <input type="text" id="regMiddleName" name="middlename" placeholder="Middle name" autocomplete="off" />
                 </div>
               </div>
               <div class="register-field-col">
                 <label for="regLastName">Last Name <span aria-hidden="true">*</span></label>
-                <input type="text" id="regLastName" name="lastname" placeholder="Last name" autocomplete="family-name" required />
+                <input type="text" id="regLastName" name="lastname" placeholder="Last name" autocomplete="off" required />
               </div>
             </div>
             <label class="reg-checkbox-row">
@@ -517,7 +517,7 @@
             <div class="register-field-row register-field-row--2">
               <div class="register-field-col">
                 <label for="regSuffix">Suffix <span class="register-step-sub" style="display:inline;font-weight:400;">(optional)</span></label>
-                <input type="text" id="regSuffix" name="suffix" placeholder="Jr., Sr., III" maxlength="32" autocomplete="honorific-suffix" />
+                <input type="text" id="regSuffix" name="suffix" placeholder="Jr., Sr., III" maxlength="32" autocomplete="off" />
               </div>
               <div class="register-field-col">
                 <label for="regGender">Gender <span aria-hidden="true">*</span></label>
@@ -750,11 +750,11 @@
             <div class="register-field-row register-field-row--2">
               <div class="register-field-col">
               <label for="regMobile">Mobile Number <span aria-hidden="true">*</span></label>
-                <input type="text" id="regMobile" name="phone" inputmode="numeric" autocomplete="tel" maxlength="11" pattern="[0-9]{11}" placeholder="09XXXXXXXXX (11 digits)" title="Enter exactly 11 digits, numbers only" required />
+                <input type="text" id="regMobile" name="phone" inputmode="numeric" autocomplete="off" maxlength="11" pattern="[0-9]{11}" placeholder="09XXXXXXXXX (11 digits)" title="Enter exactly 11 digits, numbers only" required />
               </div>
               <div class="register-field-col">
                 <label for="regEmail">Email Address <span aria-hidden="true">*</span></label>
-                <input type="email" id="regEmail" name="email" placeholder="name@example.com" autocomplete="email" required />
+                <input type="email" id="regEmail" name="email" placeholder="name@example.com" autocomplete="off" required />
               </div>
             </div>
             <div class="register-field-full register-verification-method">
@@ -1066,7 +1066,7 @@
           <h3>Reset your password</h3>
           <p>Enter the registered email address and the six-digit code sent after staff verified your identity.</p>
           <label for="recoveryOtpEmail">Registered email address</label>
-          <input id="recoveryOtpEmail" name="email" type="email" autocomplete="email" maxlength="254" required>
+          <input id="recoveryOtpEmail" name="email" type="email" autocomplete="off" maxlength="254" required>
           <label for="recoveryOtpCode">Six-digit recovery code</label>
           <input id="recoveryOtpCode" name="token" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required>
           <label for="recoveryOtpNewPassword">New password</label>
