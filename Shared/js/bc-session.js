@@ -60,6 +60,10 @@
     return localStorage.getItem('residentId');
   }
 
+  function getResidentCode() {
+    return localStorage.getItem('residentCode');
+  }
+
   function cachedResidentUser() {
     const id = getResidentId();
     if (!id) return null;
