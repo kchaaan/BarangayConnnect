@@ -4376,3 +4376,19 @@ input[readonly]:focus {
   .mobile-nav-backdrop,
   .mobile-nav-drawer { transition-duration: 0.01ms; }
 }
+
+
+/* Keep the logged-in shortcuts below the fixed header. */
+.bc-session-bar-active .bc-session-bar:not([hidden]) {
+  margin-top: var(--header-height);
+}
+
+.bc-session-bar-active .homepage-main {
+  padding-top: 3rem;
+}
+
+@media (max-width: 850px) {
+  .bc-session-bar-active .homepage-main {
+    padding-top: 1.25rem;
+  }
+}
