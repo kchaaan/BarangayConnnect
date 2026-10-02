@@ -1203,3 +1203,39 @@ body {
   .overview-card { padding: .95rem; }
   .dashboard-transparency { margin-top: 1rem; }
 }
+
+
+/* Compact dashboard spacing on small phones. */
+@media (max-width: 560px) {
+  body { padding: .55rem .65rem .85rem; }
+  .dashboard-header { margin-bottom: .7rem; }
+  .dashboard-title { font-size: clamp(1.35rem, 6vw, 1.55rem); line-height: 1.25; }
+  .dashboard-subtitle { font-size: .78rem; line-height: 1.45; }
+  .dashboard-meta { font-size: .68rem; line-height: 1.4; }
+  .dashboard-greeting-banner { min-height: 0; margin-bottom: .7rem; padding: .75rem .85rem; border-radius: 12px; }
+  .dashboard-greeting-banner__title { font-size: .98rem; line-height: 1.35; }
+  .dashboard-greeting-banner__subtitle { font-size: .78rem; line-height: 1.4; }
+  .dashboard-greeting-banner__art, .dashboard-greeting-banner__art img { height: 44px; min-height: 44px; }
+  .summary-cards { grid-template-columns: 1fr; gap: .55rem; margin-bottom: .7rem; }
+  .summary-card { min-height: 74px; gap: .7rem; padding: .65rem .75rem; border-radius: 11px; }
+  .summary-card__icon { width: 36px; height: 36px; }
+  .summary-card__label { font-size: .84rem; line-height: 1.3; }
+  .summary-card__value { margin: .15rem 0; font-size: 1.35rem; line-height: 1.2; }
+  .summary-card__hint { font-size: .72rem; line-height: 1.35; }
+  .summary-card__status-bar { margin-top: .35rem; padding: .45rem .6rem; font-size: .72rem; }
+  .dashboard-quick-actions { gap: .6rem; margin-bottom: .7rem; padding: .75rem; }
+  .dashboard-quick-actions__intro h2 { font-size: .92rem; }
+  .dashboard-quick-actions__intro > p:last-child { font-size: .7rem; }
+  .dashboard-quick-actions__links { grid-template-columns: 1fr; gap: .4rem; }
+  .dashboard-quick-action { padding: .55rem; }
+  .overview-card { padding: .8rem; }
+  .dashboard-transparency { margin-top: .7rem; padding: .75rem; }
+}
+@media (max-width: 360px) {
+  body { padding-inline: .5rem; }
+  .dashboard-title { font-size: 1.3rem; }
+  .dashboard-greeting-banner { padding: .65rem .7rem; }
+  .summary-card { min-height: 68px; padding: .6rem; }
+  .summary-card__icon { width: 32px; height: 32px; }
+  .dashboard-quick-actions__intro > p:last-child { display: none; }
+}
