@@ -802,8 +802,8 @@
     function setHeaderOffset() {
       var header = document.querySelector('.admin-header');
       if (!header) return;
-      var borderBottom = 3;
-      var offset = header.offsetHeight + borderBottom;
+      
+      var offset = Math.ceil(header.getBoundingClientRect().height);
       document.documentElement.style.setProperty('--header-offset', offset + 'px');
     }
 
@@ -825,7 +825,7 @@
       setCurrentDate();
     });
 
-    window.addEventListener('resize', setHeaderOffset);
+    window.addEventListener('resize', setHeaderOffset, { passive: true }); window.addEventListener('orientationchange', setHeaderOffset, { passive: true }); if (document.fonts && document.fonts.ready) document.fonts.ready.then(setHeaderOffset); var residentHeader = document.querySelector('.admin-header'); if (residentHeader && 'ResizeObserver' in window) new ResizeObserver(setHeaderOffset).observe(residentHeader);
 
     (function() {
       const modal = document.getElementById('updateProfileModal');
