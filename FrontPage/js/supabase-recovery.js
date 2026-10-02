@@ -61,7 +61,7 @@
 
         history.replaceState(null, '', location.pathname + location.search);
         form.hidden = true;
-        message.textContent = 'Updated na ang password mo. Bumalik sa login at gamitin ang bagong password.';
+        message.textContent = 'Your password has been updated. Return to the login page and sign in with your new password.';
         submit.textContent = 'Password updated';
       } catch (e) {
         error.textContent = e.message || 'Hindi na-update ang password. Humingi ng bagong recovery link.';
