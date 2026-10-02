@@ -3,7 +3,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>BarangayConnect - Home</title>
-  <link rel="stylesheet" href="../css/front-style.css?v=20261001-nonblocking-fonts"/>
+  <link rel="stylesheet" href="../css/front-style.css?v=20261002-session-bar-offset"/>
   <script src="../../Shared/js/bc-announcements-api.js?v=20250710"></script>
   <script src="../../Shared/js/bc-emergency-api.js?v=20261001-active-contact-filter"></script>
   <script src="../../Shared/js/bc-feedback-api.js?v=20250712"></script>
@@ -1334,7 +1334,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     if (servicesLogin) servicesLogin.hidden = true;
 
-    bar.hidden = false;
+    bar.hidden = false; document.body.classList.add("bc-session-bar-active");
   })();
 
   // ===============================
