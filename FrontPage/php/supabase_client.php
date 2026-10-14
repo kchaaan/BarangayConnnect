@@ -58,7 +58,7 @@ function bc_sb_session_start(): void {
 }
 function bc_sb_current_user(bool $refresh=false): ?array {
     bc_sb_session_start(); $session=$_SESSION['bc_supabase']??null;
-    if (!is_array($session) || empty($session['access_token'])) return null;
+    if (!is_array($session) || empty($session['access_token']) || empty($session['user_id'])) return null;
     if ($refresh || ((int)($session['expires_at']??0) < time()+30)) {
       if (empty($session['refresh_token'])) { unset($_SESSION['bc_supabase']); return null; }
       try {
@@ -66,9 +66,34 @@ function bc_sb_current_user(bool $refresh=false): ?array {
         $_SESSION['bc_supabase']['access_token']=$r['data']['access_token'];
         $_SESSION['bc_supabase']['refresh_token']=$r['data']['refresh_token']??$session['refresh_token'];
         $_SESSION['bc_supabase']['expires_at']=time()+(int)($r['data']['expires_in']??3600);
+        $session=$_SESSION['bc_supabase'];
       } catch(Throwable $e) { unset($_SESSION['bc_supabase']); return null; }
     }
-    return $_SESSION['bc_supabase'];
+
+    // Re-read the user's authoritative profile on every server-side session check.
+    // This prevents a role/status change in Supabase from leaving old privileges
+    // active in an already-issued PHP session. The user's JWT and self-read RLS
+    // policy scope this request to the same auth.users id.
+    try {
+      $uid=rawurlencode((string)$session['user_id']);
+      $profile=bc_sb_request('rest/v1/profiles?select=id,role,status,full_name,email,phone,username&id=eq.'.$uid.'&limit=1','GET',null,(string)$session['access_token'],false);
+      $row=is_array($profile['data'])?($profile['data'][0]??null):null;
+      if (!is_array($row) || (string)($row['id']??'')!==(string)$session['user_id'] || ($row['status']??'')!=='active' || !in_array(($row['role']??''),['resident','admin','superadmin'],true)) {
+        unset($_SESSION['bc_supabase']);
+        return null;
+      }
+      $_SESSION['bc_supabase']['role']=$row['role'];
+      $_SESSION['bc_supabase']['full_name']=$row['full_name']??$_SESSION['bc_supabase']['full_name']??'';
+      $_SESSION['bc_supabase']['email']=$row['email']??$_SESSION['bc_supabase']['email']??'';
+      $_SESSION['bc_supabase']['username']=$row['username']??$_SESSION['bc_supabase']['username']??'';
+      $session=$_SESSION['bc_supabase'];
+    } catch(Throwable $e) {
+      // Fail closed if the role cannot be confirmed; keep the session so a
+      // temporary Supabase outage does not destroy the user's refresh token.
+      error_log('Supabase session profile verification failed: '.$e->getMessage());
+      return null;
+    }
+    return $session;
 }
 function bc_sb_role_has_admin_access(?string $role): bool {
     return in_array($role, ['admin', 'superadmin'], true);
