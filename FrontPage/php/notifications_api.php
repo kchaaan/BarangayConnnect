@@ -7,6 +7,8 @@
  * POST ?action=admin_alert  body: { resident_id, title, message, priority? }
  */
 require_once __DIR__ . '/notifications_lib.php';
+require_once __DIR__ . '/requests_lib.php';
+require_once __DIR__ . '/supabase_client.php';
 
 header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: *');
@@ -25,9 +27,16 @@ function bc_notif_json_error(int $code, string $msg): void
     exit;
 }
 
-function bc_notif_resident_id(): int
-{
-    return (int) ($_GET['resident_id'] ?? $_POST['resident_id'] ?? 0);
+$action = trim($_GET['action'] ?? '');
+$method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+$residentSession = null;
+if (($method === 'GET' && in_array($action, ['counts', 'list'], true))
+    || ($method === 'PUT' && in_array($action, ['read', 'read_all'], true))) {
+    $residentSession = bc_sb_require_role(['resident']);
+} elseif ($method === 'POST' && $action === 'admin_alert') {
+    bc_sb_require_role(['admin']);
+} else {
+    bc_notif_json_error(405, 'Method not allowed');
 }
 
 $conn = bc_db_connect();
@@ -37,25 +46,28 @@ if (!$conn) {
 
 bc_ensure_resident_notifications_table($conn);
 
-$action = trim($_GET['action'] ?? '');
-$method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
-$residentId = bc_notif_resident_id();
+$residentId = 0;
+if ($residentSession) {
+    $residentCode = trim((string) ($residentSession['resident']['resident_id'] ?? ''));
+    if ($residentCode !== '') {
+        $residentOwner = bc_resolve_resident_owner($conn, $residentCode);
+        $residentId = (int) ($residentOwner['pk'] ?? 0);
+    }
+}
 
 if ($method === 'GET' && $action === 'counts') {
-    if ($residentId <= 0) {
-        bc_notif_json_error(400, 'resident_id is required');
+    if ($residentId > 0) {
+        bc_sync_request_notifications_for_resident($conn, $residentId);
     }
-    bc_sync_request_notifications_for_resident($conn, $residentId);
     echo json_encode(bc_notification_counts_for_resident($conn, $residentId));
     $conn->close();
     exit;
 }
 
 if ($method === 'GET' && $action === 'list') {
-    if ($residentId <= 0) {
-        bc_notif_json_error(400, 'resident_id is required');
+    if ($residentId > 0) {
+        bc_sync_request_notifications_for_resident($conn, $residentId);
     }
-    bc_sync_request_notifications_for_resident($conn, $residentId);
     $limit = min(50, max(1, (int) ($_GET['limit'] ?? 20)));
     $stmt = $conn->prepare(
         'SELECT notification_id, resident_user_id, type, priority, title, message,
@@ -82,8 +94,13 @@ if ($method === 'GET' && $action === 'list') {
 
 if ($method === 'PUT' && $action === 'read') {
     $id = (int) ($_GET['id'] ?? 0);
-    if ($residentId <= 0 || $id <= 0) {
-        bc_notif_json_error(400, 'resident_id and id are required');
+    if ($id <= 0) {
+        bc_notif_json_error(400, 'id is required');
+    }
+    if ($residentId <= 0) {
+        $conn->close();
+        echo json_encode(['success' => true]);
+        exit;
     }
     $stmt = $conn->prepare(
         'UPDATE resident_notifications SET is_read = 1
@@ -99,7 +116,9 @@ if ($method === 'PUT' && $action === 'read') {
 
 if ($method === 'PUT' && $action === 'read_all') {
     if ($residentId <= 0) {
-        bc_notif_json_error(400, 'resident_id is required');
+        $conn->close();
+        echo json_encode(['success' => true]);
+        exit;
     }
     $stmt = $conn->prepare(
         'UPDATE resident_notifications SET is_read = 1 WHERE resident_user_id = ? AND is_read = 0'
