@@ -19,15 +19,15 @@
   :root { --bc-hero-green: #12452d; --bc-hero-orange: #ff9f2e; }
   .homepage-header { background: linear-gradient(90deg, rgba(5,35,22,.48), rgba(12,55,33,.38)); border-bottom: 1px solid rgba(255,255,255,.18); box-shadow: 0 8px 28px rgba(0,0,0,calc(var(--header-scroll, 0) * .18)); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
   .homepage-main, body.bc-file-banner-active .homepage-main { max-width: none; padding: 0 0 3rem; }
-  .introduction-section { position: relative; isolation: isolate; overflow: hidden; display: grid; place-items: center; width: 100%; min-height: 100svh; margin: 0; padding: clamp(8rem, 16vh, 10rem) clamp(1.25rem, 5vw, 4rem) clamp(3rem, 7vh, 5rem); border-radius: 0; background: #103d28 url("https://barangayconnect.com/assets/images/bg-index.jpg") center center / cover no-repeat; text-align: center; }
+  .introduction-section { position: relative; isolation: isolate; overflow: hidden; display: grid; place-items: center; width: 100%; min-height: 100svh; margin: 0; padding: clamp(8rem, 16vh, 10rem) clamp(1.25rem, 5vw, 4rem) clamp(3rem, 7vh, 5rem); border-radius: 0; background: #103d28 url("../../Shared/images/tambo-barangay-hall-background.jpg") center center / cover no-repeat; text-align: center; }
   .introduction-section::before, .introduction-section::after { position: absolute; inset: 0; z-index: 0; content: ""; pointer-events: none; }
-  .introduction-section::before { background: linear-gradient(105deg, rgba(4,37,23,.86), rgba(10,64,38,.72) 56%, rgba(12,61,38,.62)); }
-  .introduction-section::after { background: linear-gradient(180deg, rgba(3,29,18,.04) 42%, rgba(3,29,18,.38)); }
+  .introduction-section::before { background: linear-gradient(105deg, rgba(4,37,23,.56), rgba(10,64,38,.46) 56%, rgba(12,61,38,.40)); }
+  .introduction-section::after { background: linear-gradient(180deg, rgba(3,29,18,.02) 42%, rgba(3,29,18,.16)); }
   .intro-content { position: relative; z-index: 1; width: min(100%, 1040px); margin: auto; }
   .intro-eyebrow { display: inline-flex; align-items: center; gap: .65rem; margin: 0 auto 1.6rem; padding: .6rem 1rem; border: 1px solid rgba(255,255,255,.24); border-radius: 999px; background: rgba(255,255,255,.1); color: #eff7ed; font-size: .82rem; font-weight: 700; letter-spacing: .06em; }
   .intro-dot { width: 8px; height: 8px; flex: 0 0 8px; border-radius: 50%; background: #4ade80; box-shadow: 0 0 0 3px rgba(74,222,128,.2); animation: bc-live-dot-pulse 2.2s ease-in-out infinite; }
   @keyframes bc-live-dot-pulse { 0%,100% { box-shadow: 0 0 0 3px rgba(74,222,128,.2); } 50% { box-shadow: 0 0 0 6px rgba(74,222,128,.08); } }
-  .intro-title { max-width: 1040px; margin: 0 auto 1.2rem; color: #fff; font-size: clamp(3rem, 8vw, 6.4rem); font-weight: 800; line-height: .98; letter-spacing: -.055em; text-shadow: 0 3px 24px rgba(0,0,0,.22); }
+  .intro-title { max-width: 1040px; margin: 0 auto 1.2rem; color: #fff; font-size: clamp(3.4rem, 9vw, 7.2rem); font-weight: 800; line-height: .98; letter-spacing: -.055em; text-shadow: 0 3px 24px rgba(0,0,0,.22); }
   .intro-title span { display: block; margin-top: .04em; background: none; color: var(--bc-hero-orange); -webkit-text-fill-color: var(--bc-hero-orange); }
   .intro-description { max-width: 780px; margin: 0 auto 1.65rem; padding: 0; color: rgba(255,255,255,.92); font-size: clamp(1rem, 1.5vw, 1.18rem); line-height: 1.7; }
   .intro-actions { display: flex; justify-content: center; flex-wrap: wrap; gap: .8rem; margin: 0 auto 1.5rem; }
@@ -71,7 +71,7 @@
   body { background: #e8f2e5; }
   body::before { display: block !important; background-image: url('../../Shared/images/tambo-barangay-hall-background.jpg') !important; }
   body::after { display: block !important; background: linear-gradient(135deg, rgba(30,48,37,.48), rgba(45,58,48,.55)) !important; }
-  .introduction-section { background-image: linear-gradient(105deg, rgba(4,37,23,.86), rgba(10,64,38,.72) 56%, rgba(12,61,38,.62)), url('../../Shared/images/tambo-barangay-hall-background.jpg') !important; background-position: center 44%; background-size: cover; }
+  .introduction-section { background-image: url('../../Shared/images/tambo-barangay-hall-background.jpg') !important; background-position: center 44%; background-size: cover; }
   .homepage-section { width: min(calc(100% - 2rem), 1260px); margin: clamp(1.5rem, 3vw, 3rem) auto; padding: clamp(1.5rem, 3vw, 2.5rem); border: 1px solid rgba(220,232,220,.96); border-radius: 22px; background: rgba(247,250,247,.96); box-shadow: 0 12px 36px rgba(20,55,34,.12); }
   .resident-steps.homepage-section { width: min(calc(100% - 2rem), 1260px); }
   .resident-step { transform: none; transition: background-color .2s ease, color .2s ease, border-color .2s ease; }
