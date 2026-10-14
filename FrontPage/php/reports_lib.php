@@ -15,6 +15,7 @@ function bc_ensure_reports_table(mysqli $conn): void
         status VARCHAR(32) NOT NULL DEFAULT 'Pending',
         image_path VARCHAR(512) NULL,
         resident_user_id INT NULL,
+        resident_auth_id CHAR(36) NULL,
         created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
         resolved_at DATETIME NULL DEFAULT NULL,
@@ -23,6 +24,11 @@ function bc_ensure_reports_table(mysqli $conn): void
         INDEX idx_cr_created (created_at),
         INDEX idx_cr_archived (archived_at)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+    $authColumn = $conn->query("SHOW COLUMNS FROM community_reports LIKE 'resident_auth_id'");
+    if ($authColumn && $authColumn->num_rows === 0) {
+        $conn->query('ALTER TABLE community_reports ADD COLUMN resident_auth_id CHAR(36) NULL AFTER resident_user_id');
+    }
 }
 
 function bc_ensure_reports_archive_columns(mysqli $conn): void
@@ -68,7 +74,7 @@ function bc_auto_archive_expired_resolved(mysqli $conn): void
 function bc_reports_select_sql(): string
 {
     return 'SELECT report_id, title, category, location, description, status, image_path,
-            created_at, updated_at, resolved_at, archived_at
+            resident_user_id, resident_auth_id, created_at, updated_at, resolved_at, archived_at
             FROM community_reports';
 }
 
