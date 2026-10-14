@@ -86,6 +86,31 @@ if ($title === '' || $category === '' || $location === '' || $description === ''
     exit;
 }
 
+$reportImageMime = null;
+if (isset($_FILES['image']) && ($_FILES['image']['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_NO_FILE) {
+    if ($_FILES['image']['error'] !== UPLOAD_ERR_OK || empty($_FILES['image']['tmp_name'])) {
+        http_response_code(400);
+        echo 'ERROR';
+        $conn->close();
+        exit;
+    }
+    $imageSize = (int) ($_FILES['image']['size'] ?? 0);
+    $finfo = finfo_open(FILEINFO_MIME_TYPE);
+    $imageMime = $finfo ? finfo_file($finfo, $_FILES['image']['tmp_name']) : false;
+    if ($finfo) {
+        finfo_close($finfo);
+    }
+    $imageTypes = ['image/jpeg' => 'jpg', 'image/png' => 'png', 'image/webp' => 'webp'];
+    if ($imageSize <= 0 || $imageSize > 5 * 1024 * 1024
+        || !is_string($imageMime) || !isset($imageTypes[$imageMime])) {
+        http_response_code(400);
+        echo 'ERROR';
+        $conn->close();
+        exit;
+    }
+    $reportImageMime = $imageMime;
+}
+
 $status = 'Pending';
 $stmt = $conn->prepare(
     'INSERT INTO community_reports (title, category, location, description, status, resident_user_id, resident_auth_id)
@@ -105,27 +130,13 @@ $reportId = (int) $conn->insert_id;
 $stmt->close();
 
 $imagePath = null;
-if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK && $_FILES['image']['tmp_name'] !== '') {
-    $imageSize = (int) ($_FILES['image']['size'] ?? 0);
-    $finfo = finfo_open(FILEINFO_MIME_TYPE);
-    $imageMime = $finfo ? finfo_file($finfo, $_FILES['image']['tmp_name']) : false;
-    if ($finfo) {
-        finfo_close($finfo);
-    }
+if ($reportImageMime !== null) {
     $imageTypes = ['image/jpeg' => 'jpg', 'image/png' => 'png', 'image/webp' => 'webp'];
-    if ($imageSize <= 0 || $imageSize > 5 * 1024 * 1024
-        || !is_string($imageMime) || !isset($imageTypes[$imageMime])) {
-        http_response_code(400);
-        echo 'ERROR';
-        $conn->close();
-        exit;
-    }
-
     $uploadBase = bc_reports_upload_dir() . DIRECTORY_SEPARATOR . $reportId;
     if (!is_dir($uploadBase)) {
         mkdir($uploadBase, 0755, true);
     }
-    $safeName = bin2hex(random_bytes(16)) . '.' . $imageTypes[$imageMime];
+    $safeName = bin2hex(random_bytes(16)) . '.' . $imageTypes[$reportImageMime];
     $destPath = $uploadBase . DIRECTORY_SEPARATOR . $safeName;
     if (move_uploaded_file($_FILES['image']['tmp_name'], $destPath)) {
         $imagePath = 'reports/' . $reportId . '/' . $safeName;
