@@ -64,7 +64,9 @@
   .homepage-section { scroll-margin-top: 100px; }
   @media (max-width: 768px) { .resident-steps__grid { grid-template-columns: 1fr; } .resident-step { min-height: 220px; } .introduction-section { min-height: 100svh; padding: 12rem 1.1rem 3rem; background-position: 58% center; } .intro-title { font-size: clamp(2.5rem,9vw,4.4rem); } }
   @media (max-width: 480px) { .intro-actions { flex-direction: column; align-items: stretch; max-width: 290px; } .hero-cta { width: 100%; } .introduction-section .intro-features { gap: .45rem; } .introduction-section .feature-badge { padding: .45rem .65rem; font-size: .68rem; } .community-ribbon__track { padding: .8rem 0; } .resident-steps { width: calc(100% - 1.4rem); } }
-  @media (prefers-reduced-motion: reduce) { .intro-dot,.community-ribbon__track { animation: none; } .resident-step,.hero-cta { transition: none; } }
+  @media (prefers-reduced-motion: reduce) { .intro-dot,.community-ribbon__track { animation: none; } .resident-step,.hero-cta { transition: none; } }  body { background-color: #f3f7f3; }
+  body::before, body::after { display: none !important; }
+
 </style>
 
 </head>
