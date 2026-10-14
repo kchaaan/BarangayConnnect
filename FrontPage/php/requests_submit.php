@@ -171,13 +171,31 @@ $uploads = bc_parse_uploaded_files('files');
 $savedFiles = 0;
 
 foreach ($uploads as $i => $file) {
-    if ($file['error'] !== UPLOAD_ERR_OK || $file['tmp_name'] === '') {
+    if ($i >= 3 || $file['error'] !== UPLOAD_ERR_OK || $file['tmp_name'] === ''
+        || $file['size'] <= 0 || $file['size'] > 10 * 1024 * 1024) {
+        continue;
+    }
+
+    $finfo = finfo_open(FILEINFO_MIME_TYPE);
+    $detectedMime = $finfo ? finfo_file($finfo, $file['tmp_name']) : false;
+    if ($finfo) {
+        finfo_close($finfo);
+    }
+    $allowedTypes = [
+        'application/pdf' => 'pdf',
+        'image/jpeg' => 'jpg',
+        'image/png' => 'png',
+    ];
+    if (!is_string($detectedMime) || !isset($allowedTypes[$detectedMime])) {
         continue;
     }
 
     $label = $fileLabels[$i] ?? $defaultLabels[$i] ?? ('Attachment ' . ($i + 1));
     $safeName = preg_replace('/[^a-zA-Z0-9._-]/', '_', basename($file['name']));
-    $destName = ($i + 1) . '_' . $safeName;
+    if ($safeName === '' || $safeName === '.' || $safeName === '..') {
+        $safeName = 'attachment.' . $allowedTypes[$detectedMime];
+    }
+    $destName = ($i + 1) . '_' . bin2hex(random_bytes(12)) . '.' . $allowedTypes[$detectedMime];
     $destPath = $uploadBase . DIRECTORY_SEPARATOR . $destName;
 
     if (!move_uploaded_file($file['tmp_name'], $destPath)) {
@@ -190,7 +208,7 @@ foreach ($uploads as $i => $file) {
          VALUES (?,?,?,?,?)'
     );
     if ($fStmt) {
-        $fStmt->bind_param('issss', $requestPk, $label, $safeName, $file['type'], $relPath);
+        $fStmt->bind_param('issss', $requestPk, $label, $safeName, $detectedMime, $relPath);
         $fStmt->execute();
         $fStmt->close();
         $savedFiles++;
