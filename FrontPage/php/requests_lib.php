@@ -552,7 +552,7 @@ function bc_request_row_to_api(array $row): array
 /**
  * Parse $_FILES field (supports files[] multi-upload from FormData).
  *
- * @return list<array{name: string, tmp_name: string, error: int, type: string}>
+ * @return list<array{name: string, tmp_name: string, error: int, type: string, size: int}>
  */
 function bc_parse_uploaded_files(string $field = 'files'): array
 {
@@ -571,6 +571,7 @@ function bc_parse_uploaded_files(string $field = 'files'): array
                 'tmp_name' => (string) $files['tmp_name'][$i],
                 'error' => (int) $files['error'][$i],
                 'type' => (string) ($files['type'][$i] ?? ''),
+                'size' => (int) ($files['size'][$i] ?? 0),
             ];
         }
     } elseif (($files['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_NO_FILE) {
@@ -579,6 +580,7 @@ function bc_parse_uploaded_files(string $field = 'files'): array
             'tmp_name' => (string) ($files['tmp_name'] ?? ''),
             'error' => (int) ($files['error'] ?? UPLOAD_ERR_NO_FILE),
             'type' => (string) ($files['type'] ?? ''),
+            'size' => (int) ($files['size'] ?? 0),
         ];
     }
 
