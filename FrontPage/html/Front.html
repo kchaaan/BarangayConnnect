@@ -15,7 +15,58 @@
   <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" /></noscript>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" media="print" onload="this.media='all'" />
   <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" /></noscript>
-  <script src="../../Shared/js/bc-notify.js?v=20250659"></script>
+  <script src="../../Shared/js/bc-notify.js?v=20250659"></script><style id="bc-live-hero-theme">
+  :root { --bc-hero-green: #12452d; --bc-hero-orange: #ff9f2e; }
+  .homepage-header { background: linear-gradient(90deg, rgba(5,35,22,.48), rgba(12,55,33,.38)); border-bottom: 1px solid rgba(255,255,255,.18); box-shadow: 0 8px 28px rgba(0,0,0,calc(var(--header-scroll, 0) * .18)); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+  .homepage-main, body.bc-file-banner-active .homepage-main { max-width: none; padding: 0 0 3rem; }
+  .introduction-section { position: relative; isolation: isolate; overflow: hidden; display: grid; place-items: center; width: 100%; min-height: 100svh; margin: 0; padding: clamp(8rem, 16vh, 10rem) clamp(1.25rem, 5vw, 4rem) clamp(3rem, 7vh, 5rem); border-radius: 0; background: #103d28 url("https://barangayconnect.com/assets/images/bg-index.jpg") center center / cover no-repeat; text-align: center; }
+  .introduction-section::before, .introduction-section::after { position: absolute; inset: 0; z-index: 0; content: ""; pointer-events: none; }
+  .introduction-section::before { background: linear-gradient(105deg, rgba(4,37,23,.86), rgba(10,64,38,.72) 56%, rgba(12,61,38,.62)); }
+  .introduction-section::after { background: linear-gradient(180deg, rgba(3,29,18,.04) 42%, rgba(3,29,18,.38)); }
+  .intro-content { position: relative; z-index: 1; width: min(100%, 1040px); margin: auto; }
+  .intro-eyebrow { display: inline-flex; align-items: center; gap: .65rem; margin: 0 auto 1.6rem; padding: .6rem 1rem; border: 1px solid rgba(255,255,255,.24); border-radius: 999px; background: rgba(255,255,255,.1); color: #eff7ed; font-size: .82rem; font-weight: 700; letter-spacing: .06em; }
+  .intro-dot { width: 8px; height: 8px; flex: 0 0 8px; border-radius: 50%; background: #4ade80; box-shadow: 0 0 0 3px rgba(74,222,128,.2); animation: bc-live-dot-pulse 2.2s ease-in-out infinite; }
+  @keyframes bc-live-dot-pulse { 0%,100% { box-shadow: 0 0 0 3px rgba(74,222,128,.2); } 50% { box-shadow: 0 0 0 6px rgba(74,222,128,.08); } }
+  .intro-title { max-width: 1040px; margin: 0 auto 1.2rem; color: #fff; font-size: clamp(3rem, 8vw, 6.4rem); font-weight: 800; line-height: .98; letter-spacing: -.055em; text-shadow: 0 3px 24px rgba(0,0,0,.22); }
+  .intro-title span { display: block; margin-top: .04em; background: none; color: var(--bc-hero-orange); -webkit-text-fill-color: var(--bc-hero-orange); }
+  .intro-description { max-width: 780px; margin: 0 auto 1.65rem; padding: 0; color: rgba(255,255,255,.92); font-size: clamp(1rem, 1.5vw, 1.18rem); line-height: 1.7; }
+  .intro-actions { display: flex; justify-content: center; flex-wrap: wrap; gap: .8rem; margin: 0 auto 1.5rem; }
+  .hero-cta { min-height: 50px; display: inline-flex; align-items: center; justify-content: center; gap: .65rem; padding: .75rem 1.4rem; border: 1px solid rgba(255,255,255,.56); border-radius: 999px; background: rgba(6,46,29,.28); color: #fff; font: 700 .96rem Poppins,sans-serif; text-decoration: none; cursor: pointer; transition: transform .2s, box-shadow .2s, background .2s; }
+  .hero-cta--primary { border-color: var(--bc-hero-orange); background: var(--bc-hero-orange); color: #18251c; }
+  .hero-cta:hover { transform: translateY(-2px); box-shadow: 0 9px 24px rgba(0,0,0,.2); }
+  .intro-features { display: flex; justify-content: center; flex-wrap: wrap; gap: .65rem; margin-top: 0; }
+  .introduction-section .feature-badge { padding: .55rem 1rem; border: 1px solid rgba(255,255,255,.22); background: rgba(247,251,246,.96); color: #173d2a; font-size: .82rem; }
+  .community-ribbon { width: 100%; overflow: hidden; margin: 0; background: #174d2e; color: #fff; }
+  .community-ribbon__track { display: flex; align-items: center; width: max-content; min-width: 200%; justify-content: space-around; gap: clamp(1.2rem,3vw,3.2rem); padding: 1rem 0; animation: bc-ribbon-scroll 32s linear infinite; }
+  .community-ribbon__track span { color: #fff; font-size: clamp(1.1rem,2.7vw,2.3rem); font-weight: 800; letter-spacing: .025em; white-space: nowrap; }
+  .community-ribbon__track span:nth-of-type(even) { color: var(--bc-hero-orange); }
+  .community-ribbon__track i { color: #9fc493; font-size: .8rem; font-style: normal; }
+  @keyframes bc-ribbon-scroll { to { transform: translateX(-50%); } }
+  .community-ribbon:hover .community-ribbon__track { animation-play-state: paused; }
+  .resident-steps { width: min(100% - 2rem,1260px); margin: 0 auto; padding: clamp(4rem,7vw,6.5rem) 0; text-align: center; }
+  .resident-steps__heading { max-width: 750px; margin: 0 auto 2.5rem; }
+  .resident-steps__eyebrow { margin-bottom: .45rem; color: #b86616; font-size: .78rem; font-weight: 700; letter-spacing: .16em; }
+  .resident-steps__heading h2 { color: #1f2c23; font-size: clamp(2rem,4.3vw,3.4rem); line-height: 1.12; letter-spacing: -.04em; }
+  .resident-steps__heading > p:last-child { margin-top: .75rem; color: #667267; font-size: 1rem; }
+  .resident-steps__grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 1rem; list-style: none; text-align: left; }
+  .resident-step { position: relative; min-height: 285px; overflow: hidden; padding: 1.65rem; border: 1px solid #dce7dd; border-radius: 20px; background: #fff; box-shadow: 0 12px 34px rgba(30,69,43,.07); transition: transform .22s,box-shadow .22s,border-color .22s; }
+  .resident-step:hover { transform: translateY(-5px); border-color: #a9c6a5; box-shadow: 0 18px 40px rgba(30,69,43,.12); }
+  .resident-step:first-child { border-color: #174d2e; background: #174d2e; color: #fff; }
+  .resident-step__icon { position: relative; z-index: 1; width: 52px; height: 52px; display: grid; place-items: center; border-radius: 15px; background: #eaf2e8; color: #205b39; font-size: 1.2rem; }
+  .resident-step:first-child .resident-step__icon { background: rgba(255,255,255,.14); color: #fff; }
+  .resident-step__number { position: absolute; top: 1.15rem; right: 1.35rem; color: #e6e9e7; font-size: 3.25rem; font-weight: 800; line-height: 1; letter-spacing: -.06em; }
+  .resident-step:first-child .resident-step__number { color: rgba(255,255,255,.14); }
+  .resident-step h3 { position: relative; margin: 2.2rem 0 .55rem; color: #1f2c23; font-size: 1.1rem; }
+  .resident-step:first-child h3 { color: #fff; }
+  .resident-step p { position: relative; max-width: 34ch; color: #627067; font-size: .93rem; line-height: 1.75; }
+  .resident-step:first-child p { color: rgba(255,255,255,.8); }
+  .resident-steps__cta { min-height: 50px; display: inline-flex; align-items: center; justify-content: center; gap: .65rem; margin-top: 1.8rem; padding: .75rem 1.3rem; border: 0; border-radius: 999px; background: var(--bc-hero-orange); color: #173b29; font: 700 .96rem Poppins,sans-serif; cursor: pointer; }
+  .homepage-section { scroll-margin-top: 100px; }
+  @media (max-width: 768px) { .resident-steps__grid { grid-template-columns: 1fr; } .resident-step { min-height: 220px; } .introduction-section { min-height: 100svh; padding: 12rem 1.1rem 3rem; background-position: 58% center; } .intro-title { font-size: clamp(2.5rem,9vw,4.4rem); } }
+  @media (max-width: 480px) { .intro-actions { flex-direction: column; align-items: stretch; max-width: 290px; } .hero-cta { width: 100%; } .introduction-section .intro-features { gap: .45rem; } .introduction-section .feature-badge { padding: .45rem .65rem; font-size: .68rem; } .community-ribbon__track { padding: .8rem 0; } .resident-steps { width: calc(100% - 1.4rem); } }
+  @media (prefers-reduced-motion: reduce) { .intro-dot,.community-ribbon__track { animation: none; } .resident-step,.hero-cta { transition: none; } }
+</style>
+
 </head>
 <body>
   <!-- Header with Register/Login on top right -->
@@ -96,12 +147,17 @@
     <!-- Introduction Section -->
     <section class="introduction-section" id="home">
       <div class="intro-content">
+        <p class="intro-eyebrow"><span class="intro-dot" aria-hidden="true"></span> BARANGAY TAMBO · PARAÑAQUE CITY</p>
         <h2 class="intro-title">Welcome to <span>BarangayConnect</span></h2>
         <p class="intro-description">
           Experience transparency, efficiency, and connection with BarangayConnect, your trusted platform to stay informed, 
           access services quickly, and engage with the community of Barangay Tambo, Parañaque City. 
           Connect with your barangay, access essential services, and stay updated with the latest announcements and information.
         </p>
+        <div class="intro-actions">
+          <button type="button" class="hero-cta hero-cta--primary" onclick="document.getElementById('registerBtn')?.click()"><i class="fas fa-user-plus" aria-hidden="true"></i> Get Started</button>
+          <button type="button" class="hero-cta" onclick="document.getElementById('loginBtn')?.click()">Log In <i class="fas fa-arrow-right" aria-hidden="true"></i></button>
+        </div>
         <div class="intro-features">
           <div class="feature-badge">
             <i class="fas fa-shield-alt"></i>
@@ -119,6 +175,25 @@
       </div>
     </section>
 
+
+    <div class="community-ribbon" aria-label="Barangay Tambo community message">
+      <div class="community-ribbon__track" aria-hidden="true">
+        <span>SERBISYO LANG PO</span><i>✦</i><span>BARANGAY TAMBO</span><i>✦</i><span>SERBISYO LANG PO</span><i>✦</i><span>BARANGAY TAMBO</span><i>✦</i>
+      </div>
+    </div>
+    <section class="resident-steps homepage-section" id="resident-steps" aria-labelledby="residentStepsTitle">
+      <div class="resident-steps__heading">
+        <p class="resident-steps__eyebrow">FOR RESIDENTS</p>
+        <h2 id="residentStepsTitle">Up and running in 3 easy steps</h2>
+        <p>Get started and stay connected with your barangay.</p>
+      </div>
+      <ol class="resident-steps__grid">
+        <li class="resident-step"><span class="resident-step__icon"><i class="fas fa-user-plus" aria-hidden="true"></i></span><span class="resident-step__number" aria-hidden="true">01</span><h3>Create Your Account</h3><p>Enter accurate details to register as a resident of Barangay Tambo.</p></li>
+        <li class="resident-step"><span class="resident-step__icon"><i class="fas fa-id-card" aria-hidden="true"></i></span><span class="resident-step__number" aria-hidden="true">02</span><h3>Open the Resident Portal</h3><p>Log in to see the services available in your resident account.</p></li>
+        <li class="resident-step"><span class="resident-step__icon"><i class="fas fa-bell" aria-hidden="true"></i></span><span class="resident-step__number" aria-hidden="true">03</span><h3>Use the Services</h3><p>Request documents, submit reports, and stay updated with announcements.</p></li>
+      </ol>
+      <button type="button" class="resident-steps__cta" onclick="document.getElementById('servicesRegisterBtn')?.click()">Register Now <i class="fas fa-arrow-right" aria-hidden="true"></i></button>
+    </section>
 
     <section class="homepage-section services-section" id="services">
       <div class="section-header">
