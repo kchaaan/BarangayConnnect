@@ -112,7 +112,13 @@ language sql stable security definer set search_path=public
 as $$ select exists(select 1 from public.profiles p where p.id=auth.uid() and p.role::text in ('admin','superadmin') and p.status='active') $$;
 create or replace function public.bc_my_resident_id() returns uuid
 language sql stable security definer set search_path=public
-as $$ select r.id from public.residents r where r.user_id=auth.uid() limit 1 $$;
+as $ select r.id from public.residents r where r.user_id=auth.uid() limit 1 $;
+
+-- These SECURITY DEFINER helpers are for authenticated RLS policies, not anonymous callers.
+revoke execute on function public.bc_is_admin() from public, anon;
+revoke execute on function public.bc_my_resident_id() from public, anon;
+grant execute on function public.bc_is_admin() to authenticated, service_role;
+grant execute on function public.bc_my_resident_id() to authenticated, service_role;
 
 alter table public.profiles enable row level security;
 alter table public.residents enable row level security;
@@ -157,7 +163,7 @@ alter table public.announcements add column if not exists status text not null d
 alter table public.announcements add column if not exists author text;
 alter table public.announcements enable row level security;
 drop policy if exists announcements_public_read on public.announcements;
-create policy announcements_public_read on public.announcements for select to anon, authenticated using (status = 'published');
+create policy announcements_public_read on public.announcements for select to anon, authenticated using (active and status = 'published');
 create table if not exists public.resident_feedback (
  id uuid primary key default gen_random_uuid(), resident_id uuid references public.residents(id), status text,
  message text not null, source text, submitter_name text, created_at timestamptz not null default now()
@@ -251,7 +257,7 @@ alter table public.service_request_files enable row level security;
 
 -- Public read data. Writes are made by PHP after it verifies the user's server-side role.
 drop policy if exists announcements_public_read on public.announcements;
-create policy announcements_public_read on public.announcements for select to anon,authenticated using(active);
+create policy announcements_public_read on public.announcements for select to anon, authenticated using (active and status = 'published');
 drop policy if exists emergency_procedures_public_read on public.emergency_procedures;
 create policy emergency_procedures_public_read on public.emergency_procedures for select to anon,authenticated using(active);
 drop policy if exists inventory_public_read on public.inventory_items;
@@ -263,7 +269,7 @@ create policy budget_public_read on public.transparency_budget for select to ano
 drop policy if exists transparency_items_public_read on public.transparency_items;
 create policy transparency_items_public_read on public.transparency_items for select to anon,authenticated using(status <> 'Archived');
 drop policy if exists transparency_docs_public_read on public.transparency_documents;
-create policy transparency_docs_public_read on public.transparency_documents for select to anon,authenticated using(true);
+create policy transparency_docs_public_read on public.transparency_documents for select to anon, authenticated using (exists (select 1 from public.transparency_items i where i.id = item_id and i.status <> 'Archived'));
 drop policy if exists reports_owner_admin_read on public.community_reports;
 create policy reports_owner_admin_read on public.community_reports for select to authenticated using(resident_id=public.bc_my_resident_id() or public.bc_is_admin());
 drop policy if exists requests_owner_admin_read on public.service_requests;
