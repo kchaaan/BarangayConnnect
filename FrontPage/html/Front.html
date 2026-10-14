@@ -67,6 +67,26 @@
   @media (prefers-reduced-motion: reduce) { .intro-dot,.community-ribbon__track { animation: none; } .resident-step,.hero-cta { transition: none; } }  body { background-color: #f3f7f3; }
   body::before, body::after { display: none !important; }
 
+  /* BarangayConnect uses its own Tambo background asset. */
+  body { background: #e8f2e5; }
+  body::before { display: block !important; background-image: url('../../Shared/images/tambo-barangay-hall-background.jpg') !important; }
+  body::after { display: block !important; background: linear-gradient(135deg, rgba(30,48,37,.48), rgba(45,58,48,.55)) !important; }
+  .introduction-section { background-image: linear-gradient(105deg, rgba(4,37,23,.86), rgba(10,64,38,.72) 56%, rgba(12,61,38,.62)), url('../../Shared/images/tambo-barangay-hall-background.jpg') !important; background-position: center 44%; background-size: cover; }
+  .homepage-section { width: min(calc(100% - 2rem), 1260px); margin: clamp(1.5rem, 3vw, 3rem) auto; padding: clamp(1.5rem, 3vw, 2.5rem); border: 1px solid rgba(220,232,220,.96); border-radius: 22px; background: rgba(247,250,247,.96); box-shadow: 0 12px 36px rgba(20,55,34,.12); }
+  .resident-steps.homepage-section { width: min(calc(100% - 2rem), 1260px); }
+  .resident-step { transform: none; transition: background-color .2s ease, color .2s ease, border-color .2s ease; }
+  .resident-step:first-child { border-color: #dce7dd; background: #fff; color: #1f2c23; }
+  .resident-step:first-child .resident-step__icon { background: #eaf2e8; color: #205b39; }
+  .resident-step:first-child .resident-step__number { color: #e6e9e7; }
+  .resident-step:first-child h3 { color: #1f2c23; }
+  .resident-step:first-child p { color: #627067; }
+  .resident-step:hover, .resident-step:first-child:hover { transform: none; border-color: #174d2e; background: #174d2e; color: #fff; box-shadow: 0 12px 34px rgba(30,69,43,.12); }
+  .resident-step:hover h3, .resident-step:first-child:hover h3 { color: #fff; }
+  .resident-step:hover p, .resident-step:first-child:hover p { color: rgba(255,255,255,.84); }
+  .resident-step:hover .resident-step__icon, .resident-step:first-child:hover .resident-step__icon { background: rgba(255,255,255,.14); color: #fff; }
+  .resident-step:hover .resident-step__number, .resident-step:first-child:hover .resident-step__number { color: rgba(255,255,255,.2); }
+  @media (max-width: 768px) { .homepage-section, .resident-steps.homepage-section { width: calc(100% - 1rem); margin: 1rem auto; padding: 1.25rem; border-radius: 18px; } }
+
 </style>
 
 </head>
