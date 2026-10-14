@@ -21,12 +21,12 @@ The supplied archive is a PHP + MySQL project, not a Supabase application. It ha
 
 ## Supabase migration status
 
-`database/supabase_target_schema.sql` is a **target schema**, not an automatic migration of the existing database. Most business-data PHP endpoints still contain MySQL queries and call the removed MySQL connection code. Those features therefore are not operational against Supabase in this package. Finish converting every API before running the application as a whole. RLS/service-role authorization also needs to be wired into each API route; the current portal HTML route guard alone does not secure an API. The credentials template does not activate Supabase by itself.
+`database/supabase_target_schema.sql` is a **target schema**, not an automatic migration of the existing database. Authentication, announcements, emergency contacts/procedures, the admin resident directory, privacy acknowledgments, and the resident-owned profile endpoint use Supabase. Several business APIs still depend on MySQL, including requests, borrowing, inventory, transparency, reports, notifications, feedback, and chatbot persistence. Convert and secure those remaining endpoints before treating the application as a complete Supabase deployment. A credentials template does not activate Supabase by itself.
 
 ## Not implemented / requires backend work or supplied configuration
 
-- Migration of requests, borrowing, inventory, transparency, emergency contacts, reports, notifications, profile management, admin management, feedback, and chatbot APIs from MySQL to Supabase.
-- Authorization checks for every API endpoint and wiring of private Supabase Storage uploads/downloads into those APIs.
+- Migration of requests, borrowing, inventory, transparency, reports, notifications, feedback, chatbot, and remaining admin-management APIs from MySQL to Supabase.
+- A consistent authorization audit and private Supabase Storage upload/download flow for the remaining business APIs.
 - Private ID upload flow, approved-document generation/e-signature/download controls, resident QR-token verification, and printable official borrowing history (the current print view is resident-only and uses available request fields).
 - A data export/import mapping for populated MySQL installations. The ZIP contained schema/code only, not the user’s database records.
 - A 15-person pilot and full system evaluation. No participants or completed feedback were supplied, so no results are claimed.
@@ -36,6 +36,7 @@ Do not deploy this package as a complete or secure resident-records application 
 ## Supabase work now included
 
 - Both portal shells check the PHP Supabase session role before showing the portal. Apache rewrite protection applies to Admin/Resident HTML routes when `mod_rewrite` and `.htaccess` overrides are enabled.
+- PHP session checks re-read the active Supabase profile and role; resident profile reads and edits are scoped to the signed-in resident.
 - Privacy acknowledgments can be written to Supabase after an authenticated user accepts the browser notice.
 
 ## Migration still incomplete
