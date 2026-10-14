@@ -86,10 +86,17 @@ if ($method === 'GET' && ($action === 'all' || $action === 'list')) {
 
 if ($method === 'GET' && $action === 'mine') {
     header('Content-Type: application/json; charset=utf-8');
-    $stmt = $conn->prepare(
-        bc_reports_select_sql() . ' WHERE resident_auth_id = ? OR (resident_auth_id IS NULL AND resident_user_id = ?) ORDER BY created_at DESC'
-    );
-    $stmt->bind_param('si', $reportAuthId, $reportOwnerId);
+    if ($reportOwnerId > 0) {
+        $stmt = $conn->prepare(
+            bc_reports_select_sql() . ' WHERE resident_auth_id = ? OR (resident_auth_id IS NULL AND resident_user_id = ?) ORDER BY created_at DESC'
+        );
+        $stmt->bind_param('si', $reportAuthId, $reportOwnerId);
+    } else {
+        $stmt = $conn->prepare(
+            bc_reports_select_sql() . ' WHERE resident_auth_id = ? ORDER BY created_at DESC'
+        );
+        $stmt->bind_param('s', $reportAuthId);
+    }
     $stmt->execute();
     $res = $stmt->get_result();
     $out = [];
@@ -139,14 +146,24 @@ if ($method === 'GET' && $action === 'get' && $id > 0) {
 if ($method === 'PUT' && $action === 'cancel' && $id > 0) {
     header('Content-Type: text/plain; charset=utf-8');
     $status = 'Cancelled';
-    $stmt = $conn->prepare(
-        "UPDATE community_reports
-         SET status = ?, archived_at = NOW(), resolved_at = NULL, updated_at = NOW()
-         WHERE report_id = ?
-           AND (resident_auth_id = ? OR (resident_auth_id IS NULL AND resident_user_id = ?))
-           AND archived_at IS NULL AND status NOT IN ('Cancelled', 'Resolved')"
-    );
-    $stmt->bind_param('sis', $status, $id, $reportAuthId, $reportOwnerId);
+    if ($reportOwnerId > 0) {
+        $stmt = $conn->prepare(
+            "UPDATE community_reports
+             SET status = ?, archived_at = NOW(), resolved_at = NULL, updated_at = NOW()
+             WHERE report_id = ?
+               AND (resident_auth_id = ? OR (resident_auth_id IS NULL AND resident_user_id = ?))
+               AND archived_at IS NULL AND status NOT IN ('Cancelled', 'Resolved')"
+        );
+        $stmt->bind_param('sisi', $status, $id, $reportAuthId, $reportOwnerId);
+    } else {
+        $stmt = $conn->prepare(
+            "UPDATE community_reports
+             SET status = ?, archived_at = NOW(), resolved_at = NULL, updated_at = NOW()
+             WHERE report_id = ? AND resident_auth_id = ?
+               AND archived_at IS NULL AND status NOT IN ('Cancelled', 'Resolved')"
+        );
+        $stmt->bind_param('sis', $status, $id, $reportAuthId);
+    }
     $ok = $stmt->execute() && $stmt->affected_rows > 0;
     $stmt->close();
     $conn->close();
