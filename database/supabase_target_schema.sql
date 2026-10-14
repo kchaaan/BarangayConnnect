@@ -112,7 +112,7 @@ language sql stable security definer set search_path=public
 as $$ select exists(select 1 from public.profiles p where p.id=auth.uid() and p.role::text in ('admin','superadmin') and p.status='active') $$;
 create or replace function public.bc_my_resident_id() returns uuid
 language sql stable security definer set search_path=public
-as $ select r.id from public.residents r where r.user_id=auth.uid() limit 1 $;
+as $$ select r.id from public.residents r where r.user_id=auth.uid() limit 1 $$;
 
 -- These SECURITY DEFINER helpers are for authenticated RLS policies, not anonymous callers.
 revoke execute on function public.bc_is_admin() from public, anon;
