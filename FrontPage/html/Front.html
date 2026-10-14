@@ -93,6 +93,15 @@
   .resident-steps.homepage-section { width: min(calc(100% - 2rem), 1260px); }
   @media (max-width: 768px) { .homepage-section, .resident-steps.homepage-section { width: calc(100% - 1rem); } }
 
+
+  /* Lighten the Tambo photo behind public sections without replacing it. */
+  body::after { background: linear-gradient(135deg, rgba(245,249,243,.18), rgba(255,255,255,.22)) !important; }
+  /* Align the resident panel with the other wide sections and equalize its cards. */
+  .resident-steps.homepage-section { width: min(calc(100% - 2rem), 1800px); }
+  .resident-steps__grid { grid-auto-rows: 1fr; align-items: stretch; }
+  .resident-steps__grid .resident-step { height: 100%; box-sizing: border-box; }
+  @media (max-width: 768px) { .resident-steps.homepage-section { width: calc(100% - 1rem); } }
+
 </style>
 
 </head>
