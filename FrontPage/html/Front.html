@@ -87,6 +87,12 @@
   .resident-step:hover .resident-step__number, .resident-step:first-child:hover .resident-step__number { color: rgba(255,255,255,.2); }
   @media (max-width: 768px) { .homepage-section, .resident-steps.homepage-section { width: calc(100% - 1rem); margin: 1rem auto; padding: 1.25rem; border-radius: 18px; } }
 
+
+  /* Give the feature panels room on wide screens while keeping the resident steps centered. */
+  .homepage-section { width: min(calc(100% - 2rem), 1800px); }
+  .resident-steps.homepage-section { width: min(calc(100% - 2rem), 1260px); }
+  @media (max-width: 768px) { .homepage-section, .resident-steps.homepage-section { width: calc(100% - 1rem); } }
+
 </style>
 
 </head>
