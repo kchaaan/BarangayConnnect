@@ -207,13 +207,22 @@ function bc_notification_exists_for_reference(
     if (($residentId <= 0 && !preg_match('/^[0-9a-f-]{36}$/i', (string) $authUserId)) || $referenceId <= 0) {
         return false;
     }
-    $stmt = $conn->prepare(
-        'SELECT 1 FROM resident_notifications
-         WHERE (resident_user_id = ? OR resident_auth_id = ?) AND type = ? AND reference_id = ?
-         LIMIT 1'
-    );
     $authId = (string) ($authUserId ?? '');
-    $stmt->bind_param('issi', $residentId, $authId, $type, $referenceId);
+    if ($residentId > 0) {
+        $stmt = $conn->prepare(
+            'SELECT 1 FROM resident_notifications
+             WHERE (resident_user_id = ? OR resident_auth_id = ?) AND type = ? AND reference_id = ?
+             LIMIT 1'
+        );
+        $stmt->bind_param('issi', $residentId, $authId, $type, $referenceId);
+    } else {
+        $stmt = $conn->prepare(
+            'SELECT 1 FROM resident_notifications
+             WHERE resident_auth_id = ? AND type = ? AND reference_id = ?
+             LIMIT 1'
+        );
+        $stmt->bind_param('ssi', $authId, $type, $referenceId);
+    }
     $stmt->execute();
     $result = $stmt->get_result();
     $exists = $result && $result->num_rows > 0;
@@ -233,14 +242,25 @@ function bc_sync_request_notifications_for_resident(mysqli $conn, int $residentI
 
     bc_ensure_resident_notifications_table($conn);
 
-    $stmt = $conn->prepare(
-        'SELECT request_pk, request_code, resident_user_id, resident_auth_id, document_type, status, remarks
-         FROM service_requests
-         WHERE resident_user_id = ? OR resident_auth_id = ?
-         ORDER BY request_pk DESC
-         LIMIT 20'
-    );
-    $stmt->bind_param('is', $residentId, $authUserId);
+    if ($residentId > 0) {
+        $stmt = $conn->prepare(
+            'SELECT request_pk, request_code, resident_user_id, resident_auth_id, document_type, status, remarks
+             FROM service_requests
+             WHERE resident_user_id = ? OR resident_auth_id = ?
+             ORDER BY request_pk DESC
+             LIMIT 20'
+        );
+        $stmt->bind_param('is', $residentId, $authUserId);
+    } else {
+        $stmt = $conn->prepare(
+            'SELECT request_pk, request_code, resident_user_id, resident_auth_id, document_type, status, remarks
+             FROM service_requests
+             WHERE resident_auth_id = ?
+             ORDER BY request_pk DESC
+             LIMIT 20'
+        );
+        $stmt->bind_param('s', $authUserId);
+    }
     $stmt->execute();
     $result = $stmt->get_result();
     if (!$result) {
@@ -268,15 +288,26 @@ function bc_sync_request_notifications_for_resident(mysqli $conn, int $residentI
 function bc_notification_counts_for_resident(mysqli $conn, int $residentId, ?string $authUserId = null): array
 {
     bc_ensure_resident_notifications_table($conn);
-    $stmt = $conn->prepare(
-        "SELECT
-            COUNT(*) AS total_unread,
-            SUM(CASE WHEN priority = 'urgent' THEN 1 ELSE 0 END) AS urgent_unread
-         FROM resident_notifications
-         WHERE (resident_user_id = ? OR resident_auth_id = ?) AND is_read = 0"
-    );
     $authId = (string) ($authUserId ?? '');
-    $stmt->bind_param('is', $residentId, $authId);
+    if ($residentId > 0) {
+        $stmt = $conn->prepare(
+            "SELECT
+                COUNT(*) AS total_unread,
+                SUM(CASE WHEN priority = 'urgent' THEN 1 ELSE 0 END) AS urgent_unread
+             FROM resident_notifications
+             WHERE (resident_user_id = ? OR resident_auth_id = ?) AND is_read = 0"
+        );
+        $stmt->bind_param('is', $residentId, $authId);
+    } else {
+        $stmt = $conn->prepare(
+            "SELECT
+                COUNT(*) AS total_unread,
+                SUM(CASE WHEN priority = 'urgent' THEN 1 ELSE 0 END) AS urgent_unread
+             FROM resident_notifications
+             WHERE resident_auth_id = ? AND is_read = 0"
+        );
+        $stmt->bind_param('s', $authId);
+    }
     $stmt->execute();
     $result = $stmt->get_result();
     $row = $result ? $result->fetch_assoc() : null;
