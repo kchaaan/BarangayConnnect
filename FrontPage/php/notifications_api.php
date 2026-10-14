@@ -57,7 +57,7 @@ if ($residentSession) {
 }
 
 if ($method === 'GET' && $action === 'counts') {
-    if ($residentId > 0) {
+    if (preg_match('/^[0-9a-f-]{36}$/i', $residentAuthId)) {
         bc_sync_request_notifications_for_resident($conn, $residentId, $residentAuthId);
     }
     echo json_encode(bc_notification_counts_for_resident($conn, $residentId, $residentAuthId));
@@ -66,19 +66,31 @@ if ($method === 'GET' && $action === 'counts') {
 }
 
 if ($method === 'GET' && $action === 'list') {
-    if ($residentId > 0) {
+    if (preg_match('/^[0-9a-f-]{36}$/i', $residentAuthId)) {
         bc_sync_request_notifications_for_resident($conn, $residentId, $residentAuthId);
     }
     $limit = min(50, max(1, (int) ($_GET['limit'] ?? 20)));
-    $stmt = $conn->prepare(
-        'SELECT notification_id, resident_user_id, type, priority, title, message,
-                link_section, reference_id, is_read, created_at
-         FROM resident_notifications
-         WHERE resident_user_id = ? OR resident_auth_id = ?
-         ORDER BY created_at DESC
-         LIMIT ?'
-    );
-    $stmt->bind_param('isi', $residentId, $residentAuthId, $limit);
+    if ($residentId > 0) {
+        $stmt = $conn->prepare(
+            'SELECT notification_id, resident_user_id, type, priority, title, message,
+                    link_section, reference_id, is_read, created_at
+             FROM resident_notifications
+             WHERE resident_user_id = ? OR resident_auth_id = ?
+             ORDER BY created_at DESC
+             LIMIT ?'
+        );
+        $stmt->bind_param('isi', $residentId, $residentAuthId, $limit);
+    } else {
+        $stmt = $conn->prepare(
+            'SELECT notification_id, resident_user_id, type, priority, title, message,
+                    link_section, reference_id, is_read, created_at
+             FROM resident_notifications
+             WHERE resident_auth_id = ?
+             ORDER BY created_at DESC
+             LIMIT ?'
+        );
+        $stmt->bind_param('si', $residentAuthId, $limit);
+    }
     $stmt->execute();
     $result = $stmt->get_result();
     $out = [];
@@ -98,11 +110,19 @@ if ($method === 'PUT' && $action === 'read') {
     if ($id <= 0) {
         bc_notif_json_error(400, 'id is required');
     }
-    $stmt = $conn->prepare(
-        'UPDATE resident_notifications SET is_read = 1
-         WHERE notification_id = ? AND (resident_user_id = ? OR resident_auth_id = ?)'
-    );
-    $stmt->bind_param('iis', $id, $residentId, $residentAuthId);
+    if ($residentId > 0) {
+        $stmt = $conn->prepare(
+            'UPDATE resident_notifications SET is_read = 1
+             WHERE notification_id = ? AND (resident_user_id = ? OR resident_auth_id = ?)'
+        );
+        $stmt->bind_param('iis', $id, $residentId, $residentAuthId);
+    } else {
+        $stmt = $conn->prepare(
+            'UPDATE resident_notifications SET is_read = 1
+             WHERE notification_id = ? AND resident_auth_id = ?'
+        );
+        $stmt->bind_param('is', $id, $residentAuthId);
+    }
     $stmt->execute();
     $stmt->close();
     $conn->close();
@@ -111,11 +131,19 @@ if ($method === 'PUT' && $action === 'read') {
 }
 
 if ($method === 'PUT' && $action === 'read_all') {
-    $stmt = $conn->prepare(
-        'UPDATE resident_notifications SET is_read = 1
-         WHERE (resident_user_id = ? OR resident_auth_id = ?) AND is_read = 0'
-    );
-    $stmt->bind_param('is', $residentId, $residentAuthId);
+    if ($residentId > 0) {
+        $stmt = $conn->prepare(
+            'UPDATE resident_notifications SET is_read = 1
+             WHERE (resident_user_id = ? OR resident_auth_id = ?) AND is_read = 0'
+        );
+        $stmt->bind_param('is', $residentId, $residentAuthId);
+    } else {
+        $stmt = $conn->prepare(
+            'UPDATE resident_notifications SET is_read = 1
+             WHERE resident_auth_id = ? AND is_read = 0'
+        );
+        $stmt->bind_param('s', $residentAuthId);
+    }
     $stmt->execute();
     $stmt->close();
     $conn->close();
