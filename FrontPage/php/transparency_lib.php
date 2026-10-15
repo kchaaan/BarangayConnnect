@@ -224,11 +224,18 @@ function bc_transparency_fetch_documents(mysqli $conn, int $itemId): array
     $stmt->execute();
     $result = $stmt->get_result();
     $docs = [];
+    $uploadDir = bc_transparency_upload_dir();
     if ($result) {
         while ($row = $result->fetch_assoc()) {
+            $fileName = basename((string) $row['file_path']);
+            $fileOnDisk = $uploadDir . DIRECTORY_SEPARATOR . $fileName;
+            // Do not publish a download link when a previous deployment removed the uploaded file.
+            if (!is_file($fileOnDisk) || !is_readable($fileOnDisk)) {
+                continue;
+            }
             $docs[] = [
                 'id' => (int) $row['document_id'],
-            'filePath' => 'FrontPage/uploads/transparency/' . basename((string) $row['file_path']),
+                'filePath' => 'FrontPage/uploads/transparency/' . $fileName,
             ];
         }
     }
@@ -236,7 +243,6 @@ function bc_transparency_fetch_documents(mysqli $conn, int $itemId): array
 
     return $docs;
 }
-
 function bc_transparency_get_current_budget(mysqli $conn): ?float
 {
     $res = $conn->query('SELECT amount FROM transparency_budget ORDER BY budget_id DESC LIMIT 1');
