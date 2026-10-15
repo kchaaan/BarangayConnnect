@@ -1,6 +1,13 @@
 # Supabase-backed portal HTML is served only after PHP verifies the matching authenticated role.
+Options -Indexes
+DirectoryIndex index.php
+
 <IfModule mod_rewrite.c>
   RewriteEngine On
+  # Keep repository metadata, SQL dumps, and migration helpers off the public site.
+  RewriteRule ^(?:\.git|database)(?:/|$) - [F,L,NC]
+  # This page is a data-free shell; its API remains session-protected and renders a sign-in link for QR scans.
+  RewriteRule ^Residents/html/ResidentPrint\.html$ - [L,NC]
   RewriteRule ^Admin/html/(.+\.html)$ FrontPage/php/portal_page.php?role=admin&path=$1 [QSA,B,L]
   RewriteRule ^Residents/html/(.+\.html)$ FrontPage/php/portal_page.php?role=resident&path=$1 [QSA,B,L]
 </IfModule>
@@ -15,5 +22,9 @@
 </IfModule>
 
 <FilesMatch "^\.env(\.|$)">
+  Require all denied
+</FilesMatch>
+
+<FilesMatch "\.(sql|bat|md)$">
   Require all denied
 </FilesMatch>
