@@ -119,7 +119,9 @@
 <style>
   @page { size: A4; margin: 0; }
   * { box-sizing: border-box; }
-  body { margin: 0; padding: 14mm 16mm; color: #243329; font: 10.5pt Arial,sans-serif; }
+  body { position: relative; isolation: isolate; margin: 0; padding: 14mm 16mm; color: #243329; font: 10.5pt Arial,sans-serif; }
+  .watermark { position: fixed; z-index: 0; top: 50%; left: 50%; width: min(150mm,70vw); transform: translate(-50%,-50%); opacity: .12; pointer-events: none; }
+  body > :not(.watermark) { position: relative; z-index: 1; }
   header { display: flex; align-items: center; gap: 10px; padding-bottom: 10px; border-bottom: 3px solid #5f7f58; }
   .seal { width: 48px; height: 48px; border: 1px solid #dfe9da; border-radius: 50%; object-fit: cover; }
   .brand { color: #5f7f58; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
@@ -134,10 +136,11 @@
   .qr-section { margin-top: 14px; padding-top: 9px; border-top: 1px solid #dfe9da; text-align: center; break-inside: avoid; }
   .qr-section h2 { margin: 0 0 5px; font-size: 11pt; }
   .qr-section p { margin: 0 0 6px; color: #5f6d5b; font-size: 8pt; }
-  .qr-section img { display: block; width: 220px; height: 220px; margin: 0 auto; image-rendering: pixelated; }
+  .qr-section img { display: block; width: 220px; height: 220px; margin: 0 auto; padding: 8px; background: #fff; image-rendering: pixelated; }
   .privacy { margin-top: 5px !important; font-weight: 700; }
   @media screen { body { max-width: 800px; margin: 20px auto; padding: 24px; box-shadow: 0 1px 12px #0002; } }
 </style></head><body>
+<img class="watermark" src="${escapeHtml(sealUrl)}" alt="">
 <header><img class="seal" src="${escapeHtml(sealUrl)}" alt="Barangay Tambo seal"><div><div class="brand">BarangayConnect</div><div class="place">Barangay Tambo, Parañaque City</div></div><time>Printed<br>${escapeHtml(printedAt)}</time></header>
 <h1>Resident Information</h1><p class="lead">Personal and emergency-contact details provided by the resident.</p>
 <div class="grid">${rows}</div>
