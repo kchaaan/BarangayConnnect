@@ -131,6 +131,26 @@
   }
 
   /* ---- Borrow Requests ---- */
+  async function renderBorrowHistoryPreview() {
+    const tbody = document.getElementById('biBorrowHistoryPreview');
+    if (!tbody) return;
+
+    try {
+      const rows = await API.borrow.history();
+      tbody.innerHTML = rows.length
+        ? rows.slice(0, 4).map((r) => `
+          <tr>
+            <td>${esc(r.residentName)}</td>
+            <td>${esc(r.itemName)}</td>
+            <td>${fmtDate(r.returnedAt || r.returnDate || r.dateNeeded)}</td>
+            <td>${statusBadge(r.status)}</td>
+          </tr>`).join('')
+        : '<tr><td colspan="4">No history records yet.</td></tr>';
+    } catch (err) {
+      tbody.innerHTML = '<tr><td colspan="4">Could not load history.</td></tr>';
+    }
+  }
+
   async function initBorrowRequests() {
     const tbody = document.getElementById('biBorrowTableBody');
     if (!tbody) return;
@@ -184,6 +204,7 @@
     await loadCategoriesInto(document.getElementById('brCategory'));
     const run = bindSearchRefresh('#brSearch', '#brStatus', '#brCategory', render);
     run({ search: '', status: 'all', category_id: '' });
+    renderBorrowHistoryPreview();
     watchBorrowSync(function () {
       reloadBorrowRequests(run);
     });
@@ -192,7 +213,10 @@
       const viewBtn = e.target.closest('[data-borrow-view]');
       const approveBtn = e.target.closest('[data-borrow-approve]');
       const rejectBtn = e.target.closest('[data-borrow-reject]');
-      const reload = () => reloadBorrowRequests(run);
+      const reload = async () => {
+        await reloadBorrowRequests(run);
+        await renderBorrowHistoryPreview();
+      };
 
       if (approveBtn) {
         await quickApproveBorrow(Number(approveBtn.getAttribute('data-borrow-approve')), reload);
