@@ -27,15 +27,19 @@ function bc_supabase_config_status(): array { return ['configured'=>(bool)bc_sup
 /**
  * Legacy resident/admin data APIs still use the local MySQL database.
  * Supabase currently handles Auth; it does not replace these MySQL endpoints yet.
- * Local XAMPP defaults match database/install_xampp.bat. BC_DB_* env vars override them.
+ * Hosted MySQL add-ons (including Clever Cloud) expose MYSQL_ADDON_* variables.
+ * Explicit BC_DB_* values take precedence; XAMPP defaults are local-only.
  */
 if (!defined('BC_DB_CONFIG_LOADED')) {
     define('BC_DB_CONFIG_LOADED', true);
-    define('BC_DB_HOST', getenv('BC_DB_HOST') ?: '127.0.0.1');
-    define('BC_DB_PORT', (int) (getenv('BC_DB_PORT') ?: 3306));
-    define('BC_DB_USER', getenv('BC_DB_USER') ?: 'root');
-    define('BC_DB_PASS', getenv('BC_DB_PASS') ?: '');
-    define('BC_DB_NAME', getenv('BC_DB_NAME') ?: 'barangayconnect');
+    $bcHttpHost = strtolower((string) ($_SERVER['HTTP_HOST'] ?? ''));
+    $bcIsLocalHost = in_array($bcHttpHost, ['localhost', 'localhost:8000', '127.0.0.1', '127.0.0.1:8000'], true);
+    define('BC_DB_HOST', getenv('BC_DB_HOST') ?: (getenv('MYSQL_ADDON_HOST') ?: ($bcIsLocalHost ? '127.0.0.1' : '')));
+    define('BC_DB_PORT', (int) (getenv('BC_DB_PORT') ?: (getenv('MYSQL_ADDON_PORT') ?: 3306)));
+    define('BC_DB_USER', getenv('BC_DB_USER') ?: (getenv('MYSQL_ADDON_USER') ?: ($bcIsLocalHost ? 'root' : '')));
+    define('BC_DB_PASS', getenv('BC_DB_PASS') ?: (getenv('MYSQL_ADDON_PASSWORD') ?: ''));
+    define('BC_DB_NAME', getenv('BC_DB_NAME') ?: (getenv('MYSQL_ADDON_DB') ?: ($bcIsLocalHost ? 'barangayconnect' : '')));
+    unset($bcHttpHost, $bcIsLocalHost);
     $GLOBALS['BC_DB_LAST_ERROR'] = null;
 }
 
@@ -43,6 +47,10 @@ if (!defined('BC_DB_CONFIG_LOADED')) {
 function bc_db_connect()
 {
     $GLOBALS['BC_DB_LAST_ERROR'] = null;
+    if (BC_DB_HOST === '' || BC_DB_USER === '' || BC_DB_NAME === '') {
+        $GLOBALS['BC_DB_LAST_ERROR'] = 'Database host, user, or database name is not configured.';
+        return null;
+    }
     if (!extension_loaded('mysqli')) {
         $GLOBALS['BC_DB_LAST_ERROR'] = 'PHP mysqli extension is not enabled.';
         return null;
@@ -65,9 +73,16 @@ function bc_db_connect()
 
 function bc_db_error_response(): string
 {
-    $message = 'MySQL connection failed. Start MySQL in XAMPP and make sure the barangayconnect database is installed.';
+    $host = strtolower((string) ($_SERVER['HTTP_HOST'] ?? ''));
+    $isLocal = in_array($host, ['localhost', 'localhost:8000', '127.0.0.1', '127.0.0.1:8000'], true);
+    $isConfigured = BC_DB_HOST !== '' && BC_DB_USER !== '' && BC_DB_NAME !== '';
+    $message = !$isConfigured
+        ? 'Database is not configured. Link the hosting MySQL add-on or set the BC_DB_* environment variables.'
+        : ($isLocal
+            ? 'MySQL connection failed. Start MySQL in XAMPP and make sure the barangayconnect database is installed.'
+            : 'MySQL connection failed. Check the hosting database add-on and its environment variables.');
     $detail = (string) ($GLOBALS['BC_DB_LAST_ERROR'] ?? '');
-    if ($detail !== '' && (getenv('BC_DEBUG') === '1' || in_array(strtolower((string) ($_SERVER['HTTP_HOST'] ?? '')), ['localhost', 'localhost:8000', '127.0.0.1:8000'], true))) {
+    if ($detail !== '' && (getenv('BC_DEBUG') === '1' || $isLocal)) {
         $message .= ' (' . $detail . ')';
     }
     return $message;
