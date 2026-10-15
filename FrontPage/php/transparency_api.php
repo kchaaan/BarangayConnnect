@@ -54,6 +54,47 @@ function bc_read_json_body(): array
     return is_array($data) ? $data : [];
 }
 
+if ($method === 'GET' && $action === 'download_document' && $id > 0) {
+    $stmt = $conn->prepare('SELECT file_path, file_data FROM transparency_documents WHERE document_id = ? LIMIT 1');
+    $stmt->bind_param('i', $id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $document = $result ? $result->fetch_assoc() : null;
+    $stmt->close();
+
+    $fileName = $document ? basename((string) $document['file_path']) : '';
+    $contents = null;
+    if ($document && isset($document['file_data']) && $document['file_data'] !== null && $document['file_data'] !== '') {
+        $contents = (string) $document['file_data'];
+    } elseif ($fileName !== '') {
+        $legacyPath = bc_transparency_upload_dir() . DIRECTORY_SEPARATOR . $fileName;
+        if (is_file($legacyPath) && is_readable($legacyPath)) {
+            $legacyContents = file_get_contents($legacyPath);
+            if ($legacyContents !== false) {
+                $contents = $legacyContents;
+            }
+        }
+    }
+
+    if ($contents === null) {
+        $conn->close();
+        http_response_code(404);
+        header('Content-Type: text/plain; charset=utf-8');
+        echo 'Document not found.';
+        exit;
+    }
+
+    $conn->close();
+    $downloadName = str_replace(["\r", "\n", '"'], '_', $fileName ?: 'transparency-document.pdf');
+    header('Content-Type: application/pdf');
+    header("Content-Disposition: attachment; filename=\"" . $downloadName . "\"; filename*=UTF-8''" . rawurlencode($downloadName));
+    header('Content-Length: ' . strlen($contents));
+    header('Cache-Control: private, no-store');
+    header('X-Content-Type-Options: nosniff');
+    echo $contents;
+    exit;
+}
+
 if ($method === 'GET' && $action === 'items') {
     header('Content-Type: application/json; charset=utf-8');
     $res = $conn->query(
@@ -238,6 +279,12 @@ if ($method === 'POST' && $action === 'document' && $id > 0) {
     }
 
     $file = $_FILES['file'];
+    if (($file['error'] ?? UPLOAD_ERR_OK) !== UPLOAD_ERR_OK) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'error' => 'The PDF upload did not complete']);
+        $conn->close();
+        exit;
+    }
     $ext = strtolower(pathinfo((string) $file['name'], PATHINFO_EXTENSION));
     if ($ext !== 'pdf') {
         http_response_code(400);
@@ -246,24 +293,34 @@ if ($method === 'POST' && $action === 'document' && $id > 0) {
         exit;
     }
 
-    $uploadDir = bc_transparency_upload_dir();
-    $safeName = 'item_' . $id . '_' . time() . '_' . preg_replace('/[^a-zA-Z0-9._-]/', '_', basename((string) $file['name']));
-    $dest = $uploadDir . DIRECTORY_SEPARATOR . $safeName;
-    if (!move_uploaded_file($file['tmp_name'], $dest)) {
-        http_response_code(500);
-        echo json_encode(['success' => false, 'error' => 'Upload failed']);
+    $contents = file_get_contents($file['tmp_name']);
+    if ($contents === false || $contents === '') {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'error' => 'The uploaded PDF is empty or unreadable']);
         $conn->close();
         exit;
     }
 
-    $relPath = $safeName;
-    $stmt = $conn->prepare('INSERT INTO transparency_documents (item_id, file_path) VALUES (?, ?)');
-    $stmt->bind_param('is', $id, $relPath);
+    $safeName = 'item_' . $id . '_' . time() . '_' . preg_replace('/[^a-zA-Z0-9._-]/', '_', basename((string) $file['name']));
+    $stmt = $conn->prepare('INSERT INTO transparency_documents (item_id, file_path, file_data) VALUES (?, ?, ?)');
+    if (!$stmt) {
+        http_response_code(500);
+        echo json_encode(['success' => false, 'error' => 'Could not prepare the document record']);
+        $conn->close();
+        exit;
+    }
+    $stmt->bind_param('isb', $id, $safeName, $contents);
+    $stmt->send_long_data(2, $contents);
     $ok = $stmt->execute();
     $stmt->close();
     $conn->close();
 
-    echo json_encode(['success' => (bool) $ok]);
+    if (!$ok) {
+        http_response_code(500);
+        echo json_encode(['success' => false, 'error' => 'Could not save the PDF to storage']);
+        exit;
+    }
+    echo json_encode(['success' => true]);
     exit;
 }
 
