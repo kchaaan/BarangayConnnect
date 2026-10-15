@@ -40,10 +40,16 @@ function bc_ensure_transparency_tables(mysqli $conn): void
         document_id INT AUTO_INCREMENT PRIMARY KEY,
         item_id INT NOT NULL,
         file_path VARCHAR(512) NOT NULL,
+        file_data LONGBLOB NULL,
         uploaded_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
         INDEX idx_td_item (item_id),
         CONSTRAINT fk_td_item FOREIGN KEY (item_id) REFERENCES transparency_items(item_id) ON DELETE CASCADE
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+    $fileDataColumn = $conn->query("SHOW COLUMNS FROM transparency_documents LIKE 'file_data'");
+    if ($fileDataColumn && $fileDataColumn->num_rows === 0) {
+        $conn->query("ALTER TABLE transparency_documents ADD COLUMN file_data LONGBLOB NULL AFTER file_path");
+    }
 
     bc_seed_transparency_defaults($conn);
     bc_replace_transparency_placeholder_items($conn);
@@ -218,7 +224,8 @@ function bc_transparency_item_to_api(array $row, array $documents = []): array
 function bc_transparency_fetch_documents(mysqli $conn, int $itemId): array
 {
     $stmt = $conn->prepare(
-        'SELECT document_id, file_path FROM transparency_documents WHERE item_id = ? ORDER BY uploaded_at DESC'
+        'SELECT document_id, file_path, (file_data IS NOT NULL AND OCTET_LENGTH(file_data) > 0) AS has_data
+         FROM transparency_documents WHERE item_id = ? ORDER BY uploaded_at DESC'
     );
     $stmt->bind_param('i', $itemId);
     $stmt->execute();
@@ -229,13 +236,15 @@ function bc_transparency_fetch_documents(mysqli $conn, int $itemId): array
         while ($row = $result->fetch_assoc()) {
             $fileName = basename((string) $row['file_path']);
             $fileOnDisk = $uploadDir . DIRECTORY_SEPARATOR . $fileName;
-            // Do not publish a download link when a previous deployment removed the uploaded file.
-            if (!is_file($fileOnDisk) || !is_readable($fileOnDisk)) {
+            $hasDatabaseFile = (int) ($row['has_data'] ?? 0) === 1;
+            $hasLegacyFile = is_file($fileOnDisk) && is_readable($fileOnDisk);
+            if (!$hasDatabaseFile && !$hasLegacyFile) {
                 continue;
             }
+            $documentId = (int) $row['document_id'];
             $docs[] = [
-                'id' => (int) $row['document_id'],
-                'filePath' => 'FrontPage/uploads/transparency/' . $fileName,
+                'id' => $documentId,
+                'filePath' => 'FrontPage/php/transparency_api.php?action=download_document&id=' . $documentId,
             ];
         }
     }
