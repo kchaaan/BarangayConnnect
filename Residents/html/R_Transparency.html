@@ -13,7 +13,7 @@
   <link rel="stylesheet" href="../css/bc-resident-page-title.css?v=20250620">
   <script src="https://kit.fontawesome.com/a2e0f1f0c1.js" crossorigin="anonymous"></script>
   <script src="../../Shared/js/bc-transparency-api.js?v=20250663"></script>
-  <script src="../../Shared/js/bc-transparency-print.js?v=20261015-seal-layout"></script>
+  <script src="../../Shared/js/bc-transparency-print.js?v=20261015-qr-matching-print"></script>
   <script>if(new URLSearchParams(location.search).get('embed')==='dashboard')document.documentElement.classList.add('dashboard-embed');</script>
 </head>
 <body>
@@ -121,11 +121,10 @@
       if (item.documents && item.documents.length > 0) {
         documentButtons = item.documents.map(doc => `
           <a href="${escapeHtml(fileUrl(doc.filePath))}"
-             target="_blank"
-             rel="noopener"
              class="action-icon view"
-             title="Open supporting PDF" aria-label="Open supporting PDF">
-             <i class="fas fa-file-pdf"></i>
+             title="Download supporting PDF" aria-label="Download supporting PDF"
+             download>
+             <i class="fas fa-download"></i>
           </a>
         `).join("");
       } else {
