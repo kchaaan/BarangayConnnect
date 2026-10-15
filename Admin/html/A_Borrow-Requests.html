@@ -59,7 +59,8 @@
       <div class="bi-widget">
         <h3>Borrowing History</h3>
         <p class="bi-widget-desc">View complete history of borrowed item transactions.</p>
-        <a href="#" class="bi-link" onclick="bcNavigatePage('A_Borrowing-History.html');return false;">View All History →</a>
+        <table class="bi-widget-table" aria-label="Recent borrowing history"><thead><tr><th>Resident</th><th>Item</th><th>Date</th><th>Status</th></tr></thead><tbody id="biBorrowHistoryPreview"><tr><td colspan="4">Loading history…</td></tr></tbody></table>
+        <div class="bi-widget-footer"><a href="#" class="bi-link" onclick="bcNavigatePage('A_Borrowing-History.html');return false;">View All History →</a></div>
       </div>
     </div>
   </div>
@@ -79,7 +80,7 @@
 
   <script src="../../Shared/js/bc-borrow-inventory-api.js?v=20250803"></script>
   <script src="../../Shared/js/bc-borrow-sync.js?v=20250821"></script>
-  <script src="../../Shared/js/bc-admin-borrow-inventory.js?v=20250821"></script>
+  <script src="../../Shared/js/bc-admin-borrow-inventory.js?v=20261015"></script>
   <script src="../../Shared/js/bc-nav-persist.js?v=20250803"></script>
   <script src="../../Shared/js/bc-nav-iframe-child.js"></script>
   <script>BorrowInventoryUI.initSidebarIframe(); BorrowInventoryUI.bindModalClosers(); BorrowInventoryUI.notifyNav('borrowed-items');</script>
