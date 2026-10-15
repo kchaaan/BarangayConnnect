@@ -13,7 +13,7 @@
   <script src="https://kit.fontawesome.com/a2e0f1f0c1.js" crossorigin="anonymous"></script>
   <script src="../../Shared/js/bc-notify.js?v=20250659"></script>
   <script src="../../Shared/js/bc-transparency-api.js?v=20250722"></script>
-  <script src="../../Shared/js/bc-transparency-print.js?v=20261015-seal-layout"></script>
+  <script src="../../Shared/js/bc-transparency-print.js?v=20261015-qr-matching-print"></script>
 </head>
 
 <body>
@@ -331,8 +331,8 @@
 
           ${i.documents && i.documents.length > 0 
             ? i.documents.map(d => 
-                `<a href="${escapeHtml(fileUrl(d.filePath))}" class="action-icon view" title="Open uploaded supporting PDF" aria-label="Open uploaded supporting PDF" target="_blank" rel="noopener">
-                   <i class="fas fa-file-pdf"></i>
+                `<a href="${escapeHtml(fileUrl(d.filePath))}" class="action-icon view" title="Download uploaded supporting PDF" aria-label="Download uploaded supporting PDF" download>
+                   <i class="fas fa-download"></i>
                  </a>`
               ).join("")
             : ""
