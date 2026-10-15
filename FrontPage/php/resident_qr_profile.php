@@ -15,7 +15,7 @@ function bc_rqp_reply(int $status, array $payload): never
 }
 
 try {
-    $session = bc_sb_require_role(['resident', 'admin']);
+    $session = bc_sb_require_role(['resident', 'admin', 'superadmin']);
     $residentCode = trim((string) ($_GET['resident'] ?? ''));
     if ($residentCode === '' || strlen($residentCode) > 80 || !preg_match('/^[A-Za-z0-9_-]+$/', $residentCode)) {
         bc_rqp_reply(400, ['success' => false, 'error' => 'Invalid resident QR link.']);

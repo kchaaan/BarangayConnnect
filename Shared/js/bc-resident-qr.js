@@ -178,8 +178,8 @@
         await loadQrLibrary();
         new global.QRCode(container, {
           text: qrText(info),
-          width: 300,
-          height: 300,
+          width: 600,
+          height: 600,
           colorDark: '#173b24',
           colorLight: '#ffffff',
           correctLevel: global.QRCode.CorrectLevel?.L ?? 1,
@@ -190,7 +190,7 @@
         if (container.querySelector('canvas') && !addQuietZone(container)) {
           throw new Error('Could not add the QR quiet zone.');
         }
-        if (status) status.textContent = 'QR ready. Sign-in is required; a phone needs the site hosted at a reachable HTTPS address (localhost works only on this computer).';
+        if (status) status.textContent = 'QR ready. Scan with Google Lens or a phone camera. The link opens sign-in before showing this record; use the live HTTPS site, not localhost.';
       } catch (error) {
         console.error('Resident QR generation failed:', error);
         container.replaceChildren();

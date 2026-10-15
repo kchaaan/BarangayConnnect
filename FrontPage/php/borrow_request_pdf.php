@@ -92,19 +92,20 @@ function bc_pdf_format_datetime(string $value): string
 function bc_build_compact_borrow_pdf(array $data): string
 {
     $cmd = "0.25 w\n";
-    $cmd .= "q 40 0 0 40 22 367 cm /Im1 Do Q\n";
-    $cmd .= "q 0.16 0.38 0.24 RG 0.8 w 22 367 40 40 re S Q\n";
+    $cmd .= "q /GS1 gs 220 0 0 220 39 100 cm /Im1 Do Q\n";
+    $cmd .= "q 54 0 0 54 122 349 cm /Im1 Do Q\n";
+    
     $cmd .= "0.16 0.38 0.24 rg\n";
-    $cmd .= bc_pdf_text('BARANGAY TAMBO', 70, 25, 12, true);
+    $cmd .= bc_pdf_text('BARANGAY TAMBO', 106, 78, 12, true);
     $cmd .= "0 0 0 rg\n";
-    $cmd .= bc_pdf_brand_mark(70, 31);
-    $cmd .= bc_pdf_text('BARANGAYCONNECT  |  EQUIPMENT BORROW REQUEST', 101, 40, 6, true);
-    $cmd .= bc_pdf_line(22, 57, 276, 57);
-    $cmd .= bc_pdf_text('REQUEST COPY - SUBJECT TO BARANGAY APPROVAL', 22, 68, 6, true);
-    $cmd .= bc_pdf_text('Prepared: ' . date('M d, Y h:i A'), 22, 78, 7);
-    $cmd .= bc_pdf_line(22, 86, 276, 86);
+    $cmd .= 
+    $cmd .= bc_pdf_text('BarangayConnect  |  Equipment Borrow Request', 83, 90, 7, true);
+    $cmd .= bc_pdf_line(22, 101, 276, 101);
+    $cmd .= bc_pdf_text('REQUEST COPY - SUBJECT TO BARANGAY APPROVAL', 22, 112, 6, true);
+    $cmd .= bc_pdf_text('Prepared: ' . date('M d, Y h:i A'), 22, 122, 7);
+    $cmd .= bc_pdf_line(22, 130, 276, 130);
 
-    $top = 97;
+    $top = 141;
     foreach ([
         ['Item', $data['item'], 2], ['Category', $data['category'], 1],
         ['Quantity', $data['quantity'], 1], ['Purpose', $data['purpose'], 3],
@@ -133,7 +134,7 @@ function bc_build_compact_borrow_pdf(array $data): string
     $objects = [
         '<< /Type /Catalog /Pages 2 0 R >>',
         '<< /Type /Pages /Kids [3 0 R] /Count 1 >>',
-        '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 298 420] /Resources << /Font << /F1 4 0 R /F2 5 0 R >> /XObject << /Im1 7 0 R >> >> /Contents 6 0 R >>',
+        '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 298 420] /Resources << /Font << /F1 4 0 R /F2 5 0 R >> /XObject << /Im1 7 0 R >> /ExtGState << /GS1 8 0 R >> >> /Contents 6 0 R >>',
         '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>',
         '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>',
         "<< {$filter}/Length " . strlen($stream) . " >>\nstream\n" . $stream . "\nendstream",
@@ -144,6 +145,7 @@ function bc_build_compact_borrow_pdf(array $data): string
         throw new RuntimeException('The Barangay Tambo seal image is missing.');
     }
     $objects[] = "<< /Type /XObject /Subtype /Image /Width 180 /Height 180 /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length " . strlen($sealBytes) . " >>\nstream\n" . $sealBytes . "\nendstream";
+    $objects[] = '<< /Type /ExtGState /ca 0.12 /CA 0.12 >>';
     $pdf = "%PDF-1.4\n%\xE2\xE3\xCF\xD3\n";
     $offsets = [0];
     foreach ($objects as $index => $object) {
