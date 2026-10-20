@@ -58,7 +58,7 @@ body > :not(.watermark) { position: relative; z-index: 1; }
   .seal { width: 76px; height: 76px; flex: 0 0 76px; border: 1px solid #dfe9da; border-radius: 50%; object-fit: cover; }
   .brand { color: #5f7f58; font-size: 12pt; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
   .municipality { margin-top: 3px; color: #5f6d5b; font-size: 9pt; }
-  .printed-at { position: absolute; top: 8px; right: 0; color: #5f6d5b; font-size: 9pt; text-align: right; white-space: nowrap; }
+  .printed-at { position: absolute; top: 40px; right: 0; transform: translateY(-50%); color: #5f6d5b; font-size: 9pt; text-align: right; white-space: nowrap; }
   h1 { margin: 10px 0 4px; font-size: 22pt; }
   .muted { color: #5f6d5b; }
   .meta { margin: 0; font-size: 9.5pt; }
@@ -73,7 +73,7 @@ body > :not(.watermark) { position: relative; z-index: 1; }
   footer { margin-top: 32px; padding-top: 10px; border-top: 1px solid #dfe9da; color: #5f6d5b; font-size: 9pt; }
   @media screen { body { max-width: 800px; margin: 32px auto; padding: 24px; } }
 </style></head><body>
-<img class="watermark" src="${escapeHtml(sealUrl)}" alt="" aria-hidden="true"><header><div class="brand-row"><img class="seal" src="${escapeHtml(sealUrl)}" alt="Barangay Tambo seal"><div><div class="brand">BarangayConnect</div><div class="municipality">Barangay Tambo, Parañaque City</div></div></div><time class="printed-at">Printed<br>${escapeHtml(generatedAt)}</time></header>
+<img class="watermark" src="${escapeHtml(sealUrl)}" alt="" aria-hidden="true"><header><div class="brand-row"><img class="seal" src="${escapeHtml(sealUrl)}" alt="Barangay Tambo seal"><div><div class="brand">BarangayConnect</div><div class="municipality">Barangay Tambo, Parañaque City</div></div></div><time class="printed-at">${escapeHtml(generatedAt)}</time></header>
 <h1>${escapeHtml(item.name)}</h1>
 <p class="meta muted">${escapeHtml(item.type || 'Project')}</p>
 <h2>Project details</h2><div class="grid">
