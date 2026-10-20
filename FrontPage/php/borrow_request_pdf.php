@@ -34,13 +34,13 @@ function bc_pdf_ascii(string $value): string
 function bc_pdf_text(string $text, float $x, float $top, int $size = 9, bool $bold = false): string
 {
     $font = $bold ? 'F2' : 'F1';
-    $y = 420 - $top;
+    $y = 842 - $top;
     return "BT /{$font} {$size} Tf 1 0 0 1 {$x} {$y} Tm (" . bc_pdf_ascii($text) . ") Tj ET\n";
 }
 
 function bc_pdf_line(float $x1, float $top1, float $x2, float $top2): string
 {
-    return ("{$x1} " . (420 - $top1) . " m {$x2} " . (420 - $top2) . " l S\n");
+    return ("{$x1} " . (842 - $top1) . " m {$x2} " . (842 - $top2) . " l S\n");
 }
 
 function bc_pdf_brand_mark(float $x, float $top): string
@@ -73,12 +73,19 @@ function bc_pdf_wrapped(string $value, int $width, int $maxLines = 3): array
     return $lines;
 }
 
-function bc_pdf_field(string $label, string $value, float $top, int $maxLines = 2): array
+function bc_pdf_field(string $label, string $value, float $x, float $top, float $width, int $maxLines = 3): array
 {
-    $commands = bc_pdf_text(strtoupper($label), 22, $top, 6, true);
-    $lines = bc_pdf_wrapped($value, 36, $maxLines);
-    foreach ($lines as $i => $line) $commands .= bc_pdf_text($line, 22, $top + 10 + ($i * 10), 8);
-    return [$commands, $top + 15 + (max(1, count($lines)) - 1) * 10];
+    $lines = bc_pdf_wrapped($value, max(14, (int) floor(($width - 16) / 4)), $maxLines);
+    $height = 27 + (count($lines) - 1) * 10;
+    $y = 842 - $top - $height;
+    $commands = "0.78 0.85 0.78 RG 0.65 w {$x} {$y} {$width} {$height} re S\n";
+    $commands .= "0.32 0.43 0.34 rg\n";
+    $commands .= bc_pdf_text(strtoupper($label), $x + 8, $top + 9, 6, true);
+    $commands .= "0.08 0.12 0.09 rg\n";
+    foreach ($lines as $i => $line) {
+        $commands .= bc_pdf_text($line, $x + 8, $top + 20 + ($i * 10), 9);
+    }
+    return [$commands, $height];
 }
 
 function bc_pdf_format_datetime(string $value): string
@@ -92,40 +99,54 @@ function bc_pdf_format_datetime(string $value): string
 function bc_build_compact_borrow_pdf(array $data): string
 {
     $cmd = "0.25 w\n";
-    $cmd .= "q /GS1 gs 220 0 0 220 39 100 cm /Im1 Do Q\n";
-    $cmd .= "q 54 0 0 54 122 349 cm /Im1 Do Q\n";
-    
+    // A4 canvas with a light seal watermark and the existing, correctly sized logo.
+    $cmd .= "q /GS1 gs 380 0 0 380 107 231 cm /Im1 Do Q\n";
+    $cmd .= "q 54 0 0 54 22 770 cm /Im1 Do Q\n";
     $cmd .= "0.16 0.38 0.24 rg\n";
-    $cmd .= bc_pdf_text('BARANGAY TAMBO', 106, 78, 12, true);
+    $cmd .= bc_pdf_text('BARANGAYCONNECT', 86, 40, 12, true);
     $cmd .= "0 0 0 rg\n";
-    $cmd .= 
-    $cmd .= bc_pdf_text('BarangayConnect  |  Equipment Borrow Request', 83, 90, 7, true);
-    $cmd .= bc_pdf_line(22, 101, 276, 101);
-    $cmd .= bc_pdf_text('REQUEST COPY - SUBJECT TO BARANGAY APPROVAL', 22, 112, 6, true);
-    $cmd .= bc_pdf_text('Prepared: ' . date('M d, Y h:i A'), 22, 122, 7);
-    $cmd .= bc_pdf_line(22, 130, 276, 130);
+    $cmd .= bc_pdf_text('Barangay Tambo, Parañaque City', 86, 52, 8);
+    $cmd .= bc_pdf_text('Printed: ' . date('M d, Y h:i A'), 489, 31, 7);
+    $cmd .= bc_pdf_line(22, 80, 573, 80);
 
-    $top = 141;
-    foreach ([
-        ['Item', $data['item'], 2], ['Category', $data['category'], 1],
-        ['Quantity', $data['quantity'], 1], ['Purpose', $data['purpose'], 3],
-        ['Pickup schedule', $data['pickup'], 1], ['Expected return', $data['return'], 1],
-        ['Event / activity', $data['event'], 2], ['Venue', $data['location'], 2],
-        ['Resident', $data['resident'], 1], ['Resident ID', $data['residentCode'], 1],
-        ['Contact number', $data['contact'], 1], ['Notes', $data['notes'], 2],
-    ] as [$label, $value, $maxLines]) {
-        [$fieldCmd, $nextTop] = bc_pdf_field($label, (string) $value, $top, (int) $maxLines);
-        $cmd .= $fieldCmd;
-        $top = $nextTop + 3;
-    }
+    $cmd .= bc_pdf_text('Equipment Borrow Request', 22, 108, 17, true);
+    $cmd .= bc_pdf_text('REQUEST COPY - SUBJECT TO BARANGAY APPROVAL', 22, 122, 7, true);
+    $cmd .= bc_pdf_text('Review the item, schedule, and resident details below.', 22, 134, 8);
 
-    $signTop = max(333, min(360, $top + 10));
-    $cmd .= bc_pdf_line(22, $signTop, 134, $signTop);
-    $cmd .= bc_pdf_line(164, $signTop, 276, $signTop);
-    $cmd .= bc_pdf_text('Applicant signature / date', 22, $signTop + 10, 6);
-    $cmd .= bc_pdf_text('Barangay staff / date', 164, $signTop + 10, 6);
-    $cmd .= bc_pdf_line(22, 398, 276, 398);
-    $cmd .= bc_pdf_text('Bring a valid ID. This slip is not an approval or release permit.', 22, 409, 6);
+    $leftX = 22;
+    $rightX = 303;
+    $cardWidth = 270;
+    $top = 154;
+    $cmd .= bc_pdf_text('ITEM & SCHEDULE', 22, $top, 9, true);
+    $cmd .= bc_pdf_line(22, $top + 6, 573, $top + 6);
+    $top += 15;
+
+    $addPair = function (array $left, array $right) use (&$cmd, &$top, $leftX, $rightX, $cardWidth): void {
+        [$leftCmd, $leftHeight] = bc_pdf_field($left[0], (string) $left[1], $leftX, $top, $cardWidth, (int) ($left[2] ?? 3));
+        [$rightCmd, $rightHeight] = bc_pdf_field($right[0], (string) $right[1], $rightX, $top, $cardWidth, (int) ($right[2] ?? 3));
+        $cmd .= $leftCmd . $rightCmd;
+        $top += max($leftHeight, $rightHeight) + 7;
+    };
+
+    $addPair(['Item', $data['item']], ['Category', $data['category']]);
+    $addPair(['Quantity', $data['quantity']], ['Purpose', $data['purpose']]);
+    $addPair(['Pickup schedule', $data['pickup']], ['Expected return', $data['return']]);
+    $addPair(['Event / activity', $data['event']], ['Venue', $data['location']]);
+
+    $top += 5;
+    $cmd .= bc_pdf_text('RESIDENT INFORMATION', 22, $top, 9, true);
+    $cmd .= bc_pdf_line(22, $top + 6, 573, $top + 6);
+    $top += 15;
+    $addPair(['Resident', $data['resident']], ['Resident ID', $data['residentCode']]);
+    $addPair(['Contact number', $data['contact']], ['Notes', $data['notes']]);
+
+    $signTop = max(710, min(748, $top + 22));
+    $cmd .= bc_pdf_line(22, $signTop, 270, $signTop);
+    $cmd .= bc_pdf_line(325, $signTop, 573, $signTop);
+    $cmd .= bc_pdf_text('Applicant signature / date', 22, $signTop + 12, 8);
+    $cmd .= bc_pdf_text('Barangay staff / date', 325, $signTop + 12, 8);
+    $cmd .= bc_pdf_line(22, 790, 573, 790);
+    $cmd .= bc_pdf_text('Bring a valid ID. This slip is not an approval or release permit.', 22, 806, 8);
 
     $stream = function_exists('gzcompress') ? gzcompress($cmd, 9) : false;
     $compressed = is_string($stream);
@@ -134,7 +155,7 @@ function bc_build_compact_borrow_pdf(array $data): string
     $objects = [
         '<< /Type /Catalog /Pages 2 0 R >>',
         '<< /Type /Pages /Kids [3 0 R] /Count 1 >>',
-        '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 298 420] /Resources << /Font << /F1 4 0 R /F2 5 0 R >> /XObject << /Im1 7 0 R >> /ExtGState << /GS1 8 0 R >> >> /Contents 6 0 R >>',
+        '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 4 0 R /F2 5 0 R >> /XObject << /Im1 7 0 R >> /ExtGState << /GS1 8 0 R >> >> /Contents 6 0 R >>',
         '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>',
         '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>',
         "<< {$filter}/Length " . strlen($stream) . " >>\nstream\n" . $stream . "\nendstream",
@@ -145,7 +166,7 @@ function bc_build_compact_borrow_pdf(array $data): string
         throw new RuntimeException('The Barangay Tambo seal image is missing.');
     }
     $objects[] = "<< /Type /XObject /Subtype /Image /Width 180 /Height 180 /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length " . strlen($sealBytes) . " >>\nstream\n" . $sealBytes . "\nendstream";
-    $objects[] = '<< /Type /ExtGState /ca 0.12 /CA 0.12 >>';
+    $objects[] = '<< /Type /ExtGState /ca 0.06 /CA 0.06 >>';
     $pdf = "%PDF-1.4\n%\xE2\xE3\xCF\xD3\n";
     $offsets = [0];
     foreach ($objects as $index => $object) {
