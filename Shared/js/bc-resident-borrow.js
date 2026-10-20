@@ -409,7 +409,8 @@
     if (hint) hint.textContent = `Maximum available: ${item.availableQty}`;
 
     document.getElementById('rBorrowFullName').value = '';
-    document.getElementById('rBorrowResidentCode').value = '';
+    const residentCode = Session?.getResidentCode?.() || global.localStorage?.getItem('residentCode') || global.currentResident?.residentId || '';
+    document.getElementById('rBorrowResidentCode').value = String(residentCode).trim();
     document.getElementById('rBorrowContact').value = '';
     document.getElementById('rBorrowPurpose').value = '';
     document.getElementById('rBorrowEvent').value = '';
