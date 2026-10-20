@@ -73,17 +73,24 @@ function bc_pdf_wrapped(string $value, int $width, int $maxLines = 3): array
     return $lines;
 }
 
+function bc_pdf_centered_text(string $text, float $top, int $size = 9, bool $bold = false): string
+{
+    // Helvetica's average glyph width is about 0.52 em; center this note on the A4 page.
+    $estimatedWidth = strlen($text) * $size * 0.52;
+    return bc_pdf_text($text, max(22, (595 - $estimatedWidth) / 2), $top, $size, $bold);
+}
+
 function bc_pdf_field(string $label, string $value, float $x, float $top, float $width, int $maxLines = 3): array
 {
-    $lines = bc_pdf_wrapped($value, max(14, (int) floor(($width - 16) / 4)), $maxLines);
-    $height = 27 + (count($lines) - 1) * 10;
+    $lines = bc_pdf_wrapped($value, max(14, (int) floor(($width - 16) / 5)), $maxLines);
+    $height = 34 + (count($lines) - 1) * 13;
     $y = 842 - $top - $height;
     $commands = "0.78 0.85 0.78 RG 0.65 w {$x} {$y} {$width} {$height} re S\n";
     $commands .= "0.32 0.43 0.34 rg\n";
-    $commands .= bc_pdf_text(strtoupper($label), $x + 8, $top + 9, 6, true);
+    $commands .= bc_pdf_text(strtoupper($label), $x + 8, $top + 11, 8, true);
     $commands .= "0.08 0.12 0.09 rg\n";
     foreach ($lines as $i => $line) {
-        $commands .= bc_pdf_text($line, $x + 8, $top + 20 + ($i * 10), 9);
+        $commands .= bc_pdf_text($line, $x + 8, $top + 25 + ($i * 13), 11);
     }
     return [$commands, $height];
 }
@@ -117,7 +124,7 @@ function bc_build_compact_borrow_pdf(array $data): string
     $rightX = 303;
     $cardWidth = 270;
     $top = 154;
-    $cmd .= bc_pdf_text('ITEM & SCHEDULE', 22, $top, 9, true);
+    $cmd .= bc_pdf_text('ITEM & SCHEDULE', 22, $top, 10, true);
     $cmd .= bc_pdf_line(22, $top + 6, 573, $top + 6);
     $top += 15;
 
@@ -134,7 +141,7 @@ function bc_build_compact_borrow_pdf(array $data): string
     $addPair(['Event / activity', $data['event']], ['Venue', $data['location']]);
 
     $top += 5;
-    $cmd .= bc_pdf_text('RESIDENT INFORMATION', 22, $top, 9, true);
+    $cmd .= bc_pdf_text('RESIDENT INFORMATION', 22, $top, 10, true);
     $cmd .= bc_pdf_line(22, $top + 6, 573, $top + 6);
     $top += 15;
     $addPair(['Resident', $data['resident']], ['Resident ID', $data['residentCode']]);
@@ -146,7 +153,7 @@ function bc_build_compact_borrow_pdf(array $data): string
     $cmd .= bc_pdf_text('Applicant signature / date', 22, $signTop + 12, 8);
     $cmd .= bc_pdf_text('Barangay staff / date', 325, $signTop + 12, 8);
     $cmd .= bc_pdf_line(22, 790, 573, 790);
-    $cmd .= bc_pdf_text('Bring a valid ID. This slip is not an approval or release permit.', 22, 806, 8);
+    $cmd .= bc_pdf_centered_text('Bring a valid ID. This slip is not an approval or release permit.', 806, 9);
 
     $stream = function_exists('gzcompress') ? gzcompress($cmd, 9) : false;
     $compressed = is_string($stream);
