@@ -34,4 +34,1807 @@
   .hero-cta { min-height: 50px; display: inline-flex; align-items: center; justify-content: center; gap: .65rem; padding: .75rem 1.4rem; border: 1px solid rgba(255,255,255,.56); border-radius: 999px; background: rgba(6,46,29,.28); color: #fff; font: 700 .96rem Poppins,sans-serif; text-decoration: none; cursor: pointer; transition: transform .2s, box-shadow .2s, background .2s; }
   .hero-cta--primary { border-color: var(--bc-hero-orange); background: var(--bc-hero-orange); color: #18251c; }
   .hero-cta:hover { transform: translateY(-2px); box-shadow: 0 9px 24px rgba(0,0,0,.2); }
+  .intro-features { display: flex; justify-content: center; flex-wrap: wrap; gap: .65rem; margin-top: 0; }
+  .introduction-section .feature-badge { padding: .55rem 1rem; border: 1px solid rgba(255,255,255,.22); background: rgba(247,251,246,.96); color: #173d2a; font-size: .82rem; }
+  .community-ribbon { width: 100%; overflow: hidden; margin: 0; background: #174d2e; color: #fff; }
+  .community-ribbon__track { display: flex; align-items: center; width: max-content; min-width: 200%; justify-content: space-around; gap: clamp(1.2rem,3vw,3.2rem); padding: 1rem 0; animation: bc-ribbon-scroll 32s linear infinite; }
+  .community-ribbon__track span { color: #fff; font-size: clamp(1.1rem,2.7vw,2.3rem); font-weight: 800; letter-spacing: .025em; white-space: nowrap; }
+  .community-ribbon__track span:nth-of-type(even) { color: var(--bc-hero-orange); }
+  .community-ribbon__track i { color: #9fc493; font-size: .8rem; font-style: normal; }
+  @keyframes bc-ribbon-scroll { to { transform: translateX(-50%); } }
+  .community-ribbon:hover .community-ribbon__track { animation-play-state: paused; }
+  .resident-steps { width: min(100% - 2rem,1260px); margin: 0 auto; padding: clamp(4rem,7vw,6.5rem) 0; text-align: center; }
+  .resident-steps__heading { max-width: 750px; margin: 0 auto 2.5rem; }
+  .resident-steps__eyebrow { margin-bottom: .45rem; color: #b86616; font-size: .78rem; font-weight: 700; letter-spacing: .16em; }
+  .resident-steps__heading h2 { color: #1f2c23; font-size: clamp(2rem,4.3vw,3.4rem); line-height: 1.12; letter-spacing: -.04em; }
+  .resident-steps__heading > p:last-child { margin-top: .75rem; color: #667267; font-size: 1rem; }
+  .resident-steps__grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 1rem; list-style: none; text-align: left; }
+  .resident-step { position: relative; min-height: 285px; overflow: hidden; padding: 1.65rem; border: 1px solid #dce7dd; border-radius: 20px; background: #fff; box-shadow: 0 12px 34px rgba(30,69,43,.07); transition: transform .22s,box-shadow .22s,border-color .22s; }
+  .resident-step:hover { transform: translateY(-5px); border-color: #a9c6a5; box-shadow: 0 18px 40px rgba(30,69,43,.12); }
+  .resident-step:first-child { border-color: #174d2e; background: #174d2e; color: #fff; }
+  .resident-step__icon { position: relative; z-index: 1; width: 52px; height: 52px; display: grid; place-items: center; border-radius: 15px; background: #eaf2e8; color: #205b39; font-size: 1.2rem; }
+  .resident-step:first-child .resident-step__icon { background: rgba(255,255,255,.14); color: #fff; }
+  .resident-step__number { position: absolute; top: 1.15rem; right: 1.35rem; color: #e6e9e7; font-size: 3.25rem; font-weight: 800; line-height: 1; letter-spacing: -.06em; }
+  .resident-step:first-child .resident-step__number { color: rgba(255,255,255,.14); }
+  .resident-step h3 { position: relative; margin: 2.2rem 0 .55rem; color: #1f2c23; font-size: 1.1rem; }
+  .resident-step:first-child h3 { color: #fff; }
+  .resident-step p { position: relative; max-width: 34ch; color: #627067; font-size: .93rem; line-height: 1.75; }
+  .resident-step:first-child p { color: rgba(255,255,255,.8); }
+  .resident-steps__cta { min-height: 50px; display: inline-flex; align-items: center; justify-content: center; gap: .65rem; margin-top: 1.8rem; padding: .75rem 1.3rem; border: 0; border-radius: 999px; background: var(--bc-hero-orange); color: #173b29; font: 700 .96rem Poppins,sans-serif; cursor: pointer; }
+  .homepage-section { scroll-margin-top: 100px; }
+  @media (max-width: 768px) { .resident-steps__grid { grid-template-columns: 1fr; } .resident-step { min-height: 220px; } .introduction-section { min-height: 100svh; padding: 9.5rem 1.1rem 2.2rem; background-position: 58% center; } .intro-title { font-size: clamp(2rem,8.5vw,3.3rem); } }
+  @media (max-width: 480px) { .intro-actions { flex-direction: column; align-items: stretch; max-width: 290px; } .hero-cta { width: 100%; } .introduction-section .intro-features { gap: .45rem; } .introduction-section .feature-badge { padding: .45rem .65rem; font-size: .68rem; } .community-ribbon__track { padding: .8rem 0; } .resident-steps { width: calc(100% - 1.4rem); } }
+  @media (prefers-reduced-motion: reduce) { .intro-dot,.community-ribbon__track { animation: none; } .resident-step,.hero-cta { transition: none; } }  body { background-color: #f3f7f3; }
+  body::before, body::after { display: none !important; }
 
+  /* BarangayConnect uses its own Tambo background asset. */
+  body { background: #e8f2e5; }
+  body::before { display: block !important; background-image: url('../../Shared/images/tambo-barangay-hall-background.png') !important; }
+  body::after { display: block !important; background: linear-gradient(135deg, rgba(30,48,37,.48), rgba(45,58,48,.55)) !important; }
+  .introduction-section { background-image: url('../../Shared/images/tambo-barangay-hall-background.png') !important; background-position: center 44%; background-size: cover; }
+  .homepage-section { width: min(calc(100% - 2rem), 1260px); margin: clamp(1.5rem, 3vw, 3rem) auto; padding: clamp(1.5rem, 3vw, 2.5rem); border: 1px solid rgba(220,232,220,.96); border-radius: 22px; background: rgba(247,250,247,.96); box-shadow: 0 12px 36px rgba(20,55,34,.12); }
+  .resident-steps.homepage-section { width: min(calc(100% - 2rem), 1260px); }
+  .resident-step { transform: none; transition: background-color .2s ease, color .2s ease, border-color .2s ease; }
+  .resident-step:first-child { border-color: #dce7dd; background: #fff; color: #1f2c23; }
+  .resident-step:first-child .resident-step__icon { background: #eaf2e8; color: #205b39; }
+  .resident-step:first-child .resident-step__number { color: #e6e9e7; }
+  .resident-step:first-child h3 { color: #1f2c23; }
+  .resident-step:first-child p { color: #627067; }
+  .resident-step:hover, .resident-step:first-child:hover { transform: none; border-color: #174d2e; background: #174d2e; color: #fff; box-shadow: 0 12px 34px rgba(30,69,43,.12); }
+  .resident-step:hover h3, .resident-step:first-child:hover h3 { color: #fff; }
+  .resident-step:hover p, .resident-step:first-child:hover p { color: rgba(255,255,255,.84); }
+  .resident-step:hover .resident-step__icon, .resident-step:first-child:hover .resident-step__icon { background: rgba(255,255,255,.14); color: #fff; }
+  .resident-step:hover .resident-step__number, .resident-step:first-child:hover .resident-step__number { color: rgba(255,255,255,.2); }
+  @media (max-width: 768px) { .homepage-section, .resident-steps.homepage-section { width: calc(100% - 1rem); margin: 1rem auto; padding: 1.25rem; border-radius: 18px; } }
+
+
+  /* Give the feature panels room on wide screens while keeping the resident steps centered. */
+  .homepage-section { width: min(calc(100% - 2rem), 1800px); }
+  .resident-steps.homepage-section { width: min(calc(100% - 2rem), 1260px); }
+  @media (max-width: 768px) { .homepage-section, .resident-steps.homepage-section { width: calc(100% - 1rem); } }
+
+
+  /* Lighten the Tambo photo behind public sections without replacing it. */
+  body::after { background: linear-gradient(135deg, rgba(245,249,243,.18), rgba(255,255,255,.22)) !important; }
+  /* Align the resident panel with the other wide sections and equalize its cards. */
+  .resident-steps.homepage-section { width: min(calc(100% - 2rem), 1800px); }
+  .resident-steps__grid { grid-auto-rows: 1fr; align-items: stretch; }
+  .resident-steps__grid .resident-step { height: 100%; box-sizing: border-box; }
+  @media (max-width: 768px) { .resident-steps.homepage-section { width: calc(100% - 1rem); } }
+
+  /* Reference-inspired hero entrance, scroll reveals, and Contact Us dialog. */   @keyframes bc-hero-enter { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: translateY(-1.5vh); } }/* Hero entrance and dark-mode Services contrast */ .intro-content{animation:bc-hero-enter .85s cubic-bezier(.2,.7,.2,1) both} html[data-theme="dark"] .homepage-section,html[data-theme="dark"] .resident-steps.homepage-section{background:#101c15!important;color:#eaf1ec!important;border-color:#33483a!important} html[data-theme="dark"] .services-section .section-title,html[data-theme="dark"] .services-section h2,html[data-theme="dark"] .services-section h3,html[data-theme="dark"] .services-section h4,html[data-theme="dark"] .section-title,html[data-theme="dark"] .section-subtitle{color:#eaf1ec!important} html[data-theme="dark"] .services-section .service-card,html[data-theme="dark"] .service-card,html[data-theme="dark"] .service-item{background:#19271f!important;color:#eaf1ec!important;border-color:#3b5142!important} html[data-theme="dark"] .services-section .service-card p,html[data-theme="dark"] .service-card p,html[data-theme="dark"] .service-item p,html[data-theme="dark"] .services-cta p{color:#bdc9c0!important} html[data-theme="dark"] .service-card a,html[data-theme="dark"] .service-item a{color:#b8dda9!important} html[data-theme="dark"] .services-cta{background:#202f26!important;color:#eaf1ec!important}    .intro-content { animation: bc-hero-enter .85s cubic-bezier(.2,.7,.2,1) both; }   html.bc-motion-ready .bc-scroll-reveal { opacity: 0; transform: translateY(28px); transition: opacity .7s cubic-bezier(.2,.7,.2,1), transform .7s cubic-bezier(.2,.7,.2,1); transition-delay: var(--bc-reveal-delay, 0s); }   html.bc-motion-ready .bc-scroll-reveal.is-visible { opacity: 1; transform: translateY(0); }   .bc-theme-toggle { position: fixed; right: 1.35rem; bottom: 5.8rem; z-index: 1001; width: 58px; height: 58px; display: grid; place-items: center; border: 1px solid rgba(255,255,255,.45); border-radius: 50%; background: #1b542f; color: #fff; box-shadow: 0 8px 24px rgba(13,43,27,.28); font-size: 1.25rem; cursor: pointer; transition: transform .2s, background .2s; }   .bc-theme-toggle:hover { transform: translateY(-3px); background: #24683d; }   .bc-contact-modal { position: fixed; inset: 0; z-index: 11000; display: grid; place-items: center; padding: 1rem; opacity: 0; visibility: hidden; transition: opacity .22s ease, visibility .22s ease; }   .bc-contact-modal.is-open { opacity: 1; visibility: visible; }   .bc-contact-modal__backdrop { position: absolute; inset: 0; background: rgba(10,20,14,.58); backdrop-filter: blur(5px); }   .bc-contact-panel { position: relative; width: min(100%, 480px); max-height: min(90svh, 720px); overflow: auto; border: 1px solid rgba(255,255,255,.35); border-radius: 24px; background: #fff; box-shadow: 0 24px 70px rgba(0,0,0,.3); transform: translateY(14px) scale(.98); transition: transform .28s cubic-bezier(.2,.7,.2,1); }   .bc-contact-modal.is-open .bc-contact-panel { transform: translateY(0) scale(1); }   .bc-contact-panel__header { position: relative; display: flex; align-items: center; gap: 1rem; min-height: 112px; padding: 1.45rem 1.8rem; overflow: hidden; background: #174d2e; color: #fff; }   .bc-contact-panel__header::after { position: absolute; width: 170px; height: 170px; right: -65px; top: -100px; border-radius: 50%; background: rgba(255,255,255,.08); content: ''; }   .bc-contact-panel__icon { z-index: 1; width: 48px; height: 48px; flex: 0 0 48px; display: grid; place-items: center; border-radius: 14px; background: rgba(255,255,255,.14); font-size: 1.2rem; }   .bc-contact-panel__heading { z-index: 1; }   .bc-contact-panel__eyebrow { margin: 0 0 .18rem; color: rgba(255,255,255,.68); font-size: .68rem; font-weight: 700; letter-spacing: .15em; }   .bc-contact-panel__heading h2 { margin: 0; color: #fff; font-size: 1.35rem; line-height: 1.25; }   .bc-contact-panel__heading p:last-child { margin: .25rem 0 0; color: rgba(255,255,255,.75); font-size: .84rem; }   .bc-contact-panel__close { position: absolute; top: 1rem; right: 1rem; z-index: 2; width: 34px; height: 34px; border: 0; border-radius: 50%; background: rgba(255,255,255,.16); color: #fff; font-size: 1.2rem; cursor: pointer; }   .bc-contact-panel__body { padding: 1.55rem 1.8rem 1.7rem; color: #343b35; }   .bc-contact-panel__intro { margin: 0 0 1.35rem; font-size: .92rem; line-height: 1.7; }   .bc-contact-email { display: flex; align-items: center; gap: .9rem; padding: 1rem 1.1rem; border: 1px solid #e0e7e1; border-radius: 15px; color: #203729; text-decoration: none; box-shadow: 0 5px 14px rgba(15,40,23,.1); }   .bc-contact-email__icon { width: 44px; height: 44px; flex: 0 0 44px; display: grid; place-items: center; border-radius: 12px; background: #174d2e; color: #fff; }   .bc-contact-email__copy { flex: 1; min-width: 0; font-size: .88rem; font-weight: 700; }   .bc-contact-email__copy span { color: #c66c13; font-size: .83rem; font-weight: 600; overflow-wrap: anywhere; }   .bc-contact-guidance { margin: 1.35rem 0; padding: 1rem 1.1rem; border: 1px solid #dce7df; border-radius: 14px; background: #f5f8f5; }   .bc-contact-guidance h3 { margin: 0 0 .6rem; color: #205436; font-size: .9rem; }   .bc-contact-guidance ul { margin: 0; padding-left: 1.15rem; font-size: .84rem; line-height: 1.8; }   .bc-contact-response { margin: 0; padding: .65rem .8rem; border: 1px solid #e2e6ec; border-radius: 12px; background: #f3f4f6; color: #758092; font-size: .78rem; }   .bc-contact-panel__actions { display: flex; gap: .8rem; padding: 1rem 1.8rem 1.5rem; border-top: 1px solid #e6e8e6; }   .bc-contact-panel__actions button, .bc-contact-panel__actions a { min-height: 44px; display: inline-flex; align-items: center; justify-content: center; gap: .55rem; border-radius: 999px; font: 700 .9rem Poppins,sans-serif; text-decoration: none; cursor: pointer; }   .bc-contact-panel__actions button { flex: 0 0 92px; border: 1px solid #d3d8d3; background: #fff; color: #333; }   .bc-contact-panel__actions a { flex: 1; border: 0; background: #174d2e; color: #fff; box-shadow: 0 5px 12px rgba(23,77,46,.18); }   @media (max-width: 520px) { .bc-theme-toggle { right: 1rem; bottom: 5rem; width: 52px; height: 52px; } .bc-contact-panel__header { padding: 1.2rem 1.25rem; } .bc-contact-panel__body { padding: 1.2rem 1.25rem 1.35rem; } .bc-contact-panel__actions { padding: .9rem 1.25rem 1.25rem; } }   @media (prefers-reduced-motion: reduce) { .intro-content { animation: none; } html.bc-motion-ready .bc-scroll-reveal, .bc-contact-modal, .bc-contact-panel { transition: none; } } .resident-steps__cta { display: flex; width: fit-content; margin-left: auto; margin-right: 0; } .resident-steps__cta { display: flex; width: fit-content; margin-left: auto; margin-right: 0; } .bc-contact-open { overflow: hidden; } /* Light/dark theme */ .bc-theme-toggle:focus-visible{outline:3px solid #f6a333;outline-offset:4px} html[data-theme="dark"] body::after{background:linear-gradient(135deg,rgba(3,12,8,.62),rgba(4,20,12,.76))!important} html[data-theme="dark"] .homepage-section,html[data-theme="dark"] .resident-steps.homepage-section{background-color:#101c15!important;color:#eaf1ec!important;border-color:#33483a!important} html[data-theme="dark"] .section-title,html[data-theme="dark"] .subsection-title,html[data-theme="dark"] .resident-steps__heading h2,html[data-theme="dark"] .resident-step h3{color:#eaf1ec!important} html[data-theme="dark"] .section-subtitle,html[data-theme="dark"] .resident-steps__heading>p:last-child,html[data-theme="dark"] .resident-step p{color:#b6c5ba!important} html[data-theme="dark"] .section-header{border-color:#34483a!important} html[data-theme="dark"] .resident-step,html[data-theme="dark"] .manual-grid article,html[data-theme="dark"] .service-card,html[data-theme="dark"] .service-item,html[data-theme="dark"] .homepage-section article,html[data-theme="dark"] .announcement-card,html[data-theme="dark"] .emergency-card,html[data-theme="dark"] .faq-item{background:#19271f!important;color:#eaf1ec!important;border-color:#3b5142!important} html[data-theme="dark"] .manual-grid h4,html[data-theme="dark"] .service-card h3,html[data-theme="dark"] .service-item h3,html[data-theme="dark"] .faq-question,html[data-theme="dark"] .emergency-card h3{color:#eaf1ec!important} html[data-theme="dark"] .manual-grid p,html[data-theme="dark"] .manual-note,html[data-theme="dark"] .service-card p,html[data-theme="dark"] .service-item p,html[data-theme="dark"] .faq-answer p,html[data-theme="dark"] .emergency-card p,html[data-theme="dark"] .announcement-card p{color:#bdc9c0!important} html[data-theme="dark"] .faq-question{background:transparent!important} html[data-theme="dark"] .search-box input,html[data-theme="dark"] #feedbackMessage,html[data-theme="dark"] .filter-btn{background:#19271f!important;color:#eaf1ec!important;border-color:#49614f!important} html[data-theme="dark"] .filter-btn.active{background:#39754c!important;color:#fff!important} html[data-theme="dark"] footer{background:#0e2419!important;color:#eaf1ec!important} html[data-theme="dark"] footer a{color:#d6e8d9!important} html[data-theme="dark"] .bc-contact-panel{background:#17241c!important;color:#eaf1ec!important} html[data-theme="dark"] .bc-contact-guidance,html[data-theme="dark"] .bc-contact-response{background:#202f26!important;color:#d5e0d8!important;border-color:#405449!important} </style>
+
+<style id="bc-dark-services-contrast">html[data-theme="dark"] .services-section .service-card h4,html[data-theme="dark"] .services-section .service-card__link-label{color:#d8f0cc!important}html[data-theme="dark"] .services-section .service-card p{color:#d2ddd5!important}html[data-theme="dark"] .services-section .service-card__link-label i{color:#ffb24d!important}html[data-theme="dark"] .services-section .services-cta h4{color:#f0f5f1!important}html[data-theme="dark"] .services-section .services-cta p{color:#cbd8ce!important}html[data-theme="dark"] .services-section .services-cta__button{background:#78a96e!important;color:#102116!important}html[data-theme="dark"] .services-section .services-cta__login{background:#17251c!important;color:#eaf1ec!important;border-color:#829986!important}</style></head>
+<body>
+  <!-- Header with Register/Login on top right -->
+  <header class="homepage-header">
+    <div class="header-left">
+      <span class="brand-logo header-brand-logo">
+        <img src="../../Shared/images/barangay-tambo-seal.jpg" alt="Barangay Tambo official seal" width="180" height="180" />
+      </span>
+      <div class="header-brand-copy">
+        <h1>BarangayConnect</h1>
+        <p>Tambo, Parañaque City</p>
+      </div>
+    </div>
+    <nav class="header-nav" aria-label="Main navigation">
+      <a href="#home">Home</a>
+      <a href="#services">Services</a>
+      <a href="#community-announcements">Announcements</a>
+      <a href="#emergency-contacts">Emergency</a>
+      <a href="#faqs">FAQ</a>
+    </nav>
+    <div class="header-right">
+      <button id="registerBtn" class="header-action-btn register-btn">
+        <i class="fas fa-user-plus"></i> Register
+      </button>
+      <button id="loginBtn" class="header-action-btn login-btn">
+        <i class="fas fa-sign-in-alt"></i> Login
+      </button>
+    </div>
+    <button type="button" class="mobile-menu-toggle" id="mobileMenuToggle" aria-expanded="false" aria-controls="mobileNavDrawer">
+      <i class="fas fa-bars" aria-hidden="true"></i><span>Menu</span>
+    </button>
+  </header>
+
+  <button type="button" id="mobileNavBackdrop" class="mobile-nav-backdrop" aria-label="Close navigation menu" hidden></button>
+  <aside id="mobileNavDrawer" class="mobile-nav-drawer" aria-label="On this page" aria-hidden="true" hidden>
+    <div class="mobile-nav-drawer__header">
+      <span>On this page</span>
+      <button type="button" id="mobileNavClose" class="mobile-nav-drawer__close" aria-label="Close menu"><i class="fas fa-xmark" aria-hidden="true"></i></button>
+    </div>
+    <nav class="mobile-nav-drawer__links" aria-label="Page sections">
+      <a href="#home">Home</a>
+      <a href="#services">Services</a>
+      <a href="#community-announcements">Announcements</a>
+      <a href="#emergency-contacts">Emergency</a>
+      <a href="#faqs">FAQ</a>
+    </nav>
+    <div class="mobile-nav-drawer__actions">
+      <button type="button" id="mobileRegisterBtn" class="header-action-btn register-btn"><i class="fas fa-user-plus" aria-hidden="true"></i> Register</button>
+      <button type="button" id="mobileLoginBtn" class="header-action-btn login-btn"><i class="fas fa-sign-in-alt" aria-hidden="true"></i> Login</button>
+    </div>
+  </aside>
+
+  <div id="bcSessionBar" class="bc-session-bar" role="navigation" aria-label="Logged-in shortcuts" hidden>
+    <span id="bcSessionBarText" class="bc-session-bar__text"></span>
+    <div class="bc-session-bar__actions">
+      <a id="bcGoResidentPortal" class="bc-session-bar__btn" href="#" hidden>Resident portal</a>
+      <a id="bcGoAdminPortal" class="bc-session-bar__btn bc-session-bar__btn--admin" href="#" hidden>Admin portal</a>
+      <button type="button" id="bcLogoutResident" class="bc-session-bar__link" hidden>Log out resident</button>
+      <button type="button" id="bcLogoutAdmin" class="bc-session-bar__link" hidden>Log out admin</button>
+    </div>
+  </div>
+
+  <div id="bcFileProtocolBanner" class="bc-file-banner" role="alert" aria-live="polite">
+    <strong>BarangayConnect needs the configured PHP server and Supabase project.</strong>
+    Open this site through its configured web-server URL; authentication and data services do not run from a local file.
+  </div>
+  <script>
+    (function () {
+      if (window.location.protocol === "file:") {
+        var b = document.getElementById("bcFileProtocolBanner");
+        if (b) b.classList.add("is-visible");
+        document.body.classList.add("bc-file-banner-active");
+      }
+    })();
+  </script>
+
+  <main class="homepage-main">
+    <!-- Introduction Section -->
+    <section class="introduction-section" id="home">
+      <div class="intro-content">
+        <p class="intro-eyebrow"><span class="intro-dot" aria-hidden="true"></span> BARANGAY TAMBO · PARAÑAQUE CITY</p>
+        <h2 class="intro-title"><span>BarangayConnect</span></h2>
+        <p class="intro-description">
+          Experience transparency, efficiency, and connection with BarangayConnect, your trusted platform to stay informed, 
+          access services quickly, and engage with the community of Barangay Tambo, Parañaque City. 
+          Connect with your barangay, access essential services, and stay updated with the latest announcements and information.
+        </p>
+        <div class="intro-actions">
+          <button type="button" class="hero-cta hero-cta--primary" onclick="document.getElementById('registerBtn')?.click()"><i class="fas fa-user-plus" aria-hidden="true"></i> Get Started</button>
+          <button type="button" class="hero-cta" onclick="document.getElementById('loginBtn')?.click()">Log In <i class="fas fa-arrow-right" aria-hidden="true"></i></button>
+        </div>
+        <div class="intro-features">
+          <div class="feature-badge">
+            <i class="fas fa-shield-alt"></i>
+            <span>Secure & Reliable</span>
+          </div>
+          <div class="feature-badge">
+            <i class="fas fa-clock"></i>
+            <span>24/7 Access</span>
+          </div>
+          <div class="feature-badge">
+            <i class="fas fa-users"></i>
+            <span>Community Focused</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <div class="community-ribbon" aria-label="Barangay Tambo community message">
+      <div class="community-ribbon__track" aria-hidden="true">
+        <span>SERBISYO LANG PO</span><i>✦</i><span>BARANGAY TAMBO</span><i>✦</i><span>SERBISYO LANG PO</span><i>✦</i><span>BARANGAY TAMBO</span><i>✦</i>
+      </div>
+    </div>
+    <section class="resident-steps homepage-section" id="resident-steps" aria-labelledby="residentStepsTitle">
+      <div class="resident-steps__heading">
+        <p class="resident-steps__eyebrow">FOR RESIDENTS</p>
+        <h2 id="residentStepsTitle">Up and running in 3 easy steps</h2>
+        <p>Get started and stay connected with your barangay.</p>
+      </div>
+      <ol class="resident-steps__grid">
+        <li class="resident-step"><span class="resident-step__icon"><i class="fas fa-user-plus" aria-hidden="true"></i></span><span class="resident-step__number" aria-hidden="true">01</span><h3>Create Your Account</h3><p>Enter accurate details to register as a resident of Barangay Tambo.</p></li>
+        <li class="resident-step"><span class="resident-step__icon"><i class="fas fa-id-card" aria-hidden="true"></i></span><span class="resident-step__number" aria-hidden="true">02</span><h3>Open the Resident Portal</h3><p>Log in to see the services available in your resident account.</p></li>
+        <li class="resident-step"><span class="resident-step__icon"><i class="fas fa-bell" aria-hidden="true"></i></span><span class="resident-step__number" aria-hidden="true">03</span><h3>Use the Services</h3><p>Request documents, submit reports, and stay updated with announcements.</p></li>
+      </ol>
+      <button type="button" class="resident-steps__cta" onclick="document.getElementById('servicesRegisterBtn')?.click()">Register Now <i class="fas fa-arrow-right" aria-hidden="true"></i></button>
+    </section>
+
+    <section class="homepage-section services-section" id="services">
+      <div class="section-header">
+        <h3 class="section-title"><i class="fas fa-handshake-angle" aria-hidden="true"></i> Services for Tambo Residents</h3>
+        <p class="section-subtitle">Access barangay services and community information in one place.</p>
+      </div>
+      <div class="services-grid">
+        <article class="service-card">
+          <span class="service-card__icon"><i class="fas fa-file-lines" aria-hidden="true"></i></span>
+          <h4>Barangay Document Requests</h4>
+          <p>Submit a request for barangay documents and follow its status in your resident portal.</p>
+        </article>
+        <article class="service-card">
+          <span class="service-card__icon"><i class="fas fa-flag" aria-hidden="true"></i></span>
+          <h4>Community Reports</h4>
+          <p>Send a report about a concern in your area and keep track of staff updates.</p>
+        </article>
+        <article class="service-card">
+          <span class="service-card__icon"><i class="fas fa-box-open" aria-hidden="true"></i></span>
+          <h4>Borrow Barangay Items</h4>
+          <p>Browse available items, submit a borrowing request, and check its progress.</p>
+        </article>
+        <a class="service-card service-card--link" href="#community-announcements">
+          <span class="service-card__icon"><i class="fas fa-bullhorn" aria-hidden="true"></i></span>
+          <h4>Community Announcements</h4>
+          <p>Read barangay updates, service notices, and upcoming community events.</p>
+          <span class="service-card__link-label">View announcements <i class="fas fa-arrow-right" aria-hidden="true"></i></span>
+        </a>
+        <a class="service-card service-card--link" href="#emergency-contacts">
+          <span class="service-card__icon"><i class="fas fa-phone-volume" aria-hidden="true"></i></span>
+          <h4>Emergency Contacts</h4>
+          <p>Find important contact numbers and emergency procedures for the community.</p>
+          <span class="service-card__link-label">View contacts <i class="fas fa-arrow-right" aria-hidden="true"></i></span>
+        </a>
+      </div>
+      <div class="services-cta">
+        <div>
+          <h4>Need to use an online service?</h4>
+          <p>Create a resident account or log in to open your portal.</p>
+        </div>
+        <div class="services-cta__actions">
+          <button type="button" class="services-cta__button" id="servicesRegisterBtn"><i class="fas fa-user-plus" aria-hidden="true"></i> Create an account</button>
+          <button type="button" class="services-cta__login" id="servicesLoginBtn">Log in</button>
+        </div>
+      </div>
+    </section>
+    <!-- Announcements Section -->
+    <section class="homepage-section announcements-section" id="community-announcements">
+      <div class="section-header">
+        <h3 class="section-title">
+          <i class="fas fa-bullhorn"></i>
+          Community Announcements
+        </h3>
+        <p class="section-subtitle">Stay informed about important updates and events in your barangay</p>
+      </div>
+
+      <!-- Filter and Search -->
+      <div class="filter-section">
+        <div class="search-box">
+          <i class="fas fa-search"></i>
+          <input type="text" placeholder="Search announcements..." id="announcementSearchInput">
+        </div>
+        <div class="filter-buttons">
+          <button class="filter-btn active" data-filter="all">All</button>
+          <button class="filter-btn" data-filter="important">Important</button>
+          <button class="filter-btn" data-filter="event">Events</button>
+          <button class="filter-btn" data-filter="service">Services</button>
+        </div>
+      </div>
+
+      <!-- Announcements List -->
+      <div class="announcements-container" id="announcementsContainer">
+        <!-- Announcements will be dynamically loaded here -->
+      </div>
+    </section>
+
+    <!-- Emergency Contacts Section -->
+    <section class="homepage-section emergency-section" id="emergency-contacts">
+      <div class="section-header">
+        <h3 class="section-title">
+          <i class="fas fa-phone"></i>
+          Emergency Contacts
+        </h3>
+        <p class="section-subtitle">Quick access to emergency services and important contacts</p>
+      </div>
+
+     <!-- Emergency Numbers -->
+<div class="emergency-content-section">
+  <h3 class="section-title emergency-subsection-title">Emergency Numbers</h3>
+
+  <!-- ✅ This will be filled dynamically -->
+  <div class="emergency-grid" id="emergencyGrid">
+    <p style="color: gray; text-align: center;">Loading emergency contacts...</p>
+  </div>
+</div>
+
+<!-- Barangay Contacts -->
+<div class="contacts-content-section">
+  <h3 class="section-title contacts-subsection-title">Barangay Contacts</h3>
+
+  <!-- ✅ This will be filled dynamically -->
+  <div class="contacts-grid" id="barangayContactsGrid">
+    <p style="color: gray; text-align: center;">Loading barangay contacts...</p>
+  </div>
+</div>
+
+</section>
+
+
+    <!-- FAQs & Feedback Section -->
+    <section class="homepage-section faqs-section" id="faqs">
+      <div class="section-header">
+        <h3 class="section-title">
+          <i class="fas fa-circle-question"></i>
+          Frequently Asked Questions
+        </h3>
+        <p class="section-subtitle">Find answers to common questions about the BarangayConnect system</p>
+      </div>
+
+      <div class="faq-list">
+        <div class="faq-item">
+          <button class="faq-question">
+            What is BarangayConnect?
+            <i class="fas fa-chevron-down"></i>
+          </button>
+          <div class="faq-answer">
+            <p>
+              BarangayConnect is a web-based barangay management system that allows residents
+              to access barangay services, announcements, reports, transparency records,
+              and emergency information online.
+            </p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">
+            Who can use the BarangayConnect system?
+            <i class="fas fa-chevron-down"></i>
+          </button>
+          <div class="faq-answer">
+            <p>
+              The system is designed for residents and barangay administrators.
+              Residents can submit requests and reports, while administrators manage
+              barangay records, documents, and community information.
+            </p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">
+            What happens after I finish registering?
+            <i class="fas fa-chevron-down"></i>
+          </button>
+          <div class="faq-answer">
+            <p>
+              When you complete registration successfully, your resident account is activated right away
+              and you are taken to the resident homepage. Use accurate information so barangay records stay
+              correct; the barangay may still follow up on concerns about false or duplicate accounts.
+            </p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">
+            What services can I request through the system?
+            <i class="fas fa-chevron-down"></i>
+          </button>
+          <div class="faq-answer">
+            <p>
+              Residents can request barangay documents such as clearance, certificates,
+              permits, and endorsements through the Requests section.
+            </p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">
+            How can I submit a report or complaint?
+            <i class="fas fa-chevron-down"></i>
+          </button>
+          <div class="faq-answer">
+            <p>
+              Reports can be submitted through the Reports section by describing
+              the issue or concern within the community.
+            </p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">
+            Can I track my requests and reports?
+            <i class="fas fa-chevron-down"></i>
+          </button>
+          <div class="faq-answer">
+            <p>
+              Yes. The system allows residents to track the status of submitted
+              requests and reports such as pending, approved, or completed.
+            </p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">
+            What is the Transparency section for?
+            <i class="fas fa-chevron-down"></i>
+          </button>
+          <div class="faq-answer">
+            <p>
+              The Transparency section shows barangay projects, programs,
+              and fund utilization to promote openness and accountability.
+            </p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">
+            Can I update my personal information?
+            <i class="fas fa-chevron-down"></i>
+          </button>
+          <div class="faq-answer">
+            <p>
+              Yes. Residents can update their profile and emergency contact
+              details through the Update Profile option in the settings menu.
+            </p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">
+            Is my information secure in the system?
+            <i class="fas fa-chevron-down"></i>
+          </button>
+          <div class="faq-answer">
+            <p>
+              Yes. BarangayConnect ensures that resident information is only accessible
+              to authorized barangay administrators.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Send Feedback Section -->
+      <div class="feedback-section">
+        <h4 class="subsection-title">Send Us Your Feedback</h4>
+        <p>Are you satisfied with the BarangayConnect system?</p>
+
+        <div class="feedback-icons">
+          <div class="feedback-option" data-value="Satisfied">
+            <i class="fas fa-face-smile"></i>
+            <span>Satisfied</span>
+          </div>
+
+          <div class="feedback-option" data-value="Not Satisfied">
+            <i class="fas fa-face-frown"></i>
+            <span>Not Satisfied</span>
+          </div>
+        </div>
+
+        <textarea id="feedbackMessage" placeholder="Write your feedback here..."></textarea>
+        <button class="feedback-btn">Submit Feedback</button>
+      </div>
+    </section>
+
+  </main>
+
+  <footer>
+    <div class="footer-left">
+<span>&copy; 2026 BarangayConnect Tambo, Parañaque City</span>
+    </div>
+    <div class="footer-links">
+      <a href="#services">Resident Services</a>
+      <span aria-hidden="true">•</span>
+      <a href="#" class="terms-modal-trigger" data-terms-scroll="">Terms &amp; Conditions</a>
+      <span aria-hidden="true">•</span>
+      <a href="#" class="terms-modal-trigger" data-terms-scroll="privacy">Privacy</a><span aria-hidden="true">•</span><a href="#" id="contactFooterLink">Contact Us</a>
+    </div>
+  </footer>
+
+  <div id="contactModal" class="bc-contact-modal" role="dialog" aria-modal="true" aria-labelledby="contactModalTitle" aria-hidden="true"><button type="button" class="bc-contact-modal__backdrop" data-contact-close aria-label="Close contact panel"></button><section class="bc-contact-panel" tabindex="-1"><header class="bc-contact-panel__header"><span class="bc-contact-panel__icon" aria-hidden="true"><i class="fas fa-envelope"></i></span><div class="bc-contact-panel__heading"><p class="bc-contact-panel__eyebrow">BARANGAYCONNECT</p><h2 id="contactModalTitle">Contact Us</h2><p>We'd love to hear from you</p></div><button type="button" class="bc-contact-panel__close" data-contact-close aria-label="Close">&times;</button></header><div class="bc-contact-panel__body"><p class="bc-contact-panel__intro">Have a question, feedback, or issue with the platform? Reach out to the BarangayConnect team and we'll get back to you as soon as we can.</p><a class="bc-contact-email" href="mailto:contact.barangayconnect@gmail.com"><span class="bc-contact-email__icon" aria-hidden="true"><i class="fas fa-envelope"></i></span><span class="bc-contact-email__copy">Email Us<br><span>contact.barangayconnect@gmail.com</span></span><i class="fas fa-arrow-up-right-from-square" aria-hidden="true"></i></a><section class="bc-contact-guidance"><h3><i class="fas fa-circle-info" aria-hidden="true"></i> What to include</h3><ul><li>Your name and registered barangay</li><li>A clear description of your concern or feedback</li><li>Screenshots if reporting a technical issue</li></ul></section><p class="bc-contact-response"><i class="far fa-clock" aria-hidden="true"></i> We typically respond within <strong>1–3 business days.</strong></p></div><footer class="bc-contact-panel__actions"><button type="button" data-contact-close>Close</button><a href="mailto:contact.barangayconnect@gmail.com"><i class="fas fa-envelope" aria-hidden="true"></i> Send Email</a></footer></section></div>   <button type="button" id="themeToggle" class="bc-theme-toggle" aria-label="Switch to dark mode" title="Switch to dark mode" aria-pressed="false"><i class="fas fa-moon" aria-hidden="true"></i></button> <!-- Shown when viewport is near end of page; scrolls back to top -->
+  <button type="button" id="scrollToTopFab" class="scroll-to-top-fab" aria-label="Back to top" title="Back to top">
+    <i class="fas fa-chevron-up" aria-hidden="true"></i>
+  </button>
+
+  <!-- Top Notification Popup -->
+  <div id="topNotification" class="top-notification">
+    <div class="notification-backdrop"></div>
+    <div class="notification-content">
+      <div class="notification-text">
+        <div class="notification-title">Login Successful!</div>
+        <div class="notification-message" id="notificationMessage"></div>
+        <div class="loading-indicator" id="loadingIndicator">
+          <div class="spinner"></div>
+          <span class="loading-text">Redirecting... Please wait</span>
+        </div>
+      </div>
+      <div class="notification-button-container" id="notificationButtonContainer">
+        <button class="notification-ok-btn" id="notificationOkBtn">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Terms & Conditions modal (opens in-page) -->
+  <div id="termsModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="termsModalTitle" aria-hidden="true">
+    <div class="modal-content modal-content--terms">
+      <span class="close" data-close="termsModal" aria-label="Close">&times;</span>
+      <div class="terms-modal-head">
+        <p class="terms-modal-pill">BarangayConnect</p>
+        <h2 id="termsModalTitle">Terms &amp; Conditions</h2>
+        <p class="terms-modal-updated">Last updated: May 2026</p>
+      </div>
+      <div class="terms-modal-body">
+        <p class="terms-modal-lead">BarangayConnect – Terms &amp; Conditions</p>
+
+        <h3>1) Eligibility &amp; Accounts</h3>
+        <p>To use BarangayConnect, residents must create an account using accurate and truthful personal information, including their full name, active mobile number, and optional email address. These details are used for barangay records, contact, and delivering services through the system. After you complete registration, your resident account is active and you can use the resident portal (including requests, reports, and other resident features) without waiting for a separate “approval” step. Residents are responsible for keeping their login credentials private and must ensure that no one else uses their account without permission. Any activity that takes place under your account will be considered your responsibility. Only one account per resident is allowed, and the barangay may deny or remove accounts with false, duplicated, or misleading information.</p>
+
+        <h3 id="privacy">2) Data &amp; Privacy</h3>
+        <p>BarangayConnect collects only the necessary information required to provide barangay-related services. This mainly includes your contact details and the information you submit through forms, requests, or reports. Your mobile number and email will be used only for sending important service-related updates and clarifications. You should not upload personal IDs or sensitive documents unless specifically requested by authorized barangay personnel for verification. All submissions are processed through barangay-managed systems where authorized staff review and act on your concerns. Reasonable measures are applied to protect your data, but users must also handle their information responsibly.</p>
+
+        <h3>3) Acceptable Use</h3>
+        <p>BarangayConnect must only be used for legitimate barangay concerns such as filing service requests, reporting incidents, or following up on barangay matters. Users must not submit false, abusive, defamatory, inappropriate, or malicious content. Uploading materials that violate laws, harm other users, or contain harmful code is strictly prohibited. Respect for others’ privacy is required. Share only information that is necessary and relevant to the barangay concern you are filing.</p>
+
+        <h3>4) Requests, Reports, and Supporting Details</h3>
+        <p>Barangay requests and incident reports may require additional information or clarification. Processing time may vary depending on the type of concern and the workload of barangay personnel. Status indicators such as “pending,” “in progress,” or “resolved” are for information purposes and may change after review. Barangay staff may contact you if more details are needed before taking action. It is your responsibility to provide clear and accurate descriptions and attach only the necessary photos or documents to support your concern.</p>
+
+        <h3>5) Notifications &amp; Communication</h3>
+        <p>By using BarangayConnect, you agree to receive service-related notices through the contact details you provided. These include status updates, reminders, and requests for clarification. In addition to SMS or email, updates and notifications can also be viewed directly on your personal dashboard inside the BarangayConnect system. Ensure your contact information remains accurate to avoid missing important updates, and respond to barangay messages promptly to help speed up request processing.</p>
+
+        <h3>6) Security</h3>
+        <p>If you suspect that someone is misusing your account, report it immediately to barangay personnel. While the barangay applies security measures to safeguard your account, complete protection cannot be guaranteed. Do not share your password with anyone. Always log out when using shared devices and avoid accessing the system through unsecured networks, especially when handling sensitive details.</p>
+
+        <h3>7) Availability &amp; Changes</h3>
+        <p>BarangayConnect services may become temporarily unavailable due to maintenance, system updates, or unforeseen technical problems. The barangay aims to restore access as quickly as possible, but certain issues may be beyond its control. Features and terms may be updated periodically. Continued use of the platform means you accept the latest version of these Terms &amp; Conditions.</p>
+
+        <h3>8) Limitation</h3>
+        <p>BarangayConnect acts as a digital platform to submit barangay-related concerns, but final outcomes still depend on official review, verification, and field processes. The barangay is not responsible for delays caused by technical issues, incomplete information from users, emergencies, or conditions outside reasonable control.</p>
+
+        <h3>9) Contact Information</h3>
+        <p>For concerns or questions, residents may visit the BarangayConnect office at Barangay Tambo, Parañaque City, or contact the barangay during office hours (Monday–Friday, 8:00 AM–5:00 PM).</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Register Modal — multi-step wizard (backdrop does not close; use Close) -->
+  <div id="registerModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="registerModalTitle">
+    <div class="modal-content modal-content--register">
+      <span class="close" data-close="registerModal" aria-label="Close">&times;</span>
+      <h2 id="registerModalTitle">Register</h2>
+
+      <form id="registerForm" autocomplete="off" novalidate>
+        <div class="register-wizard" data-current-step="1">
+          <div class="register-progress" aria-label="Registration progress">
+            <div class="register-progress__top">
+              <span class="register-progress__eyebrow">Resident signup</span>
+              <span class="register-progress__fraction">Step <span id="regWizardStepNum">1</span> of 4</span>
+            </div>
+            <div class="register-progress__bar-track" role="presentation">
+              <div class="register-progress__bar">
+                <div class="register-progress__fill" aria-hidden="true"></div>
+              </div>
+            </div>
+            <ol class="register-progress__segments">
+              <li class="register-progress__step is-current" data-step="1">Personal</li>
+              <li class="register-progress__step" data-step="2">Address</li>
+              <li class="register-progress__step" data-step="3">Other</li>
+              <li class="register-progress__step" data-step="4">Account</li>
+            </ol>
+          </div>
+
+          <!-- Step 1: Personal Information -->
+          <div class="register-step is-active" data-step="1" role="region" aria-labelledby="regStep1Title">
+            <h3 id="regStep1Title" class="register-step-title">Personal Information</h3>
+            <p class="register-step-sub">Required identification details</p>
+
+            <div class="register-field-row register-field-row--3">
+              <div class="register-field-col">
+                <label for="regFirstName">First Name <span aria-hidden="true">*</span></label>
+                <input type="text" id="regFirstName" name="firstname" placeholder="First name" autocomplete="off" required />
+              </div>
+              <div class="register-field-col">
+                <label for="regMiddleName">Middle Name</label>
+                <div id="regMiddleWrap" class="reg-middle-wrap">
+                  <input type="text" id="regMiddleName" name="middlename" placeholder="Middle name" autocomplete="off" />
+                </div>
+              </div>
+              <div class="register-field-col">
+                <label for="regLastName">Last Name <span aria-hidden="true">*</span></label>
+                <input type="text" id="regLastName" name="lastname" placeholder="Last name" autocomplete="off" required />
+              </div>
+            </div>
+            <label class="reg-checkbox-row">
+              <input type="checkbox" id="regNoMiddle" />
+              <span>I don't have a middle name</span>
+            </label>
+
+            <div class="register-field-row register-field-row--2">
+              <div class="register-field-col">
+                <label for="regSuffix">Suffix <span class="register-step-sub" style="display:inline;font-weight:400;">(optional)</span></label>
+                <input type="text" id="regSuffix" name="suffix" placeholder="Jr., Sr., III" maxlength="32" autocomplete="off" />
+              </div>
+              <div class="register-field-col">
+                <label for="regGender">Gender <span aria-hidden="true">*</span></label>
+                <select id="regGender" name="gender" required>
+                  <option value="" disabled selected>Select gender</option>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                  <option value="Other">Other</option>
+                  <option value="Prefer not to say">Prefer not to say</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="register-field-row register-field-row--3">
+              <div class="register-field-col">
+                <label for="regBirthdate">Date of Birth <span aria-hidden="true">*</span></label>
+                <input type="date" id="regBirthdate" name="birthdate" required />
+              </div>
+              <div class="register-field-col register-field-col--age">
+                <label for="regAge">Age</label>
+                <input type="text" id="regAge" name="age" inputmode="numeric" placeholder="—" readonly aria-live="polite" />
+              </div>
+              <div class="register-field-col">
+                <label for="regCivilStatus">Civil Status <span aria-hidden="true">*</span></label>
+                <select id="regCivilStatus" name="civilStatus" required>
+                  <option value="" disabled selected>Select status</option>
+                  <option value="Single">Single</option>
+                  <option value="Married">Married</option>
+                  <option value="Widowed">Widowed</option>
+                  <option value="Separated">Separated</option>
+                  <option value="Divorced">Divorced</option>
+                  <option value="Annulled">Annulled</option>
+                  <option value="Common-law / Live-in">Common-law / Live-in</option>
+                </select>
+              </div>
+            </div>
+            <div class="register-field-full">
+              <label for="regPlaceOfBirth">Place of Birth <span aria-hidden="true">*</span></label>
+              <input type="text" id="regPlaceOfBirth" name="placeOfBirth" placeholder="City / hospital / municipality" required />
+            </div>
+
+            <div class="register-field-row register-field-row--2">
+              <div class="register-field-col">
+                <label for="regNationality">Nationality <span aria-hidden="true">*</span></label>
+                <input type="text" id="regNationality" name="nationality" placeholder="e.g. Filipino" required />
+              </div>
+              <div class="register-field-col register-field-col--religion">
+                <label for="regReligionSelect">Religion <span aria-hidden="true">*</span></label>
+                <div class="register-field-control register-field-control--religion">
+                  <select id="regReligionSelect" class="register-select register-select--religion" aria-describedby="regReligionHint" required>
+                    <option value="" disabled selected>Choose your religion</option>
+                    <option value="Roman Catholic">Roman Catholic</option>
+                    <option value="Islam">Islam</option>
+                    <option value="Iglesia ni Cristo">Iglesia ni Cristo</option>
+                    <option value="Philippine Independent Church (Aglipayan)">Philippine Independent Church (Aglipayan)</option>
+                    <option value="Seventh-day Adventist">Seventh-day Adventist</option>
+                    <option value="Bible Baptist">Bible Baptist</option>
+                    <option value="United Church of Christ in the Philippines">United Church of Christ in the Philippines</option>
+                    <option value="Jehovah's Witnesses">Jehovah's Witnesses</option>
+                    <option value="Church of Jesus Christ of Latter-day Saints">Church of Jesus Christ of Latter-day Saints</option>
+                    <option value="Members Church of God International">Members Church of God International</option>
+                    <option value="Evangelical / Born Again">Evangelical / Born Again</option>
+                    <option value="Buddhism">Buddhism</option>
+                    <option value="Indigenous / Ancestral">Indigenous / Ancestral</option>
+                    <option value="None / Not religious">None / Not religious</option>
+                    <option value="__other__">Other — specify below</option>
+                  </select>
+                  <p id="regReligionHint" class="register-field-hint">Select a common affiliation in the Philippines, or choose Other.</p>
+                  <div id="regReligionOtherWrap" class="reg-conditional register-religion-other">
+                    <label for="regReligionOther" class="register-religion-other__label">Specify religion</label>
+                    <input type="text" id="regReligionOther" name="religion_other" placeholder="Enter denomination or affiliation" autocomplete="off" />
+                  </div>
+                  <input type="hidden" id="regReligion" name="religion" value="" />
+                </div>
+              </div>
+            </div>
+
+            <p class="register-section-title">Government / barangay IDs</p>
+            <p class="register-step-sub">Provide at least one ID if you have it. We also verify your full name, birth date, and address so only one account exists per resident.</p>
+
+            <div class="register-field-row register-field-row--2">
+              <div class="register-field-col">
+                <label for="regBarangayIdNumber">Barangay Resident ID Number</label>
+                <input type="text" id="regBarangayIdNumber" name="barangayIdNumber" placeholder="Official barangay ID (if issued)" autocomplete="off" inputmode="text" />
+              </div>
+              <div class="register-field-col">
+                <label for="regNationalIdNumber">National ID Number</label>
+                <input type="text" id="regNationalIdNumber" name="nationalIdNumber" placeholder="PhilSys / national ID (if available)" autocomplete="off" inputmode="text" />
+              </div>
+            </div>
+
+            <div class="register-field-full">
+              <label for="regVoterIdNumber">Voter&apos;s ID Number</label>
+              <input type="text" id="regVoterIdNumber" name="voterIdNumber" placeholder="COMELEC voter ID (if registered voter)" autocomplete="off" inputmode="text" />
+            </div>
+
+            <button type="button" class="form-btn" id="regStep1Proceed">Proceed</button>
+          </div>
+
+          <!-- Step 2: Address Information -->
+          <div class="register-step" data-step="2" role="region" aria-labelledby="regStep2Title">
+            <h3 id="regStep2Title" class="register-step-title">Address Information</h3>
+            <p class="register-step-sub">Structured address and residency</p>
+
+            <div class="register-field-full">
+              <label for="regStreet">Street <span aria-hidden="true">*</span></label>
+              <select id="regStreet" name="street" required aria-label="Street">
+                <option value="" disabled selected>Select street</option>
+                <option value="PIO DE JESUS">PIO DE JESUS</option>
+                <option value="T.M GABRIEL">T.M GABRIEL</option>
+                <option value="D. DE LEON">D. DE LEON</option>
+                <option value="MEPAR 1 &amp; 2">MEPAR 1 &amp; 2</option>
+                <option value="LOPEZ DE LEON">LOPEZ DE LEON</option>
+                <option value="PABAGA">PABAGA</option>
+                <option value="SIZZLING">SIZZLING</option>
+                <option value="SANDUGO">SANDUGO</option>
+                <option value="AGRIPINA">AGRIPINA</option>
+                <option value="JUAN FERMIN">JUAN FERMIN</option>
+                <option value="KABESANG SILLIO (ILOG)">KABESANG SILLIO (ILOG)</option>
+                <option value="KABESANG SILLIO (GITNA)">KABESANG SILLIO (GITNA)</option>
+                <option value="ATO MENDOZA">ATO MENDOZA</option>
+                <option value="RIVERSIDE 3">RIVERSIDE 3</option>
+                <option value="MAYUGA">MAYUGA</option>
+                <option value="WHISKY 3">WHISKY 3</option>
+                <option value="POOK REAL">POOK REAL</option>
+                <option value="MARTYR's">MARTYR's</option>
+                <option value="GABRIEL ST.">GABRIEL ST.</option>
+                <option value="PUYAT">PUYAT</option>
+                <option value="16th ST. EXTENSION">16th ST. EXTENSION</option>
+                <option value="16 ST.">16 ST.</option>
+                <option value="RIVERSIDE I">RIVERSIDE I</option>
+                <option value="RIVERSIDE II">RIVERSIDE II</option>
+                <option value="SEASIDE BUKANA">SEASIDE BUKANA</option>
+                <option value="SEASIDE GITNA">SEASIDE GITNA</option>
+                <option value="SEASIDE DULO">SEASIDE DULO</option>
+                <option value="SEASIDE HARAPAN">SEASIDE HARAPAN</option>
+                <option value="GREEN HOUSE">GREEN HOUSE</option>
+                <option value="TALAHIB (c/o MATET)">TALAHIB (c/o MATET)</option>
+                <option value="CAMP CALAUDIO">CAMP CALAUDIO</option>
+                <option value="C. SANTOS">C. SANTOS</option>
+                <option value="P. PAULINO">P. PAULINO</option>
+              </select>
+            </div>
+
+            <div class="register-field-row register-field-row--2">
+              <div class="register-field-col">
+                <label for="regBlockLot">Block / Lot</label>
+                <input type="text" id="regBlockLot" name="blockLot" placeholder="Blk / Lot" />
+              </div>
+              <div class="register-field-col">
+                <label for="regHouseUnit">House No. / Unit</label>
+                <input type="text" id="regHouseUnit" name="houseUnit" placeholder="No. or unit" />
+              </div>
+            </div>
+
+            <div class="register-field-row register-field-row--2">
+              <div class="register-field-col">
+                <label for="regBarangay">Barangay <span aria-hidden="true">*</span></label>
+                <input type="text" id="regBarangay" name="barangay" placeholder="e.g. Tambo" value="Tambo" required />
+              </div>
+              <div class="register-field-col">
+                <label for="regCity">City / Municipality <span aria-hidden="true">*</span></label>
+                <input type="text" id="regCity" name="city" placeholder="e.g. Parañaque City" value="Parañaque City" required />
+              </div>
+            </div>
+
+            <div class="register-field-row register-field-row--2">
+              <div class="register-field-col">
+                <label for="regProvince">Province <span aria-hidden="true">*</span></label>
+                <input type="text" id="regProvince" name="province" placeholder="e.g. Metro Manila" value="Metro Manila" required />
+              </div>
+              <div class="register-field-col">
+                <label for="regRegion">Region <span aria-hidden="true">*</span></label>
+                <input type="text" id="regRegion" name="region" placeholder="e.g. NCR" value="NCR" required />
+              </div>
+            </div>
+
+            <div class="register-field-full">
+              <label for="regResidentType">Resident Type <span aria-hidden="true">*</span></label>
+              <select id="regResidentType" name="residentType" required>
+                <option value="" disabled selected>Select resident type</option>
+                <option value="Owner">Owner</option>
+                <option value="Renter">Renter</option>
+                <option value="Boarder">Boarder</option>
+                <option value="Caretaker">Caretaker</option>
+                <option value="Relative Owner">Relative Owner</option>
+                <option value="Kasambahay">Kasambahay</option>
+                <option value="Barracks">Barracks</option>
+              </select>
+            </div>
+
+            <div id="regOwnerNameBlock" class="reg-conditional">
+              <div class="register-field-full">
+                <label for="regOwnerName">Name of Owner <span aria-hidden="true">*</span></label>
+                <input type="text" id="regOwnerName" name="ownerName" placeholder="Full name of property owner" autocomplete="off" />
+              </div>
+            </div>
+
+            <div id="regEmployerBlock" class="reg-conditional">
+              <div class="register-field-row register-field-row--2">
+                <div class="register-field-col">
+                  <label for="regEmployerName">Employer Name <span aria-hidden="true">*</span></label>
+                  <input type="text" id="regEmployerName" name="employerName" placeholder="Employer or household name" />
+                </div>
+                <div class="register-field-col register-field-col--grow">
+                  <label for="regEmployerAddress">Employer Address <span aria-hidden="true">*</span></label>
+                  <textarea id="regEmployerAddress" name="employerAddress" rows="2" placeholder="Complete employer address"></textarea>
+                </div>
+              </div>
+            </div>
+
+            <div class="register-field-row register-field-row--2">
+              <div class="register-field-col register-field-col--narrow">
+                <label for="regYearsResidency">Years of Residency <span aria-hidden="true">*</span></label>
+                <input type="number" id="regYearsResidency" name="yearsResidency" inputmode="decimal" min="0" step="any" placeholder="e.g. 5" required />
+              </div>
+            </div>
+
+            <div class="register-nav">
+              <button type="button" class="form-btn form-btn--ghost" id="regStep2Back">Back</button>
+              <button type="button" class="form-btn form-btn--grow" id="regStep2Next">Next</button>
+            </div>
+          </div>
+
+          <!-- Step 3: Other Information (includes vehicle & sector) -->
+          <div class="register-step" data-step="3" role="region" aria-labelledby="regStep3Title">
+            <h3 id="regStep3Title" class="register-step-title">Other Information</h3>
+            <p class="register-step-sub">Contact, employment, voter info, vehicle, and sector classification</p>
+
+            <div class="register-field-row register-field-row--2">
+              <div class="register-field-col">
+              <label for="regMobile">Mobile Number <span aria-hidden="true">*</span></label>
+                <input type="text" id="regMobile" name="phone" inputmode="numeric" autocomplete="off" maxlength="11" pattern="[0-9]{11}" placeholder="09XXXXXXXXX (11 digits)" title="Enter exactly 11 digits, numbers only" required />
+              </div>
+              <div class="register-field-col">
+                <label for="regEmail">Email Address <span aria-hidden="true">*</span></label>
+                <input type="email" id="regEmail" name="email" placeholder="name@example.com" autocomplete="off" required />
+              </div>
+            </div>
+            <div class="register-field-full register-verification-method">
+              <label for="regVerificationMethod">Send verification code to</label>
+              <select id="regVerificationMethod" name="verificationMethod">
+                <option value="email">Email address</option>
+                <option value="sms" disabled>Mobile number (SMS setup required)</option>
+              </select>
+              <p id="regVerificationMethodNote" class="register-otp-note">Email verification is available. SMS will be enabled after a provider is configured.</p>
+            </div>
+
+            <div class="register-field-full">
+              <label for="regEmploymentStatus">Current Employment Status <span aria-hidden="true">*</span></label>
+              <select id="regEmploymentStatus" name="employmentStatus" required>
+                <option value="" disabled selected>Select employment status</option>
+                <option value="employed_government">Employed – Government</option>
+                <option value="employed_private">Employed – Private Sector</option>
+                <option value="self_employed">Self-Employed</option>
+                <option value="business_owner">Business Owner</option>
+                <option value="ofw">OFW</option>
+                <option value="student">Student</option>
+                <option value="unemployed">Unemployed</option>
+                <option value="retired">Retired</option>
+                <option value="homemaker">Homemaker</option>
+                <option value="others">Others (Specify)</option>
+              </select>
+            </div>
+
+            <div id="regEmploymentDetailBlock" class="reg-conditional register-field-full">
+              <label for="regEmploymentDetail" id="regEmploymentDetailLabel">Occupation / Employer <span aria-hidden="true">*</span></label>
+              <input type="text" id="regEmploymentDetail" name="employmentDetail" placeholder="e.g. Administrative Aide, City Hall" autocomplete="organization-title" />
+            </div>
+
+            <div class="register-field-row register-field-row--2">
+              <div class="register-field-col">
+                <label for="regCitizenshipStatus">Citizenship <span aria-hidden="true">*</span></label>
+                <select id="regCitizenshipStatus" name="citizenshipStatus" required>
+                  <option value="filipino" selected>Filipino</option>
+                  <option value="dual">Dual Citizenship</option>
+                  <option value="foreign">Foreign National</option>
+                  <option value="stateless">Stateless</option>
+                  <option value="others">Others (Specify)</option>
+                </select>
+              </div>
+              <div class="register-field-col">
+                <label for="regBloodType">Blood Type</label>
+                <select id="regBloodType" name="bloodType">
+                  <option value="" selected>Select blood type</option>
+                  <option value="A+">A+</option>
+                  <option value="A-">A-</option>
+                  <option value="B+">B+</option>
+                  <option value="B-">B-</option>
+                  <option value="AB+">AB+</option>
+                  <option value="AB-">AB-</option>
+                  <option value="O+">O+</option>
+                  <option value="O-">O-</option>
+                  <option value="Unknown">Unknown</option>
+                </select>
+              </div>
+            </div>
+
+            <div id="regSecondCitizenshipBlock" class="reg-conditional register-field-full">
+              <label for="regSecondCitizenship">Second Citizenship <span aria-hidden="true">*</span></label>
+              <input type="text" id="regSecondCitizenship" name="secondCitizenship" placeholder="e.g. American, Japanese" autocomplete="off" />
+            </div>
+
+            <div id="regForeignNationalityBlock" class="reg-conditional register-field-full">
+              <label for="regForeignNationality">Nationality <span aria-hidden="true">*</span></label>
+              <input type="text" id="regForeignNationality" name="foreignNationality" placeholder="e.g. Japanese, Korean" autocomplete="country-name" />
+            </div>
+
+            <div id="regCitizenshipOtherBlock" class="reg-conditional register-field-full">
+              <label for="regCitizenshipOther">Specify Citizenship <span aria-hidden="true">*</span></label>
+              <input type="text" id="regCitizenshipOther" name="citizenshipOther" placeholder="Specify citizenship" autocomplete="off" />
+            </div>
+
+            <div class="register-field-full">
+              <label for="regSectors">Sector Organization</label>
+              <select id="regSectors" name="sectorOrganization" aria-label="Sector organization">
+                <option value="">Select sector organization</option>
+                <option value="Senior Citizen">Senior Citizen</option>
+                <option value="Person with Disability">Person with Disability</option>
+                <option value="Solo Parent">Solo Parent</option>
+                <option value="Displaced Worker">Displaced Worker</option>
+                <option value="Indigenous People">Indigenous People</option>
+                <option value="Indigent Person">Indigent Person</option>
+                <option value="Informal Settler">Informal Settler</option>
+                <option value="4Ps Beneficiary">4Ps Beneficiary</option>
+                <option value="Banca Owner">Banca Owner</option>
+                <option value="Sapra Registered">Sapra Registered</option>
+                <option value="Tahungan">Tahungan</option>
+                <option value="Kasambahay">Kasambahay</option>
+                <option value="Barracks Worker">Barracks Worker</option>
+                <option value="Minor">Minor</option>
+                <option value="Nano/Micro Enterprise">Nano/Micro Enterprise</option>
+                <option value="Student">Student</option>
+                <option value="OFW">OFW</option>
+                <option value="TODA Driver">TODA Driver</option>
+                <option value="JODA Driver">JODA Driver</option>
+                <option value="Other Driver">Other Driver</option>
+                <option value="Vendor">Vendor</option>
+                <option value="With Comorbidities">With Comorbidities</option>
+                <option value="Working Student">Working Student</option>
+                <option value="LGBTQIA+">LGBTQIA+</option>
+              </select>
+            </div>
+
+            <p class="register-section-title">Voter status</p>
+            <div class="register-field-full">
+              <label for="regVoterStatus">If Voter <span aria-hidden="true">*</span></label>
+              <select id="regVoterStatus" name="voterStatus" required>
+                <option value="" disabled selected>Select voter status</option>
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+              </select>
+            </div>
+            <div id="regPrecinctBlock" class="register-field-full reg-conditional">
+              <label for="regPrecinctNumber">Precinct Number <span aria-hidden="true">*</span></label>
+              <input type="text" id="regPrecinctNumber" name="precinctNumber" placeholder="Precinct number" />
+            </div>
+
+            <p class="register-section-title">Vehicle</p>
+            <div class="register-field-full">
+              <label for="regVehicleOwner">Vehicle Owner <span aria-hidden="true">*</span></label>
+              <select id="regVehicleOwner" name="vehicleOwner" required>
+                <option value="" disabled selected>Select vehicle owner status</option>
+                <option value="yes">Yes</option>
+                <option value="no">No</option>
+              </select>
+            </div>
+            <div id="regVehicleFields" class="reg-conditional">
+              <div class="register-field-row register-field-row--2">
+                <div class="register-field-col">
+                  <label for="regVehicleType">Type of Vehicle <span aria-hidden="true">*</span></label>
+                  <input type="text" id="regVehicleType" name="vehicleType" placeholder="Motorcycle, SUV…" />
+                </div>
+                <div class="register-field-col">
+                  <label for="regPlateNumber">Plate Number <span aria-hidden="true">*</span></label>
+                  <input type="text" id="regPlateNumber" name="plateNumber" placeholder="Plate / conduction" />
+                </div>
+              </div>
+            </div>
+
+            <div class="register-nav">
+              <button type="button" class="form-btn form-btn--ghost" id="regStep3Back">Back</button>
+              <button type="button" class="form-btn form-btn--grow" id="regStep3Next">Next</button>
+            </div>
+          </div>
+
+          <!-- Step 4: Account Credentials -->
+          <div class="register-step" data-step="4" role="region" aria-labelledby="regStep4Title">
+            <h3 id="regStep4Title" class="register-step-title">Account Credentials</h3>
+            <p class="register-step-sub">Choose your username and password</p>
+
+            <div class="register-field-full">
+              <label for="regUsername">Username</label>
+              <input type="text" id="regUsername" name="username" placeholder="Choose a username" autocomplete="username" required />
+            </div>
+
+            <div class="register-field-row register-field-row--2">
+              <div class="register-field-col">
+                <label for="regPassword">Password</label>
+                <div class="password-input-wrap">
+                  <input type="password" id="regPassword" name="password" placeholder="Enter password" autocomplete="new-password" required />
+                  <button type="button" class="password-visibility-toggle" data-password-targets="regPassword regConfirmPassword" aria-label="Ipakita ang mga password" aria-controls="regPassword regConfirmPassword" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                  </button>
+                </div>
+                <div class="password-strength" id="regPasswordStrength" data-level="empty" aria-live="polite" aria-atomic="true">
+                  <div class="password-strength__track" aria-hidden="true"><span></span></div>
+                  <span class="password-strength__label">Password strength</span>
+                </div>
+              </div>
+              <div class="register-field-col">
+                <label for="regConfirmPassword">Confirm Password</label>
+                <div class="password-input-wrap">
+                  <input type="password" id="regConfirmPassword" name="confirmPassword" placeholder="Confirm password" autocomplete="new-password" required />
+                </div>
+              </div>
+            </div>
+
+            <label class="terms-consent">
+              <input type="checkbox" id="regTermsCheckbox" />
+              <span>I agree to the <a href="#" class="terms-modal-trigger" data-terms-scroll="">Terms &amp; Conditions</a> of BarangayConnect.</span>
+            </label>
+
+            <div class="register-nav">
+              <button type="button" class="form-btn form-btn--ghost" id="regStep4Back">Back</button>
+              <button type="submit" class="form-btn form-btn--grow" id="regSubmitBtn">Register &amp; Send Code</button>
+            </div>
+          </div>
+        </div>
+        <section id="registerOtpPanel" class="register-otp-panel" aria-labelledby="registerOtpTitle" hidden>
+          <h3 id="registerOtpTitle" class="register-step-title">Verify your contact</h3>
+          <p class="register-step-sub">We sent a six-digit verification code to <strong id="registerOtpDestination"></strong>. Enter it below to finish creating your account.</p>
+          <div class="register-field-full">
+            <label for="registerOtpCode">Verification code</label>
+            <input type="text" id="registerOtpCode" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" placeholder="6-digit code" aria-describedby="registerOtpMessage" />
+            <p id="registerOtpMessage" class="register-otp-message" role="status" aria-live="polite"></p>
+          </div>
+          <div class="register-nav register-otp-actions">
+            <button type="button" class="form-btn form-btn--ghost" id="registerOtpResendBtn">Resend code</button>
+            <button type="button" class="form-btn form-btn--grow" id="registerOtpVerifyBtn">Verify &amp; Register</button>
+          </div>
+        </section>
+      </form>
+    </div>
+  </div>
+
+
+  <div id="privacyNoticeGate" class="privacy-gate" role="dialog" aria-modal="true" aria-labelledby="privacyNoticeTitle" aria-describedby="privacyNoticeIntro" hidden><div class="privacy-gate__panel"><p class="privacy-gate__eyebrow">BarangayConnect · Tambo, Parañaque City</p><h2 id="privacyNoticeTitle">Data Privacy Notice</h2><p id="privacyNoticeIntro" class="privacy-gate__lead">Your privacy matters. Please read this notice before continuing.</p><div class="privacy-gate__body"><h3>Why we collect information</h3><p>Information supports account verification, service requests and reports, borrowing, announcements, and authorized resident services.</p><h3>Information collected</h3><p>Depending on the service, this may include your name, contact details, address, account credentials, request details, and documents or images you submit.</p><h3>How information is used and protected</h3><p>Information is used for barangay administration and service delivery, and should be available only to personnel with a work-related need. The barangay should apply appropriate access controls and security safeguards. Submit only information needed for your request.</p><h3>Your rights and privacy concerns</h3><p>You may request access or correction, raise a concern, or ask how information is handled by contacting the Barangay Tambo office. Ask the barangay for its current Data Protection Officer contact details. Applicable data privacy rights remain available to you.</p><p class="privacy-gate__disclaimer">For the official privacy policy and current privacy contact details, contact the barangay office.</p></div><button type="button" id="privacyNoticeAcknowledge" class="privacy-gate__button">I Understand</button></div></div>
+  <!-- Login Modal -->
+  <div id="loginModal" class="modal">
+    <div class="modal-content">
+      <span class="close" data-close="loginModal">&times;</span>
+      <h2>Login</h2>
+
+      <form id="unifiedLoginForm" novalidate>
+        <label for="loginIdentifier"><i class="fas fa-user"></i> Username or email</label>
+        <input type="text" id="loginIdentifier" name="identifier" autocomplete="username" required />
+        <label for="loginPassword"><i class="fas fa-lock"></i> Password</label>
+        <div class="password-input-wrap">
+          <input type="password" id="loginPassword" name="password" autocomplete="current-password" required />
+          <button type="button" class="password-visibility-toggle" data-password-targets="loginPassword" aria-label="Ipakita ang password" aria-controls="loginPassword" aria-pressed="false">
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+        <section class="login-captcha" aria-label="Human verification">
+          <div class="login-captcha__robot-row" id="loginRobotCheckRow">
+            <button type="button" class="login-captcha__robot-check" id="loginRobotCheck" aria-pressed="false">
+              <span class="login-captcha__robot-box" aria-hidden="true">
+                <i class="fas fa-spinner fa-spin" id="loginRobotSpinner" hidden></i>
+                <i class="fas fa-check" id="loginRobotCheckmark" hidden></i>
+                <i class="fas fa-xmark" id="loginRobotErrorIcon" hidden></i>
+              </span>
+              <span>I'm not a robot</span>
+            </button>
+          </div>
+          <p class="login-captcha__label" id="loginCaptchaLabel" hidden>CAPTCHA · Enter the code shown</p>
+          <div class="login-captcha__challenge-row" id="loginCaptchaChallengeRow" hidden>
+            <img id="loginCaptchaImage" class="login-captcha__image" alt="CAPTCHA code" hidden />
+            <span id="loginCaptchaPlaceholder" class="login-captcha__placeholder">Enter your username and password</span>
+            <button type="button" id="refreshLoginCaptcha" class="login-captcha__refresh" aria-label="Generate a new CAPTCHA" title="New code" disabled>
+              <i class="fas fa-rotate" id="loginCaptchaRefreshIcon" aria-hidden="true"></i>
+              <i class="fas fa-spinner fa-spin" id="loginCaptchaRefreshSpinner" aria-hidden="true" hidden></i>
+            </button>
+          </div>
+          <div class="login-captcha__digits" id="loginCaptchaDigits" role="group" aria-label="Enter the 6-character CAPTCHA code" aria-describedby="loginCaptchaStatus" hidden>
+            <input class="login-captcha__digit" type="text" inputmode="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="1" aria-label="CAPTCHA character 1 of 6" disabled />
+            <input class="login-captcha__digit" type="text" inputmode="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="1" aria-label="CAPTCHA character 2 of 6" disabled />
+            <input class="login-captcha__digit" type="text" inputmode="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="1" aria-label="CAPTCHA character 3 of 6" disabled />
+            <input class="login-captcha__digit" type="text" inputmode="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="1" aria-label="CAPTCHA character 4 of 6" disabled />
+            <input class="login-captcha__digit" type="text" inputmode="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="1" aria-label="CAPTCHA character 5 of 6" disabled />
+            <input class="login-captcha__digit" type="text" inputmode="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="1" aria-label="CAPTCHA character 6 of 6" disabled />
+          </div>
+          <input id="loginCaptchaAnswer" type="hidden" disabled />
+          <p id="loginCaptchaStatus" class="login-captcha__status" role="status" aria-live="polite">Check the box to continue.</p>
+        </section>
+        <p id="unifiedLoginError" class="unified-login-error" role="alert" aria-live="polite"></p>
+        <button type="submit" class="form-btn" id="unifiedLoginSubmit" disabled>Login</button>
+        <p class="forgot-password"><a href="#" id="forgotPasswordLink">Forgot Password?</a></p>
+      </form>
+    </div>
+  </div>
+
+  <!-- Forgot Password Modal -->
+  <div id="forgotPasswordModal" class="modal">
+    <div class="modal-content">
+      <span class="close" data-close="forgotPasswordModal">&times;</span>
+      <h2><i class="fas fa-key"></i> Forgot Password Assistance</h2>
+      <div class="forgot-password-content">
+        <p>Don't worry! Our barangay team is here to help you recover your password. Follow these steps:</p>
+        
+        <div class="steps-container">
+          <div class="step">
+            <div class="step-number">1</div>
+            <div class="step-content">
+              <h3>Visit the Barangay Office</h3>
+              <p>Go to the BarangayConnect office at Tambo, Parañaque City during office hours (8:00 AM - 5:00 PM, Monday to Friday).</p>
+            </div>
+          </div>
+
+          <div class="step">
+            <div class="step-number">2</div>
+            <div class="step-content">
+              <h3>Bring Valid ID</h3>
+              <p>Bring any government-issued ID (Driver's License, Passport, Postal ID, etc.) to verify your identity.</p>
+            </div>
+          </div>
+
+          <div class="step">
+            <div class="step-number">3</div>
+            <div class="step-content">
+              <h3>Provide Account Information</h3>
+              <p>Tell our staff your registered full name and mobile number to locate your account.</p>
+            </div>
+          </div>
+
+          <div class="step">
+            <div class="step-number">4</div>
+            <div class="step-content">
+              <h3>Password Reset</h3>
+              <p>After verifying your identity in person, staff will send a six-digit recovery code to the Gmail address registered to your account. Enter that code below to set a new password.</p>
+            </div>
+          </div>
+        </div>
+
+        <form id="recoveryOtpForm" class="recovery-otp-form" novalidate>
+          <h3>Reset your password</h3>
+          <p>Enter the registered email address and the six-digit code sent after staff verified your identity.</p>
+          <label for="recoveryOtpEmail">Registered email address</label>
+          <input id="recoveryOtpEmail" name="email" type="email" autocomplete="off" maxlength="254" required>
+          <label for="recoveryOtpCode">Six-digit recovery code</label>
+          <input id="recoveryOtpCode" name="token" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required>
+          <label for="recoveryOtpNewPassword">New password</label>
+          <div class="password-input-wrap">
+            <input id="recoveryOtpNewPassword" name="password" type="password" autocomplete="new-password" minlength="8" required>
+            <button type="button" class="password-visibility-toggle" data-password-targets="recoveryOtpNewPassword" aria-label="Show password" aria-controls="recoveryOtpNewPassword" aria-pressed="false">
+              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+          <label for="recoveryOtpConfirmPassword">Confirm new password</label>
+          <div class="password-input-wrap">
+            <input id="recoveryOtpConfirmPassword" name="confirm_password" type="password" autocomplete="new-password" minlength="8" required>
+            <button type="button" class="password-visibility-toggle" data-password-targets="recoveryOtpConfirmPassword" aria-label="Show password" aria-controls="recoveryOtpConfirmPassword" aria-pressed="false">
+              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+          <p id="recoveryOtpMessage" class="recovery-otp-message" role="status" aria-live="polite"></p>
+          <button id="recoveryOtpSubmit" type="submit" class="form-btn">Verify code and save new password</button>
+          <p class="recovery-otp-security">Staff should verify your identity in person. Never tell anyone your recovery code or password.</p>
+        </form>
+
+        <div class="contact-info">
+          <h3><i class="fas fa-phone"></i> Need Help?</h3>
+          <p><strong>Barangay Office:</strong> Tambo, Parañaque City</p>
+          <p><strong>Office Hours:</strong> Monday - Friday, 8:00 AM - 5:00 PM</p>
+          <p><strong>Contact:</strong> Visit our office or call (02) 8XXX-XXXX</p>
+        </div>
+
+        <div class="security-note">
+          <i class="fas fa-shield-alt"></i>
+          <p><strong>Security Note:</strong> Staff must verify your identity at the barangay office before sending a recovery code. The code goes to the Gmail address registered to your account.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Supabase recovery links return to this page with a short-lived token in the URL fragment. -->
+  <div id="passwordRecoveryGate" class="privacy-gate" role="dialog" aria-modal="true" aria-labelledby="passwordRecoveryTitle" hidden>
+    <div class="privacy-gate__panel password-recovery-panel">
+      <p class="privacy-gate__eyebrow">BarangayConnect · Secure account recovery</p>
+      <h2 id="passwordRecoveryTitle">Set a new password</h2>
+      <p id="passwordRecoveryMessage" class="privacy-gate__lead" aria-live="polite">Choose a new password for your account.</p>
+      <form id="passwordRecoveryForm" novalidate>
+        <label for="recoveryPassword">New password</label>
+        <div class="password-input-wrap">
+          <input id="recoveryPassword" type="password" autocomplete="new-password" minlength="8" required>
+          <button type="button" class="password-visibility-toggle" data-password-targets="recoveryPassword" aria-label="Ipakita ang password" aria-controls="recoveryPassword" aria-pressed="false">
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+        <label for="recoveryPasswordConfirm">Confirm new password</label>
+        <div class="password-input-wrap">
+          <input id="recoveryPasswordConfirm" type="password" autocomplete="new-password" minlength="8" required>
+          <button type="button" class="password-visibility-toggle" data-password-targets="recoveryPasswordConfirm" aria-label="Ipakita ang password" aria-controls="recoveryPasswordConfirm" aria-pressed="false">
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+        <p id="passwordRecoveryError" class="unified-login-error" role="alert" aria-live="assertive"></p>
+        <button id="passwordRecoverySubmit" type="submit" class="privacy-gate__button">Save new password</button>
+      </form>
+      <button id="passwordRecoveryBack" type="button" class="password-recovery-back">Back to BarangayConnect</button>
+    </div>
+  </div>
+
+  <!-- Custom Alert Popup (styled; replaces browser alert()) -->
+  <div id="customAlert" class="custom-alert-modal" role="dialog" aria-modal="true" aria-labelledby="customAlertTitle" aria-describedby="customAlertMessage">
+    <div class="custom-alert-backdrop" tabindex="-1"></div>
+    <div class="custom-alert-content">
+      <div class="custom-alert-title" id="customAlertTitle">BarangayConnect</div>
+      <div class="custom-alert-message" id="customAlertMessage"></div>
+      <div class="custom-alert-button-container">
+        <button type="button" class="custom-alert-ok-btn" id="customAlertOkBtn">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../Shared/js/activity-log.js"></script>
+  <script src="../../Shared/js/resident-store.js"></script>
+  <script src="../../Shared/js/bc-session.js?v=20261001-logout-notice"></script>
+  <script src="../../Shared/js/bc-nav-persist.js"></script>
+  <script src="../js/script.js?v=20261001-registration-password-strength"></script>
+  <script src="../js/password-visibility.js?v=20260929-1"></script>
+  <script src="../js/supabase-login.js?v=20261001-resident-print-return" defer></script>
+  <script src="../js/supabase-recovery.js?v=20261002-english-recovery" defer></script>
+  
+  <!-- Homepage Sections JavaScript -->
+  <script>
+document.addEventListener("DOMContentLoaded", () => {
+
+  // Smooth section navigation with a moving active state in the fixed header.
+  const headerNav = document.querySelector(".header-nav");
+  const navLinks = Array.from(document.querySelectorAll('.header-nav a[href^="#"], .mobile-nav-drawer__links a[href^="#"]'));
+  const navSections = navLinks
+    .map((link) => document.getElementById(decodeURIComponent(link.hash.slice(1))))
+    .filter(Boolean);
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches; const scrollRevealTargets = document.querySelectorAll(".homepage-section, .community-ribbon, .resident-step"); if (!reducedMotion && "IntersectionObserver" in window) { const revealObserver = new IntersectionObserver((entries) => entries.forEach((entry) => { if (entry.isIntersecting) { entry.target.classList.add("is-visible"); revealObserver.unobserve(entry.target); } }), { threshold: .12, rootMargin: "0px 0px -40px 0px" }); scrollRevealTargets.forEach((element, index) => { element.classList.add("bc-scroll-reveal"); if (element.classList.contains("resident-step")) element.style.setProperty("--bc-reveal-delay", String((index % 3) * 90) + "ms"); revealObserver.observe(element); }); document.documentElement.classList.add("bc-motion-ready"); } else { scrollRevealTargets.forEach((element) => element.classList.add("is-visible")); } const contactModal = document.getElementById("contactModal"); const contactPanel = contactModal?.querySelector(".bc-contact-panel"); const themeToggle = document.getElementById("themeToggle"); const storedTheme = localStorage.getItem("bc-home-theme"); function applyTheme(theme) { document.documentElement.dataset.theme = theme; const dark = theme === "dark"; if (!themeToggle) return; themeToggle.innerHTML = '<i class="fas fa-' + (dark ? 'sun' : 'moon') + '" aria-hidden="true"></i>'; themeToggle.setAttribute("aria-label", dark ? "Switch to light mode" : "Switch to dark mode"); themeToggle.title = dark ? "Switch to light mode" : "Switch to dark mode"; themeToggle.setAttribute("aria-pressed", String(dark)); } applyTheme(storedTheme === "dark" ? "dark" : "light"); themeToggle?.addEventListener("click", () => { const nextTheme = document.documentElement.dataset.theme === "dark" ? "light" : "dark"; localStorage.setItem("bc-home-theme", nextTheme); applyTheme(nextTheme); }); const contactFooterLink = document.getElementById("contactFooterLink"); const contactCloseButtons = contactModal?.querySelectorAll("[data-contact-close]") || []; let contactReturnFocus = null; function openContactModal(event) { event?.preventDefault(); if (!contactModal) return; contactReturnFocus = document.activeElement; contactModal.classList.add("is-open"); contactModal.setAttribute("aria-hidden", "false"); document.body.classList.add("bc-contact-open"); contactModal.querySelector(".bc-contact-panel__close")?.focus(); } function closeContactModal() { if (!contactModal?.classList.contains("is-open")) return; contactModal.classList.remove("is-open"); contactModal.setAttribute("aria-hidden", "true"); document.body.classList.remove("bc-contact-open"); contactReturnFocus?.focus?.(); }  contactFooterLink?.addEventListener("click", openContactModal); contactCloseButtons.forEach((button) => button.addEventListener("click", closeContactModal)); document.addEventListener("keydown", (event) => { if (event.key === "Escape") closeContactModal(); });
+  const mobileMenuToggle = document.getElementById("mobileMenuToggle");
+  const mobileNavDrawer = document.getElementById("mobileNavDrawer");
+  const mobileNavBackdrop = document.getElementById("mobileNavBackdrop");
+  let mobileMenuCloseTimer = null;
+
+  function closeMobileMenu(restoreFocus = false) {
+    if (!mobileNavDrawer || mobileNavDrawer.hidden) return;
+    mobileNavDrawer.classList.remove("is-open");
+    mobileNavBackdrop?.classList.remove("is-open");
+    mobileNavDrawer.setAttribute("aria-hidden", "true");
+    mobileMenuToggle?.setAttribute("aria-expanded", "false");
+    document.body.classList.remove("bc-mobile-menu-open");
+    clearTimeout(mobileMenuCloseTimer);
+    mobileMenuCloseTimer = setTimeout(() => {
+      mobileNavDrawer.hidden = true;
+      if (mobileNavBackdrop) mobileNavBackdrop.hidden = true;
+      if (restoreFocus) mobileMenuToggle?.focus();
+    }, reducedMotion ? 0 : 240);
+  }
+
+  function openMobileMenu() {
+    if (!mobileNavDrawer || !mobileNavBackdrop) return;
+    clearTimeout(mobileMenuCloseTimer);
+    mobileNavDrawer.hidden = false;
+    mobileNavBackdrop.hidden = false;
+    mobileNavDrawer.setAttribute("aria-hidden", "false");
+    mobileMenuToggle?.setAttribute("aria-expanded", "true");
+    document.body.classList.add("bc-mobile-menu-open");
+    requestAnimationFrame(() => {
+      mobileNavDrawer.classList.add("is-open");
+      mobileNavBackdrop.classList.add("is-open");
+    });
+    document.getElementById("mobileNavClose")?.focus();
+  }
+
+  mobileMenuToggle?.addEventListener("click", () => {
+    if (mobileMenuToggle.getAttribute("aria-expanded") === "true") closeMobileMenu(true);
+    else openMobileMenu();
+  });
+  document.getElementById("mobileNavClose")?.addEventListener("click", () => closeMobileMenu(true));
+  mobileNavBackdrop?.addEventListener("click", () => closeMobileMenu(true));
+  mobileNavDrawer?.querySelectorAll('a[href^="#"]').forEach((link) => {
+    link.addEventListener("click", () => closeMobileMenu());
+  });
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && mobileMenuToggle?.getAttribute("aria-expanded") === "true") closeMobileMenu(true);
+  });
+  document.getElementById("mobileRegisterBtn")?.addEventListener("click", () => {
+    closeMobileMenu();
+    document.getElementById("registerBtn")?.click();
+  });
+  document.getElementById("mobileLoginBtn")?.addEventListener("click", () => {
+    closeMobileMenu();
+    document.getElementById("loginBtn")?.click();
+  });
+
+  function setActiveNavLink(sectionId) {
+    navLinks.forEach((link) => {
+      const active = link.hash === `#${sectionId}`;
+      link.classList.toggle("is-active", active);
+      if (active) link.setAttribute("aria-current", "location");
+      else link.removeAttribute("aria-current");
+    });
+  }
+
+  navLinks.forEach((link) => {
+    link.addEventListener("click", (event) => {
+      const target = document.getElementById(decodeURIComponent(link.hash.slice(1)));
+      if (!target) return;
+      event.preventDefault();
+      setActiveNavLink(target.id);
+      if (window.location.hash !== link.hash) history.pushState(null, "", link.hash);
+      target.scrollIntoView({ behavior: reducedMotion ? "auto" : "smooth", block: "start" });
+    });
+  });
+
+  if ("IntersectionObserver" in window && navSections.length) {
+    const sectionVisibility = new Map();
+    const navObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) sectionVisibility.set(entry.target.id, entry.intersectionRatio);
+        else sectionVisibility.delete(entry.target.id);
+      });
+      const visibleSections = Array.from(sectionVisibility.entries())
+        .sort((a, b) => b[1] - a[1]);
+      if (visibleSections[0]) setActiveNavLink(visibleSections[0][0]);
+    }, { rootMargin: `-${Math.min(160, parseInt(getComputedStyle(document.documentElement).getPropertyValue("--header-height"), 10) || 96)}px 0px -45% 0px`, threshold: [0.05, 0.2, 0.45, 0.7] });
+    navSections.forEach((section) => navObserver.observe(section));
+  }
+
+  if (window.location.hash) setActiveNavLink(decodeURIComponent(window.location.hash.slice(1)));
+  else if (window.scrollY < 8) setActiveNavLink("home");
+
+  // ===============================
+  // SESSION BAR — stay on home page; choose Resident or Admin portal
+  // ===============================
+  (function initHomeSessionBar() {
+    const S = window.BarangayConnectSession;
+    const bar = document.getElementById("bcSessionBar");
+    if (!S || !bar) return;
+
+    const hasRes = S.hasResidentSession();
+    const hasAdm = S.hasAdminSession();
+    if (!hasRes && !hasAdm) return;
+
+    const textEl = document.getElementById("bcSessionBarText");
+    const parts = [];
+    if (hasRes) {
+      const fn = localStorage.getItem("residentFirstname") || "Resident";
+      const ln = localStorage.getItem("residentLastname") || "";
+      parts.push("Resident: " + (fn + " " + ln).trim());
+    }
+    if (hasAdm) {
+      parts.push("Admin: " + (localStorage.getItem("adminUsername") || "admin"));
+    }
+    if (textEl) {
+      textEl.textContent =
+        "You are logged in. This page is the public home — use the buttons to open a portal, or log in as the other role.";
+    }
+
+    const resLink = document.getElementById("bcGoResidentPortal");
+    const admLink = document.getElementById("bcGoAdminPortal");
+    const Nav = window.BarangayConnectNavPersist;
+    if (resLink && hasRes) {
+      resLink.href = Nav
+        ? Nav.portalUrlWithSavedState('resident', S.residentPortalUrl())
+        : S.residentPortalUrl();
+      resLink.hidden = false;
+    }
+    if (admLink && hasAdm) {
+      admLink.href = Nav
+        ? Nav.portalUrlWithSavedState('admin', S.adminPortalUrl())
+        : S.adminPortalUrl();
+      admLink.hidden = false;
+    }
+
+    async function logoutFromFront(role) {
+      const button = document.getElementById(role === "admin" ? "bcLogoutAdmin" : "bcLogoutResident");
+      if (button) button.disabled = true;
+      try {
+        const response = await fetch("../php/supabase_logout.php", { method: "POST", credentials: "same-origin", cache: "no-store" });
+        const result = await response.json();
+        if (!response.ok || !result.success) throw new Error("Could not end the sign-in session.");
+        S.clearAdminSession();
+        S.clearResidentSession();
+        window.location.reload();
+      } catch (error) {
+        if (button) button.disabled = false;
+        window.alert("Logout did not finish. Please try again while connected.");
+      }
+    }
+    document.getElementById("bcLogoutResident")?.addEventListener("click", () => logoutFromFront("resident"));
+    document.getElementById("bcLogoutAdmin")?.addEventListener("click", () => logoutFromFront("admin"));
+    const logoutRes = document.getElementById("bcLogoutResident");
+    const logoutAdm = document.getElementById("bcLogoutAdmin");
+    if (logoutRes) logoutRes.hidden = !hasRes;
+    if (logoutAdm) logoutAdm.hidden = !hasAdm;
+
+    const servicesCta = document.getElementById("servicesRegisterBtn");
+    const servicesLogin = document.getElementById("servicesLoginBtn");
+    const servicesTitle = document.querySelector(".services-cta h4");
+    const servicesCopy = document.querySelector(".services-cta p");
+    if (servicesCta) {
+      const portalRole = hasRes ? "resident" : "admin";
+      servicesCta.dataset.portalRole = portalRole;
+      servicesCta.innerHTML = `<i class="fas fa-arrow-right-to-bracket" aria-hidden="true"></i> Open ${portalRole === "resident" ? "resident" : "admin"} portal`;
+      if (servicesTitle) servicesTitle.textContent = "Continue to your portal";
+      if (servicesCopy) servicesCopy.textContent = "You're signed in. Open your portal to continue.";
+    }
+    if (servicesLogin) servicesLogin.hidden = true;
+
+    bar.hidden = false; document.body.classList.add("bc-session-bar-active");
+  })();
+
+  // ===============================
+  // HEADER: gradual glass (transparent + blur) as user scrolls; solid at top
+  // ===============================
+  const pageHeader = document.querySelector(".homepage-header");
+  const compactHeaderQuery = window.matchMedia("(max-width: 850px)");
+  function syncHeaderHeight() {
+    if (!pageHeader) return;
+
+    // Let the responsive stylesheet own the compact header height. An inline
+    // value measured before device emulation settles overrides the mobile CSS
+    // and can leave the page looking desktop-sized until a refresh.
+    if (compactHeaderQuery.matches) {
+      document.documentElement.style.removeProperty("--header-height");
+      return;
+    }
+
+    const height = Math.round(pageHeader.getBoundingClientRect().height);
+    if (height > 0) document.documentElement.style.setProperty("--header-height", `${height}px`);
+  }
+  let headerHeightRaf = null;
+  function scheduleHeaderHeightSync() {
+    if (headerHeightRaf !== null) cancelAnimationFrame(headerHeightRaf);
+    headerHeightRaf = requestAnimationFrame(() => {
+      headerHeightRaf = null;
+      syncHeaderHeight();
+    });
+  }
+  scheduleHeaderHeightSync();
+  if (pageHeader && "ResizeObserver" in window) {
+    new ResizeObserver(scheduleHeaderHeightSync).observe(pageHeader);
+  }
+  window.addEventListener("resize", scheduleHeaderHeightSync, { passive: true });
+  window.addEventListener("orientationchange", scheduleHeaderHeightSync, { passive: true });
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener("resize", scheduleHeaderHeightSync, { passive: true });
+  }
+  if (compactHeaderQuery.addEventListener) {
+    compactHeaderQuery.addEventListener("change", scheduleHeaderHeightSync);
+  } else {
+    compactHeaderQuery.addListener(scheduleHeaderHeightSync);
+  }
+  const HEADER_SCROLL_RANGE = 200;
+  let headerScrollRaf = null;
+  function applyHeaderScrollProgress() {
+    if (!pageHeader) return;
+    const y = window.scrollY || document.documentElement.scrollTop;
+    const t = Math.min(1, Math.max(0, y / HEADER_SCROLL_RANGE));
+    pageHeader.style.setProperty("--header-scroll", t.toFixed(4));
+  }
+  function scheduleHeaderScroll() {
+    if (headerScrollRaf != null) return;
+    headerScrollRaf = requestAnimationFrame(() => {
+      headerScrollRaf = null;
+      applyHeaderScrollProgress();
+    });
+  }
+  applyHeaderScrollProgress();
+  window.addEventListener("scroll", scheduleHeaderScroll, { passive: true });
+
+  // ===============================
+  // Floating button: visible only near bottom of page; fade in/out
+  // ===============================
+  const scrollToTopFab = document.getElementById("scrollToTopFab");
+  const END_OF_PAGE_THRESHOLD_PX = 72;
+  let fabRaf = null;
+  function updateScrollToTopFab() {
+    if (!scrollToTopFab) return;
+    const scrollTop = window.scrollY || document.documentElement.scrollTop;
+    const vh = window.innerHeight;
+    const docH = document.documentElement.scrollHeight;
+    const distFromBottom = docH - (scrollTop + vh);
+    const atEnd = distFromBottom <= END_OF_PAGE_THRESHOLD_PX;
+    scrollToTopFab.classList.toggle("is-visible", atEnd);
+    fabRaf = null;
+  }
+  function scheduleFabUpdate() {
+    if (fabRaf != null) return;
+    fabRaf = requestAnimationFrame(updateScrollToTopFab);
+  }
+  updateScrollToTopFab();
+  window.addEventListener("scroll", scheduleFabUpdate, { passive: true });
+  window.addEventListener("resize", scheduleFabUpdate, { passive: true });
+  scrollToTopFab?.addEventListener("click", () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  });
+
+  // ===============================
+  // MODAL OPEN
+  // ===============================
+  const privacyGate = document.getElementById("privacyNoticeGate");
+  // Show the privacy notice on every Home page load, including after a refresh.
+  if (privacyGate && !window.BC_PASSWORD_RECOVERY) {
+    privacyGate.hidden = false;
+    document.body.classList.add("privacy-gate-open");
+    Array.from(document.body.children).forEach((node) => { if (node !== privacyGate) node.inert = true; });
+    const acknowledge = document.getElementById("privacyNoticeAcknowledge");
+    acknowledge?.focus();
+    acknowledge?.addEventListener("click", () => {
+      privacyGate.hidden = true;
+      Array.from(document.body.children).forEach((node) => { node.inert = false; });
+      document.body.classList.remove("privacy-gate-open");
+      document.getElementById("loginBtn")?.focus();
+    });
+  } else if (privacyGate) privacyGate.hidden = true;
+  const loginModal = document.getElementById("loginModal");
+  const forgotModal = document.getElementById("forgotPasswordModal");
+
+  /* Register / Register (hero) opened in script.js with wizard reset */
+  document.getElementById("loginBtn")?.addEventListener("click", () => loginModal.style.display = "block");
+  document.getElementById("loginBtn2")?.addEventListener("click", () => loginModal.style.display = "block");
+  document.getElementById("servicesRegisterBtn")?.addEventListener("click", (event) => {
+    const role = event.currentTarget.dataset.portalRole;
+    const S = window.BarangayConnectSession;
+    const Nav = window.BarangayConnectNavPersist;
+    if (role === "resident" && S?.hasResidentSession()) {
+      window.location.href = Nav ? Nav.portalUrlWithSavedState("resident", S.residentPortalUrl()) : S.residentPortalUrl();
+      return;
+    }
+    if (role === "admin" && S?.hasAdminSession()) {
+      window.location.href = Nav ? Nav.portalUrlWithSavedState("admin", S.adminPortalUrl()) : S.adminPortalUrl();
+      return;
+    }
+    document.getElementById("registerBtn")?.click();
+  });
+  document.getElementById("servicesLoginBtn")?.addEventListener("click", () => document.getElementById("loginBtn")?.click());
+
+  // ===============================
+  // MODAL CLOSE
+  // ===============================
+  document.querySelectorAll(".close").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const modalId = btn.getAttribute("data-close");
+      const el = document.getElementById(modalId);
+      if (el) {
+        el.style.display = "none";
+        if (modalId === "termsModal") el.setAttribute("aria-hidden", "true");
+      }
+    });
+  });
+
+  // ===============================
+  // FORGOT PASSWORD MODAL
+  // ===============================
+  document.getElementById("forgotPasswordLink")?.addEventListener("click", (e) => {
+    e.preventDefault();
+    forgotModal.style.display = "block";
+  });
+
+  // ===============================
+  // VOTER STATUS: precinct field enable/disable
+  // ===============================
+  const regVoterYes = document.getElementById("regVoterYes");
+  const regVoterNo = document.getElementById("regVoterNo");
+  const regPrecinctNumber = document.getElementById("regPrecinctNumber");
+
+  const updatePrecinctFieldState = () => {
+    if (!regPrecinctNumber) return;
+    const isVoter = regVoterYes?.checked;
+    const isNotVoter = regVoterNo?.checked;
+
+    regPrecinctNumber.disabled = Boolean(isNotVoter);
+    regPrecinctNumber.required = Boolean(isVoter);
+
+    if (isNotVoter) regPrecinctNumber.value = "";
+  };
+
+  regVoterYes?.addEventListener("change", updatePrecinctFieldState);
+  regVoterNo?.addEventListener("change", updatePrecinctFieldState);
+  updatePrecinctFieldState();
+
+  // ===============================
+  // LOGIN TAB SWITCH (Resident/Admin)
+  // ===============================
+  const tabButtons = document.querySelectorAll(".tab-button");
+  const residentPanel = document.getElementById("residentLoginPanel");
+  const adminPanel = document.getElementById("adminLoginPanel");
+
+  tabButtons.forEach(btn => {
+    btn.addEventListener("click", () => {
+      tabButtons.forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+
+      const target = btn.dataset.target;
+      residentPanel.classList.toggle("hidden", target !== "residentLoginPanel");
+      adminPanel.classList.toggle("hidden", target !== "adminLoginPanel");
+    });
+  });
+
+  // ===============================
+  // ANNOUNCEMENTS (BACKEND)
+  // ===============================
+  const AnnApi = window.BarangayConnectAnnouncementsApi;
+  let allAnnouncements = [];
+  let announcementsLoading = false;
+
+  async function loadAnnouncements() {
+    if (!AnnApi || announcementsLoading) return;
+    announcementsLoading = true;
+    try {
+      allAnnouncements = await AnnApi.fetchPublished();
+      renderAnnouncements();
+    } catch {
+      console.error("Failed to load announcements");
+    } finally {
+      announcementsLoading = false;
+    }
+  }
+
+  function formatDate(dateString) {
+    if (!dateString) return "";
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric", month: "long", day: "numeric"
+    });
+  }
+
+  function mapAnnouncementType(type) {
+    const map = { important: "important", event: "event", service: "service", maintenance: "service" };
+    return map[type?.toLowerCase()] || "important";
+  }
+
+  function getBadgeLabel(type) {
+    const map = { important: "Important", event: "Event", service: "Service", maintenance: "Service" };
+    return map[type?.toLowerCase()] || "Important";
+  }
+
+  function renderAnnouncements() {
+    const container = document.getElementById("announcementsContainer");
+    const searchTerm = document.getElementById("announcementSearchInput")?.value.toLowerCase() || "";
+    const filter = document.querySelector(".filter-btn.active")?.dataset.filter || "all";
+
+    const filtered = allAnnouncements.filter(a => {
+      const type = mapAnnouncementType(a.type);
+      const matchType = filter === "all" || type === filter;
+      const matchSearch = !searchTerm || a.title.toLowerCase().includes(searchTerm) || (a.description || "").toLowerCase().includes(searchTerm);
+      return matchType && matchSearch;
+    });
+
+    if (filtered.length === 0) {
+      container.innerHTML = `<p style="text-align:center;color:gray;">No announcements found.</p>`;
+      return;
+    }
+
+    container.innerHTML = filtered.map(a => `
+      <div class="announcement-card">
+        <div class="announcement-header">
+          <div class="announcement-badge ${mapAnnouncementType(a.type)}">${getBadgeLabel(a.type)}</div>
+          <div class="announcement-date">${formatDate(a.announcementDate)}</div>
+        </div>
+        <div class="announcement-content">
+          <h3>${a.title}</h3>
+          <p>${a.description || ""}</p>
+        </div>
+      </div>
+    `).join("");
+  }
+
+  document.getElementById("announcementSearchInput")?.addEventListener("input", renderAnnouncements);
+  document.querySelectorAll(".filter-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      renderAnnouncements();
+    });
+  });
+
+  loadAnnouncements();
+  setInterval(() => { if (!document.hidden) loadAnnouncements(); }, 60000);
+
+  // ===============================
+  // EMERGENCY CONTACTS (BACKEND)
+  // ===============================
+  const EmApi = window.BarangayConnectEmergencyApi;
+  let emergencyContactsLoading = false;
+
+  async function loadEmergencyContacts() {
+    if (!EmApi || emergencyContactsLoading) return;
+    emergencyContactsLoading = true;
+    try {
+      const contacts = await EmApi.fetchContacts();
+
+      const emergencyGrid = document.getElementById("emergencyGrid");
+      const barangayGrid = document.getElementById("barangayContactsGrid");
+      if (!emergencyGrid || !barangayGrid) return;
+
+      const escapeHtml = (value) => String(value ?? "").replace(/[&<>\"']/g, (char) => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;"
+      }[char]));
+
+      emergencyGrid.innerHTML = "";
+      barangayGrid.innerHTML = "";
+
+      if (!contacts.length) {
+        emergencyGrid.innerHTML = '<p class="emergency-empty-state">No emergency contacts are saved yet. An administrator can add them from Emergency Contacts.</p>';
+        barangayGrid.innerHTML = '<p class="emergency-empty-state">No barangay contacts are saved yet.</p>';
+        return;
+      }
+
+      contacts.forEach(function (contact) {
+        const card = `
+          <div class="emergency-card">
+            <h3>${escapeHtml(contact.serviceName)}</h3>
+            <div class="phone-number">${EmApi.renderPhoneLinks(contact.contactNumber, contact.serviceName)}</div>
+            <p>${escapeHtml(contact.description || "")}</p>
+            <div class="emergency-call-actions">${EmApi.renderCallButtons(contact.contactNumber, contact.serviceName)}</div>
+          </div>
+        `;
+
+        if ((contact.serviceName || "").toLowerCase().includes("barangay")) {
+          barangayGrid.innerHTML += card;
+        } else {
+          emergencyGrid.innerHTML += card;
+        }
+      });
+
+      if (!emergencyGrid.children.length) {
+        emergencyGrid.innerHTML = '<p class="emergency-empty-state">No emergency contacts are saved yet. An administrator can add them from Emergency Contacts.</p>';
+      }
+      if (!barangayGrid.children.length) {
+        barangayGrid.innerHTML = '<p class="emergency-empty-state">No barangay contacts are saved yet.</p>';
+      }
+
+    } catch (err) {
+      console.error("Failed to load contacts:", err);
+      const emergencyGrid = document.getElementById("emergencyGrid");
+      const barangayGrid = document.getElementById("barangayContactsGrid");
+      if (emergencyGrid) emergencyGrid.innerHTML = '<p class="emergency-load-error" role="alert">Emergency contacts could not be loaded. Check the server and Supabase connection, then refresh.</p>';
+      if (barangayGrid) barangayGrid.innerHTML = '<p class="emergency-load-error" role="alert">Barangay contacts could not be loaded. Check the server and Supabase connection, then refresh.</p>';
+    } finally {
+      emergencyContactsLoading = false;
+    }
+  }
+
+  loadEmergencyContacts();
+  setInterval(() => { if (!document.hidden) loadEmergencyContacts(); }, 120000);
+
+  // ===============================
+  // FAQ ACCORDION
+  // ===============================
+  document.querySelectorAll(".faq-question").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const item = btn.parentElement;
+      document.querySelectorAll(".faq-item").forEach(i => i.classList.remove("active"));
+      item.classList.add("active");
+    });
+  });
+
+  // ===============================
+  // FEEDBACK (PHP / MySQL)
+  // ===============================
+  const FeedbackApi = window.BarangayConnectFeedbackApi;
+  let selectedFeedback = "";
+
+  document.querySelectorAll(".feedback-option").forEach(option => {
+    option.addEventListener("click", () => {
+      document.querySelectorAll(".feedback-option").forEach(o => o.classList.remove("active"));
+      option.classList.add("active");
+      selectedFeedback = option.dataset.value;
+    });
+  });
+
+  document.querySelector(".feedback-btn")?.addEventListener("click", async () => {
+    const message = document.getElementById("feedbackMessage").value.trim();
+
+    if (!selectedFeedback) return alert("Please select Satisfied or Not Satisfied.");
+    if (!message) return alert("Please write your feedback.");
+    if (!FeedbackApi) return alert("Feedback service is unavailable.");
+
+    try {
+      await FeedbackApi.create({
+        status: selectedFeedback,
+        message: message,
+        source: "front",
+        submitterName: "Front page visitor",
+      });
+
+      alert("✅ Feedback submitted! Thank you.");
+      document.getElementById("feedbackMessage").value = "";
+      document.querySelectorAll(".feedback-option").forEach(o => o.classList.remove("active"));
+      selectedFeedback = "";
+
+    } catch (err) {
+      console.error(err);
+      alert("❌ Failed to submit feedback.");
+    }
+  });
+
+});
+
+</script>
