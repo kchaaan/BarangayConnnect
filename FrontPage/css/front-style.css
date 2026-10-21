@@ -52,7 +52,7 @@ body::before {
   position: fixed;
   inset: -5px;
   z-index: -2;
-  background: url('../../Shared/images/tambo-barangay-hall-background.jpg') center 44% / cover no-repeat;
+  background: url('../../Shared/images/tambo-barangay-hall-background.png') center 44% / cover no-repeat;
   filter: saturate(0.62) contrast(0.92) brightness(0.86) blur(1.5px);
   transform: scale(1.01);
   pointer-events: none;
