@@ -10,46 +10,54 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <script src="../../Shared/js/bc-borrow-inventory-ui.js?v=20250803"></script>
   <style>
-    * { scrollbar-width: none !important; }
-    *::-webkit-scrollbar { display: none !important; }
+    * { scrollbar-width:none!important; } *::-webkit-scrollbar { display:none!important; }
     .borrow-history-toolbar { display:flex; align-items:center; justify-content:space-between; gap:1rem; padding:1.1rem 1.2rem; border-bottom:1px solid #e5ece5; }
     .borrow-history-toolbar h2 { margin:0; color:#243329; font-size:1.05rem; }
     .borrow-history-actions { display:flex; align-items:center; gap:.65rem; }
-    .borrow-history-actions .bi-btn { white-space:nowrap; }
-    .borrow-history-actions .bi-btn i { margin-right:.4rem; }
+    .borrow-history-actions .bi-btn { white-space:nowrap; } .borrow-history-actions .bi-btn i { margin-right:.4rem; }
     .borrow-status-guide { margin-top:1.25rem; padding:1.2rem; border:1px solid #e0e8e1; border-radius:12px; background:#fff; }
     .borrow-status-guide h2 { margin:0 0 1rem; color:#243329; font-size:1rem; }
     .borrow-status-guide__items { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:1rem; }
     .borrow-status-guide__item { display:flex; align-items:flex-start; gap:.7rem; min-width:0; }
     .borrow-status-guide__icon { display:flex; flex:0 0 1.8rem; width:1.8rem; height:1.8rem; align-items:center; justify-content:center; border-radius:50%; background:#f2f4f2; }
-    .borrow-status-guide__icon.pending { color:#ef861e; background:#fff3e8; }
-    .borrow-status-guide__icon.approved { color:#13a56b; background:#e8f7ef; }
-    .borrow-status-guide__icon.rejected { color:#e74e46; background:#fdeceb; }
-    .borrow-status-guide__icon.completed { color:#3975f6; background:#eaf0ff; }
+    .borrow-status-guide__icon.pending { color:#ef861e; background:#fff3e8; } .borrow-status-guide__icon.approved { color:#13a56b; background:#e8f7ef; }
+    .borrow-status-guide__icon.rejected { color:#e74e46; background:#fdeceb; } .borrow-status-guide__icon.completed { color:#3975f6; background:#eaf0ff; }
     .borrow-status-guide__item strong,.borrow-status-guide__item span { display:block; }
-    .borrow-status-guide__item strong { margin:.1rem 0 .3rem; color:#17212b; font-size:.9rem; }
-    .borrow-status-guide__item span { color:#596b60; font-size:.88rem; line-height:1.45; }
+    .borrow-status-guide__item strong { margin:.1rem 0 .3rem; color:#17212b; font-size:.9rem; } .borrow-status-guide__item span { color:#596b60; font-size:.88rem; line-height:1.45; }
+    .borrow-print-sheet { display:none; box-sizing:border-box; position:relative; isolation:isolate; width:100%; min-height:210mm; padding:12mm 14mm; overflow:hidden; color:#243329; font:10pt Arial,sans-serif; }
+    .borrow-print-sheet>:not(.watermark) { position:relative; z-index:1; }
+    .borrow-print-sheet .watermark { position:fixed; z-index:0; top:50%; left:50%; width:430px; height:430px; transform:translate(-50%,-50%); object-fit:contain; opacity:.1; pointer-events:none; }
+    .borrow-print-sheet .print-header { display:flex; align-items:center; gap:12px; padding-bottom:12px; border-bottom:3px solid #5f7f58; margin-bottom:18px; }
+    .borrow-print-sheet .seal { width:56px; height:56px; flex:0 0 56px; border:1px solid #dce7d8; border-radius:50%; object-fit:cover; }
+    .borrow-print-sheet .brand { color:#5f7f58; font-weight:700; letter-spacing:.06em; text-transform:uppercase; }
+    .borrow-print-sheet .place { color:#5f6d5b; font-size:9pt; } .borrow-print-sheet time { margin-left:auto; color:#5f6d5b; font-size:9pt; text-align:right; white-space:nowrap; }
+    .borrow-print-sheet h1 { margin:0 0 5px; font-size:20pt; } .borrow-print-sheet .print-lead { margin:0 0 16px; color:#5f6d5b; font-size:9pt; }
+    .borrow-print-sheet table { position:relative; width:100%; table-layout:fixed; border-collapse:collapse; font-size:8.5pt; }
+    .borrow-print-sheet th,.borrow-print-sheet td { border:1px solid #9ba99d; padding:5px; text-align:left; vertical-align:top; overflow-wrap:anywhere; }
+    .borrow-print-sheet th { background:#e8efe9; }
+    .borrow-print-sheet th:nth-child(1),.borrow-print-sheet th:nth-child(2) { width:17%; }
+    .borrow-print-sheet th:nth-child(3) { width:8%; } .borrow-print-sheet th:nth-child(4),.borrow-print-sheet th:nth-child(5),.borrow-print-sheet th:nth-child(6) { width:12%; }
+    .borrow-print-sheet th:nth-child(7) { width:10%; } .borrow-print-sheet th:nth-child(8) { width:12%; }
+    .borrow-print-sheet .signature { margin-top:18px; display:flex; justify-content:space-between; gap:24px; font-size:9pt; }
+    .borrow-print-sheet .signature span { flex:1; } .borrow-print-sheet .print-footer { margin-top:18px; padding-top:10px; border-top:1px solid #dce7d8; color:#5f6d5b; font-size:8pt; }
+    @media screen { .borrow-print-sheet { max-width:1100px; margin:20px auto; padding:42px 48px; background:#fff; border:1px solid #dce7d8; } }
     @media (max-width:760px) { .borrow-history-toolbar { align-items:flex-start; flex-direction:column; } .borrow-history-actions { width:100%; justify-content:space-between; } .borrow-status-guide__items { grid-template-columns:repeat(2,minmax(0,1fr)); } }
     @media (max-width:420px) { .borrow-status-guide__items { grid-template-columns:1fr; } }
     @media print {
-      @page { size:auto; margin:12mm; }
-      html,body { width:auto!important; min-height:0!important; margin:0!important; padding:0!important; background:#fff!important; }
-      body > :not(.bi-page) { display:none!important; }
-      body > .bi-page { display:block!important; width:100%!important; max-width:none!important; margin:0!important; padding:0!important; background:#fff!important; box-shadow:none!important; }
-      .page-header { margin:0 0 12px!important; }
-      .borrow-history-actions,.borrow-status-guide { display:none!important; }
-      .bi-card { margin:0!important; padding:0!important; border:0!important; box-shadow:none!important; }
-      .bi-table-wrap { overflow:visible!important; }
-      .bi-table { width:100%!important; border-collapse:collapse!important; }
-      .bi-table th,.bi-table td { border:1px solid #9ba99d!important; }
-      .bi-table tr { break-inside:avoid; }
-      * { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+      @page { size:A4 landscape; margin:0; }
+      html,body { width:297mm; min-height:210mm; margin:0!important; padding:0!important; background:#fff!important; }
+      body>* { display:none!important; }
+      body>.bi-page { display:block!important; width:100%!important; min-height:0!important; margin:0!important; padding:0!important; box-shadow:none!important; background:#fff!important; }
+      .bi-page>* { display:none!important; }
+      .bi-page>#borrowPrintSheet { display:block!important; box-sizing:border-box!important; width:297mm!important; min-height:210mm!important; margin:0!important; padding:11mm 13mm!important; color:#243329!important; font:10pt Arial,sans-serif!important; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+      #borrowPrintSheet * { visibility:visible!important; } #borrowPrintSheet table { break-inside:auto; } #borrowPrintSheet tr { break-inside:avoid; break-after:auto; }
     }
   </style>
 </head>
 <body data-bi-page="history">
   <div class="bi-page">
     <div class="page-header"><h1 class="page-title">Borrowing History</h1></div>
+    <div class="borrow-print-sheet" id="borrowPrintSheet" aria-hidden="true"></div>
     <div class="bi-card">
       <div class="borrow-history-toolbar">
         <h2>Borrowing Records</h2>
@@ -58,12 +66,10 @@
           <button type="button" class="bi-btn bi-btn--outline" id="biRefreshBorrowHistory"><i class="fas fa-arrows-rotate" aria-hidden="true"></i>Refresh</button>
         </div>
       </div>
-      <div class="bi-table-wrap">
-        <table class="bi-table">
-          <thead><tr><th>Request ID</th><th>Resident</th><th>Item</th><th>Qty</th><th>Borrow Date</th><th>Return Date</th><th>Status</th><th></th></tr></thead>
-          <tbody id="biHistoryTableBody"><tr><td colspan="8">Loading…</td></tr></tbody>
-        </table>
-      </div>
+      <div class="bi-table-wrap"><table class="bi-table">
+        <thead><tr><th>Request ID</th><th>Resident</th><th>Item</th><th>Qty</th><th>Borrow Date</th><th>Return Date</th><th>Status</th><th></th></tr></thead>
+        <tbody id="biHistoryTableBody"><tr><td colspan="8">Loading…</td></tr></tbody>
+      </table></div>
     </div>
     <section class="borrow-status-guide" aria-labelledby="borrowStatusGuideTitle">
       <h2 id="borrowStatusGuideTitle">Request Status Guide</h2>
@@ -81,8 +87,31 @@
   <script src="../../Shared/js/bc-nav-iframe-child.js"></script>
   <script>BorrowInventoryUI.initSidebarIframe(); BorrowInventoryUI.notifyNav('borrowed-items');</script>
   <script>
-    document.getElementById('biPrintBorrowHistory')?.addEventListener('click', function () { window.print(); });
-    document.getElementById('biRefreshBorrowHistory')?.addEventListener('click', function () { window.location.reload(); });
+    (function () {
+      const button = document.getElementById('biPrintBorrowHistory');
+      const sheet = document.getElementById('borrowPrintSheet');
+      const escapeHtml = (value) => { const node = document.createElement('div'); node.textContent = value == null ? '' : String(value); return node.innerHTML; };
+      const formatDate = (value) => { if (!value) return '—'; const date = new Date(value.length === 10 ? value + 'T12:00:00' : value); return Number.isNaN(date.getTime()) ? escapeHtml(value) : date.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' }); };
+      button?.addEventListener('click', async function () {
+        if (!sheet) return;
+        const originalLabel = button.innerHTML;
+        button.disabled = true;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin" aria-hidden="true"></i> Preparing…';
+        try {
+          const api = window.BarangayConnectBorrowInventoryApi;
+          const rows = await api.borrow.history();
+          if (!Array.isArray(rows) || !rows.length) { window.alert('No borrowing records are available to print.'); return; }
+          const logo = new URL('../../Shared/images/barangay-tambo-seal.jpg', window.location.href).href;
+          const printed = new Intl.DateTimeFormat('en-PH', { dateStyle:'medium', timeStyle:'short' }).format(new Date());
+          const tableRows = rows.map((row) => '<tr><td>'+escapeHtml(row.residentName || '')+'</td><td>'+escapeHtml(row.itemName || '')+'</td><td>'+escapeHtml(row.quantity || '')+' '+escapeHtml(row.itemUnit || '')+'</td><td>'+formatDate(row.dateNeeded || row.submittedAt || '')+'</td><td>'+formatDate(row.returnDate || '')+'</td><td>'+formatDate(row.returnedAt || '')+'</td><td>'+escapeHtml(row.status || '')+'</td><td>'+escapeHtml(row.borrowCode || '')+'</td></tr>').join('');
+          sheet.innerHTML = '<img class="watermark" src="'+escapeHtml(logo)+'" alt="" aria-hidden="true"><header class="print-header"><img class="seal" src="'+escapeHtml(logo)+'" alt="Barangay Tambo seal"><div><div class="brand">BarangayConnect</div><div class="place">Barangay Tambo, Parañaque City</div></div><time>Printed '+escapeHtml(printed)+'</time></header><h1>Borrowing History</h1><p class="print-lead">Official barangay borrowing record.</p><table><thead><tr><th>Resident</th><th>Item</th><th>Quantity</th><th>Date requested</th><th>Expected return</th><th>Actual return</th><th>Status</th><th>Reference</th></tr></thead><tbody>'+tableRows+'</tbody></table><div class="signature"><span>Prepared by: ____________________</span><span>Barangay staff: ____________________</span></div><footer class="print-footer">BarangayConnect borrowing record · Please verify details with the Barangay Tambo office.</footer>';
+          window.print();
+        } catch (error) {
+          window.alert(error?.message || 'Could not load borrowing history for printing. Please refresh and try again.');
+        } finally { button.disabled = false; button.innerHTML = originalLabel; }
+      });
+      document.getElementById('biRefreshBorrowHistory')?.addEventListener('click', function () { window.location.reload(); });
+    })();
   </script>
 </body>
 </html>
