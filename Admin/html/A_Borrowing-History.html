@@ -9,12 +9,55 @@
   <link rel="stylesheet" href="../css/A_borrow-inventory-style.css?v=20250803">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <script src="../../Shared/js/bc-borrow-inventory-ui.js?v=20250803"></script>
-  <style>* { scrollbar-width: none !important; } *::-webkit-scrollbar { display: none !important; }</style>
+  <style>
+    * { scrollbar-width: none !important; }
+    *::-webkit-scrollbar { display: none !important; }
+    .borrow-history-toolbar { display:flex; align-items:center; justify-content:space-between; gap:1rem; padding:1.1rem 1.2rem; border-bottom:1px solid #e5ece5; }
+    .borrow-history-toolbar h2 { margin:0; color:#243329; font-size:1.05rem; }
+    .borrow-history-actions { display:flex; align-items:center; gap:.65rem; }
+    .borrow-history-actions .bi-btn { white-space:nowrap; }
+    .borrow-history-actions .bi-btn i { margin-right:.4rem; }
+    .borrow-status-guide { margin-top:1.25rem; padding:1.2rem; border:1px solid #e0e8e1; border-radius:12px; background:#fff; }
+    .borrow-status-guide h2 { margin:0 0 1rem; color:#243329; font-size:1rem; }
+    .borrow-status-guide__items { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:1rem; }
+    .borrow-status-guide__item { display:flex; align-items:flex-start; gap:.7rem; min-width:0; }
+    .borrow-status-guide__icon { display:flex; flex:0 0 1.8rem; width:1.8rem; height:1.8rem; align-items:center; justify-content:center; border-radius:50%; background:#f2f4f2; }
+    .borrow-status-guide__icon.pending { color:#ef861e; background:#fff3e8; }
+    .borrow-status-guide__icon.approved { color:#13a56b; background:#e8f7ef; }
+    .borrow-status-guide__icon.rejected { color:#e74e46; background:#fdeceb; }
+    .borrow-status-guide__icon.completed { color:#3975f6; background:#eaf0ff; }
+    .borrow-status-guide__item strong,.borrow-status-guide__item span { display:block; }
+    .borrow-status-guide__item strong { margin:.1rem 0 .3rem; color:#17212b; font-size:.9rem; }
+    .borrow-status-guide__item span { color:#596b60; font-size:.88rem; line-height:1.45; }
+    @media (max-width:760px) { .borrow-history-toolbar { align-items:flex-start; flex-direction:column; } .borrow-history-actions { width:100%; justify-content:space-between; } .borrow-status-guide__items { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+    @media (max-width:420px) { .borrow-status-guide__items { grid-template-columns:1fr; } }
+    @media print {
+      @page { size:auto; margin:12mm; }
+      html,body { width:auto!important; min-height:0!important; margin:0!important; padding:0!important; background:#fff!important; }
+      body > :not(.bi-page) { display:none!important; }
+      body > .bi-page { display:block!important; width:100%!important; max-width:none!important; margin:0!important; padding:0!important; background:#fff!important; box-shadow:none!important; }
+      .page-header { margin:0 0 12px!important; }
+      .borrow-history-actions,.borrow-status-guide { display:none!important; }
+      .bi-card { margin:0!important; padding:0!important; border:0!important; box-shadow:none!important; }
+      .bi-table-wrap { overflow:visible!important; }
+      .bi-table { width:100%!important; border-collapse:collapse!important; }
+      .bi-table th,.bi-table td { border:1px solid #9ba99d!important; }
+      .bi-table tr { break-inside:avoid; }
+      * { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+    }
+  </style>
 </head>
 <body data-bi-page="history">
   <div class="bi-page">
     <div class="page-header"><h1 class="page-title">Borrowing History</h1></div>
     <div class="bi-card">
+      <div class="borrow-history-toolbar">
+        <h2>Borrowing Records</h2>
+        <div class="borrow-history-actions">
+          <button type="button" class="bi-btn bi-btn--outline" id="biPrintBorrowHistory"><i class="fas fa-print" aria-hidden="true"></i>Print Borrowing History</button>
+          <button type="button" class="bi-btn bi-btn--outline" id="biRefreshBorrowHistory"><i class="fas fa-arrows-rotate" aria-hidden="true"></i>Refresh</button>
+        </div>
+      </div>
       <div class="bi-table-wrap">
         <table class="bi-table">
           <thead><tr><th>Request ID</th><th>Resident</th><th>Item</th><th>Qty</th><th>Borrow Date</th><th>Return Date</th><th>Status</th><th></th></tr></thead>
@@ -22,11 +65,24 @@
         </table>
       </div>
     </div>
+    <section class="borrow-status-guide" aria-labelledby="borrowStatusGuideTitle">
+      <h2 id="borrowStatusGuideTitle">Request Status Guide</h2>
+      <div class="borrow-status-guide__items">
+        <div class="borrow-status-guide__item"><i class="borrow-status-guide__icon pending fas fa-clock" aria-hidden="true"></i><div><strong>Pending</strong><span>Waiting for barangay admin review.</span></div></div>
+        <div class="borrow-status-guide__item"><i class="borrow-status-guide__icon approved fas fa-check" aria-hidden="true"></i><div><strong>Approved</strong><span>You may claim the item at the barangay hall.</span></div></div>
+        <div class="borrow-status-guide__item"><i class="borrow-status-guide__icon rejected fas fa-times" aria-hidden="true"></i><div><strong>Rejected</strong><span>Request was not approved.</span></div></div>
+        <div class="borrow-status-guide__item"><i class="borrow-status-guide__icon completed fas fa-check-double" aria-hidden="true"></i><div><strong>Completed</strong><span>Item returned; transaction closed.</span></div></div>
+      </div>
+    </section>
   </div>
   <script src="../../Shared/js/bc-borrow-inventory-api.js?v=20250803"></script>
-  <script src="../../Shared/js/bc-admin-borrow-inventory.js?v=20250803"></script>
+  <script src="../../Shared/js/bc-admin-borrow-inventory.js?v=20261022-history-controls"></script>
   <script src="../../Shared/js/bc-nav-persist.js?v=20250803"></script>
   <script src="../../Shared/js/bc-nav-iframe-child.js"></script>
   <script>BorrowInventoryUI.initSidebarIframe(); BorrowInventoryUI.notifyNav('borrowed-items');</script>
+  <script>
+    document.getElementById('biPrintBorrowHistory')?.addEventListener('click', function () { window.print(); });
+    document.getElementById('biRefreshBorrowHistory')?.addEventListener('click', function () { window.location.reload(); });
+  </script>
 </body>
 </html>
