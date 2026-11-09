@@ -2,15 +2,21 @@
 /**
  * Submit anonymous community report (resident R_Reports.html → admin A_Reports.html).
  * POST multipart: data (JSON blob), image (optional file).
- * Response: plain text SUCCESS (legacy UI) or JSON if Accept: application/json
+ * Response: JSON with the saved report ID, or a specific validation/database error.
  */
 require_once __DIR__ . '/reports_lib.php';
 require_once __DIR__ . '/supabase_client.php';
 require_once __DIR__ . '/requests_lib.php';
 
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: POST, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type');
+header('Content-Type: application/json; charset=utf-8');
+header('Cache-Control: no-store');
+
+function bc_report_submit_reply(int $status, array $payload): never
+{
+    http_response_code($status);
+    echo json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    exit;
+}
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(204);
@@ -18,18 +24,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    http_response_code(405);
-    echo 'ERROR';
-    exit;
+    header('Allow: POST, OPTIONS');
+    bc_report_submit_reply(405, ['success' => false, 'error' => 'Method not allowed.']);
 }
 
 $reportSession = bc_sb_require_role(['resident']);
 
 $conn = bc_db_connect();
 if (!$conn) {
-    http_response_code(500);
-    echo 'ERROR';
-    exit;
+    bc_report_submit_reply(503, ['success' => false, 'error' => bc_db_error_response()]);
 }
 
 bc_ensure_reports_table($conn);
@@ -38,10 +41,8 @@ $residentCode = trim((string) ($reportSession['resident']['resident_id'] ?? ''))
 $reportOwner = $residentCode !== '' ? bc_resolve_resident_owner($conn, $residentCode) : null;
 $residentUserId = (int) ($reportOwner['pk'] ?? 0);
 if ($residentUserId <= 0) {
-    http_response_code(403);
-    echo 'ERROR';
     $conn->close();
-    exit;
+    bc_report_submit_reply(403, ['success' => false, 'error' => 'Your resident profile is not linked to the report database. Please contact the barangay office.']);
 }
 
 $rawData = $_POST['data'] ?? '';
@@ -51,10 +52,8 @@ if ($rawData === '' && isset($_FILES['data'])) {
 
 $payload = json_decode($rawData, true);
 if (!is_array($payload)) {
-    http_response_code(400);
-    echo 'ERROR';
     $conn->close();
-    exit;
+    bc_report_submit_reply(400, ['success' => false, 'error' => 'The report form data could not be read. Please review the form and try again.']);
 }
 
 $title = trim((string) ($payload['title'] ?? ''));
@@ -63,10 +62,8 @@ $location = trim((string) ($payload['location'] ?? ''));
 $description = trim((string) ($payload['description'] ?? ''));
 
 if ($title === '' || $category === '' || $location === '' || $description === '') {
-    http_response_code(400);
-    echo 'ERROR';
     $conn->close();
-    exit;
+    bc_report_submit_reply(400, ['success' => false, 'error' => 'Complete the issue title, category, location, and description.']);
 }
 
 $status = 'Pending';
@@ -77,11 +74,10 @@ $stmt = $conn->prepare(
 $stmt->bind_param('sssssi', $title, $category, $location, $description, $status, $residentUserId);
 
 if (!$stmt->execute()) {
-    http_response_code(500);
-    echo 'ERROR';
+    error_log('BarangayConnect report insert failed: ' . $stmt->error);
     $stmt->close();
     $conn->close();
-    exit;
+    bc_report_submit_reply(500, ['success' => false, 'error' => 'The report could not be saved to the reports database. Please try again.']);
 }
 
 $reportId = (int) $conn->insert_id;
@@ -103,7 +99,9 @@ if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK && $_
         $u = $conn->prepare('UPDATE community_reports SET image_path = ? WHERE report_id = ?');
         if ($u) {
             $u->bind_param('si', $imagePath, $reportId);
-            $u->execute();
+            if (!$u->execute()) {
+                error_log('BarangayConnect report attachment path update failed: ' . $u->error);
+            }
             $u->close();
         }
     }
@@ -111,16 +109,8 @@ if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK && $_
 
 $conn->close();
 
-$accept = $_SERVER['HTTP_ACCEPT'] ?? '';
-if (stripos($accept, 'application/json') !== false) {
-    header('Content-Type: application/json; charset=utf-8');
-    echo json_encode([
-        'success' => true,
-        'reportId' => $reportId,
-        'message' => 'SUCCESS',
-    ]);
-    exit;
-}
-
-header('Content-Type: text/plain; charset=utf-8');
-echo 'SUCCESS';
+bc_report_submit_reply(201, [
+    'success' => true,
+    'reportId' => $reportId,
+    'message' => 'Your report was saved successfully.',
+]);
