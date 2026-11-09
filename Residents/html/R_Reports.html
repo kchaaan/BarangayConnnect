@@ -682,36 +682,45 @@ function submitReport() {
     return;
   }
 
-      const residentUserId = parseInt(localStorage.getItem('residentId') || '0', 10) || 0;
+      const submitButton = document.querySelector('#reportsFormEl button[onclick="submitReport()"]');
       const formData = new FormData();
-  formData.append(
-        'data',
-        new Blob(
-          [JSON.stringify({ title, category, location, description, residentUserId })],
-          { type: 'application/json' }
-        )
-      );
+      formData.append('data', JSON.stringify({ title, category, location, description }));
       if (image) formData.append('image', image);
 
-      fetch(ReportsApi.submitUrl(), { method: 'POST', body: formData })
-        .then((res) => res.text())
-        .then((result) => {
-          if (result === 'SUCCESS' || (result && result.indexOf('SUCCESS') !== -1)) {
-            notify(
-              'success',
-              'Your report has been submitted. Barangay staff will review it on the admin Reports page.',
-              'Report sent'
-            );
-            document.getElementById('reportsFormEl').reset();
-            syncReportCategoryOtherField();
-            initReportLocationFields();
-      closeReportForm();
-      loadReports();
-    } else {
-            notify('error', 'Error submitting report. Please try again.', 'Submission failed');
+      if (submitButton) {
+        submitButton.disabled = true;
+        submitButton.dataset.originalText = submitButton.innerHTML;
+        submitButton.innerHTML = '<i class="fas fa-spinner fa-spin" aria-hidden="true"></i> Submitting…';
+      }
+
+      fetch(ReportsApi.submitUrl(), {
+        method: 'POST',
+        body: formData,
+        credentials: 'same-origin',
+        headers: { Accept: 'application/json' },
+      })
+        .then(async (res) => {
+          const result = await res.json().catch(() => ({}));
+          if (!res.ok || !result.success || !result.reportId) {
+            throw new Error(result.error || 'The report could not be saved. Please try again.');
           }
+          return result;
         })
-        .catch(() => notify('error', 'Could not reach the report service.', 'Connection error'));
+        .then((result) => {
+          notify('success', `Your report ${formatReportId(result.reportId)} was saved. Barangay staff can now review it.`, 'Report sent');
+          document.getElementById('reportsFormEl').reset();
+          syncReportCategoryOtherField();
+          initReportLocationFields();
+          closeReportForm();
+          loadReports();
+        })
+        .catch((error) => notify('error', error.message || 'Could not reach the report service.', 'Submission failed'))
+        .finally(() => {
+          if (submitButton) {
+            submitButton.disabled = false;
+            submitButton.innerHTML = submitButton.dataset.originalText || '<i class="fas fa-paper-plane" aria-hidden="true"></i> Submit Report';
+          }
+        });
     }
 
     function closeReportDetailsModal() {
