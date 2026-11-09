@@ -60,6 +60,22 @@ try {
     $isAdmin = bc_sb_role_has_admin_access($role);
     $residentId = trim((string) ($session['resident']['id'] ?? ''));
     if (!$isAdmin && !preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i', $residentId)) {
+        $userId = trim((string) ($session['user_id'] ?? ''));
+        if (preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i', $userId)) {
+            $residentResult = bc_sb_rest('residents', 'GET', [
+                'user_id' => 'eq.' . $userId,
+                'select' => 'id,resident_id,first_name,last_name,contact_number',
+                'limit' => '1',
+            ]);
+            $resident = $residentResult['data'][0] ?? [];
+            $residentId = trim((string) ($resident['id'] ?? ''));
+            if ($residentId !== '') {
+                bc_sb_session_start();
+                $_SESSION['bc_supabase']['resident'] = $resident;
+            }
+        }
+    }
+    if (!$isAdmin && !preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i', $residentId)) {
         bc_reports_reply(403, ['success'=>false,'error'=>'Your resident account is missing its linked Supabase resident record.']);
     }
 

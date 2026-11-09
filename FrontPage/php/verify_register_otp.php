@@ -89,13 +89,21 @@ try {
     ]);
     $resident = $residentResult['data'][0] ?? null;
     if (!is_array($resident)) {
-        bc_sb_rest('residents', 'POST', [], $residentPayload, ['return=minimal']);
-        $resident = [
-            'id' => '',
-            'resident_id' => (string) ($residentPayload['resident_id'] ?? ''),
-            'first_name' => (string) ($residentPayload['first_name'] ?? ''),
-            'last_name' => (string) ($residentPayload['last_name'] ?? ''),
-        ];
+        $createdResident = bc_sb_rest('residents', 'POST', [], $residentPayload, ['return=representation']);
+        $resident = $createdResident['data'][0] ?? null;
+        if (!is_array($resident) || empty($resident['id'])) {
+            // Re-read by the authenticated owner in case the insert response was
+            // empty or the registration request was retried after a prior insert.
+            $residentResult = bc_sb_rest('residents', 'GET', [
+                'user_id' => 'eq.' . $userId,
+                'select' => 'id,resident_id,first_name,last_name',
+                'limit' => '1',
+            ]);
+            $resident = $residentResult['data'][0] ?? null;
+        }
+        if (!is_array($resident) || empty($resident['id'])) {
+            throw new RuntimeException('Resident account was verified, but its Supabase resident record could not be linked.');
+        }
     }
     if (($profile['role'] ?? '') !== 'resident' || ($profile['status'] ?? '') !== 'active') {
         bc_regotp_json(403, ['success' => false, 'error' => 'The email is verified, but the resident profile is incomplete. Please contact the barangay administrator.']);

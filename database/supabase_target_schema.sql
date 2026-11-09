@@ -167,6 +167,11 @@ create table if not exists public.community_reports (
  category text, description text not null, location text, status text not null default 'pending',
  attachment_path text, admin_remarks text, created_at timestamptz not null default now(), updated_at timestamptz not null default now()
 );
+alter table public.community_reports add column if not exists attachment_path text;
+alter table public.community_reports add column if not exists resolved_at timestamptz;
+alter table public.community_reports add column if not exists archived_at timestamptz;
+create index if not exists community_reports_resident_created_idx on public.community_reports(resident_id, created_at desc);
+create index if not exists community_reports_archive_idx on public.community_reports(archived_at, resolved_at);
 create table if not exists public.resident_notifications (
  id uuid primary key default gen_random_uuid(), resident_id uuid not null references public.residents(id),
  title text not null, message text not null, type text, priority text default 'normal', is_read boolean not null default false,

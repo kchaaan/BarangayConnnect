@@ -24,8 +24,22 @@ try {
     $resident = $session['resident'] ?? [];
     $residentId = trim((string) ($resident['id'] ?? ''));
     $authUserId = trim((string) ($session['user_id'] ?? ''));
+    if (!preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i', $residentId)
+        && preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i', $authUserId)) {
+        $residentResult = bc_sb_rest('residents', 'GET', [
+            'user_id' => 'eq.' . $authUserId,
+            'select' => 'id,resident_id,first_name,last_name,contact_number',
+            'limit' => '1',
+        ]);
+        $resident = $residentResult['data'][0] ?? [];
+        $residentId = trim((string) ($resident['id'] ?? ''));
+        if ($residentId !== '') {
+            bc_sb_session_start();
+            $_SESSION['bc_supabase']['resident'] = $resident;
+        }
+    }
     if (!preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i', $residentId)) {
-        bc_report_submit_reply(403, ['success' => false, 'error' => 'Your resident account is missing its Supabase resident record. Please ask the barangay administrator to link the account, then try again.']);
+        bc_report_submit_reply(403, ['success' => false, 'error' => 'Your account is not linked to a resident record in Supabase yet. Please contact the barangay administrator to link your resident account.']);
     }
     if (!preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i', $authUserId)) {
         bc_report_submit_reply(401, ['success' => false, 'error' => 'Your login session expired. Please sign in again and retry.']);
