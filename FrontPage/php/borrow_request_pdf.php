@@ -119,11 +119,12 @@ function bc_build_compact_borrow_pdf(array $data): string
     $cmd .= bc_pdf_text('Equipment Borrow Request', 22, 108, 17, true);
     $cmd .= bc_pdf_text('REQUEST COPY - SUBJECT TO BARANGAY APPROVAL', 22, 122, 7, true);
     $cmd .= bc_pdf_text('Review the item, schedule, and resident details below.', 22, 134, 8);
+    $cmd .= bc_pdf_text('Request reference: ' . $data['requestCode'], 22, 146, 9, true);
 
     $leftX = 22;
     $rightX = 303;
     $cardWidth = 270;
-    $top = 154;
+    $top = 164;
     $cmd .= bc_pdf_text('ITEM & SCHEDULE', 22, $top, 10, true);
     $cmd .= bc_pdf_line(22, $top + 6, 573, $top + 6);
     $top += 15;
@@ -187,12 +188,26 @@ function bc_build_compact_borrow_pdf(array $data): string
     return $pdf;
 }
 
+$borrowCode = strtoupper(trim((string) ($body['borrowCode'] ?? '')));
+$isSavedRequest = $borrowCode !== '';
+if ($isSavedRequest && !preg_match('/^BR-\d{4}-\d{4,}$/', $borrowCode)) {
+    http_response_code(400);
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode(['success' => false, 'error' => 'Invalid borrowing request reference.']);
+    exit;
+}
+if (!$isSavedRequest) {
+    http_response_code(400);
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode(['success' => false, 'error' => 'Submit the borrowing request before printing its official request copy.']);
+    exit;
+}
 $itemId = filter_var($body['itemId'] ?? null, FILTER_VALIDATE_INT);
 $quantity = filter_var($body['quantity'] ?? null, FILTER_VALIDATE_INT);
 $purpose = trim((string) ($body['purpose'] ?? ''));
 $pickup = trim((string) ($body['dateNeeded'] ?? ''));
 $returnDate = trim((string) ($body['returnDate'] ?? ''));
-if (!$itemId || !$quantity || $quantity < 1 || $purpose === '' || $pickup === '' || $returnDate === '') {
+if (!$isSavedRequest && (!$itemId || !$quantity || $quantity < 1 || $purpose === '' || $pickup === '' || $returnDate === '')) {
     http_response_code(400);
     header('Content-Type: application/json; charset=utf-8');
     echo json_encode(['success' => false, 'error' => 'Complete the required borrow details before creating the PDF.']);
@@ -207,13 +222,65 @@ if (!$conn) {
     exit;
 }
 bc_ensure_inventory_tables($conn);
+if ($isSavedRequest) {
+    $requestStmt = $conn->prepare(
+        'SELECT b.borrow_code, b.item_id, b.quantity, b.date_needed, b.return_date, b.purpose, b.remarks,
+                b.applicant_name, b.applicant_resident_id, b.applicant_contact
+         FROM borrow_requests b WHERE b.borrow_code = ? AND b.auth_user_id = ? LIMIT 1'
+    );
+    if (!$requestStmt) {
+        $conn->close();
+        http_response_code(500);
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode(['success' => false, 'error' => 'Could not prepare the saved request receipt.']);
+        exit;
+    }
+    $authUserId = trim((string) ($session['user_id'] ?? ''));
+    $requestStmt->bind_param('ss', $borrowCode, $authUserId);
+    $requestStmt->execute();
+    $savedRequest = $requestStmt->get_result()->fetch_assoc();
+    $requestStmt->close();
+    if (!$savedRequest) {
+        $conn->close();
+        http_response_code(404);
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode(['success' => false, 'error' => 'Saved request not found for this resident account. Refresh your requests and try again.']);
+        exit;
+    }
+    $itemId = (int) $savedRequest['item_id'];
+    $quantity = (int) $savedRequest['quantity'];
+    $purpose = trim((string) $savedRequest['purpose']);
+    $pickup = (string) $savedRequest['date_needed'];
+    $returnDate = (string) $savedRequest['return_date'];
+    $body['borrowCode'] = (string) $savedRequest['borrow_code'];
+    $body['contact'] = (string) ($savedRequest['applicant_contact'] ?? '');
+    $body['remarks'] = (string) ($savedRequest['remarks'] ?? '');
+    $body['savedResidentName'] = (string) ($savedRequest['applicant_name'] ?? '');
+    $body['savedResidentCode'] = (string) ($savedRequest['applicant_resident_id'] ?? '');
+    $remarksMap = [];
+    foreach (explode("\n", (string) ($savedRequest['remarks'] ?? '')) as $remarkLine) {
+        $separator = strpos($remarkLine, ':');
+        if ($separator !== false) $remarksMap[strtolower(trim(substr($remarkLine, 0, $separator)))] = trim(substr($remarkLine, $separator + 1));
+    }
+    $body['dateNeeded'] = $remarksMap['pickup date & time'] ?? $pickup;
+    $body['returnDate'] = $remarksMap['expected return date & time'] ?? $returnDate;
+    $body['event'] = $remarksMap['event/activity'] ?? '';
+    $body['eventAt'] = $remarksMap['event date & time'] ?? '';
+    $body['location'] = $remarksMap['location/venue'] ?? '';
+    $body['remarks'] = $remarksMap['additional notes'] ?? '';
+    $notesMarker = 'Additional Notes:';
+    $notesOffset = stripos((string) ($savedRequest['remarks'] ?? ''), $notesMarker);
+    if ($notesOffset !== false) {
+        $body['remarks'] = trim(substr((string) $savedRequest['remarks'], $notesOffset + strlen($notesMarker)));
+    }
+}
 $itemStmt = $conn->prepare('SELECT i.name, i.unit, i.available_qty, c.name AS category FROM inventory_items i LEFT JOIN inventory_categories c ON c.category_id = i.category_id WHERE i.item_id = ? LIMIT 1');
 $itemStmt->bind_param('i', $itemId);
 $itemStmt->execute();
 $item = $itemStmt->get_result()->fetch_assoc();
 $itemStmt->close();
 $conn->close();
-if (!$item || (int) $item['available_qty'] < $quantity) {
+if (!$item || (!$isSavedRequest && (int) $item['available_qty'] < $quantity)) {
     http_response_code(409);
     header('Content-Type: application/json; charset=utf-8');
     echo json_encode(['success' => false, 'error' => 'The selected item or requested quantity is no longer available.']);
@@ -221,7 +288,13 @@ if (!$item || (int) $item['available_qty'] < $quantity) {
 }
 
 $resident = [];
-try {
+if ($isSavedRequest) {
+    $resident = [
+        'resident_id' => (string) ($body['savedResidentCode'] ?? ''),
+        'full_name' => (string) ($body['savedResidentName'] ?? ''),
+        'contact_number' => (string) ($body['contact'] ?? ''),
+    ];
+} else try {
     $residentResult = bc_sb_rest('residents', 'GET', [
         'user_id' => 'eq.' . (string) $session['user_id'],
         'select' => 'resident_id,first_name,middle_name,last_name,contact_number',
@@ -238,10 +311,14 @@ if (!$resident) {
     exit;
 }
 
-$fullName = trim(implode(' ', array_filter([
-    $resident['first_name'] ?? '', $resident['middle_name'] ?? '', $resident['last_name'] ?? '',
-])));
+$fullName = trim((string) ($resident['full_name'] ?? ''));
+if ($fullName === '') {
+    $fullName = trim(implode(' ', array_filter([
+        $resident['first_name'] ?? '', $resident['middle_name'] ?? '', $resident['last_name'] ?? '',
+    ])));
+}
 $data = [
+    'requestCode' => $isSavedRequest ? $borrowCode : '',
     'item' => (string) $item['name'],
     'category' => (string) ($item['category'] ?? 'General'),
     'quantity' => $quantity . ' ' . (string) ($item['unit'] ?? 'pcs'),
