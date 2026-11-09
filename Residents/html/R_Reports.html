@@ -480,9 +480,10 @@
     }
 
     function formatReportId(id) {
-      const n = parseInt(id, 10);
-      if (!n) return '—';
-      return 'RPT-' + String(n).padStart(4, '0');
+      const value = String(id || '').trim();
+      if (!value) return '—';
+      if (/^\d+$/.test(value)) return 'RPT-' + value.padStart(4, '0');
+      return 'RPT-' + value.replace(/-/g, '').slice(0, 8).toUpperCase();
     }
 
     function formatTableDate(iso) {
@@ -561,8 +562,8 @@
           const detail = document.querySelector('#reportListError span');
           if (detail) {
             detail.textContent = controller.signal.aborted
-              ? 'Loading timed out. Start MySQL in XAMPP, then use Refresh.'
-              : 'Could not reach the reports database. Start MySQL in XAMPP, then use Refresh.';
+              ? 'Loading timed out. Please try Refresh again.'
+              : 'Could not reach the reports service. Please try Refresh again.';
           }
         })
         .finally(() => {
@@ -750,8 +751,8 @@ function submitReport() {
 
       const imgSection = document.getElementById('residentReportImageSection');
       const img = document.getElementById('residentReportImage');
-      if (report.imageBase64) {
-        img.src = `data:image/jpeg;base64,${report.imageBase64}`;
+      if (report.imageUrl || report.imageBase64) {
+        img.src = report.imageUrl || `data:image/jpeg;base64,${report.imageBase64}`;
         imgSection.hidden = false;
       } else {
         img.removeAttribute('src');
@@ -766,3 +767,4 @@ function submitReport() {
 </script>
 </body>
 </html>
+
