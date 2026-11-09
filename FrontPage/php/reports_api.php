@@ -1,229 +1,131 @@
 <?php
-/**
- * Community reports API (resident list + admin A_Reports.html).
- *
- * GET  ?action=all|archived|get&id= (community listing)
- * GET  ?action=mine (resident-owned reports, including archived, for personal dashboard counts)
- * PUT  ?action=cancel&id=
- * PUT  ?action=status&id=  body: plain text status (e.g. "In Progress")
- */
-require_once __DIR__ . '/reports_lib.php';
-require_once __DIR__ . '/notifications_lib.php';
+declare(strict_types=1);
+/** Resident/admin community reports API backed by Supabase. */
 require_once __DIR__ . '/supabase_client.php';
-require_once __DIR__ . '/requests_lib.php';
 
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET, PUT, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type');
+header('Cache-Control: no-store');
+header('Content-Type: application/json; charset=utf-8');
 
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(204);
+function bc_reports_reply(int $status, mixed $payload): never
+{
+    http_response_code($status);
+    echo json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     exit;
 }
-
-$reportMethod = strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET'));
-$reportAction = trim((string) ($_GET['action'] ?? ''));
-$reportSession = null;
-if ($reportMethod === 'GET' && in_array($reportAction, ['all', 'list', 'archived', 'get'], true)) {
-    // Residents retain the existing community-report read screens. Ordinary
-    // admins cannot open the report inbox; the SuperAdmin retains full access.
-    $reportSession = bc_sb_require_role(['resident', 'superadmin']);
-} elseif ($reportMethod === 'GET' && $reportAction === 'mine') {
-    $reportSession = bc_sb_require_role(['resident']);
-} elseif ($reportMethod === 'PUT' && $reportAction === 'cancel') {
-    $reportSession = bc_sb_require_role(['resident']);
-} elseif ($reportMethod === 'PUT' && $reportAction === 'status') {
-    $reportSession = bc_sb_require_role(['superadmin']);
-} else {
-    http_response_code(405);
-    header('Content-Type: application/json; charset=utf-8');
-    echo json_encode(['success' => false, 'error' => 'Unsupported report action.']);
-    exit;
+function bc_report_status(string $value): string
+{
+    $map = ['pending'=>'Pending','in progress'=>'In Progress','in_progress'=>'In Progress','resolved'=>'Resolved','completed'=>'Resolved','cancelled'=>'Cancelled','canceled'=>'Cancelled'];
+    return $map[strtolower(trim($value))] ?? '';
 }
-
-$conn = bc_db_connect();
-if (!$conn) {
-    http_response_code(503);
-    header('Content-Type: application/json; charset=utf-8');
-    echo json_encode([
-        'success' => false,
-        'error' => function_exists('bc_db_error_response')
-            ? bc_db_error_response()
-            : 'The reports database is unavailable. Start MySQL in XAMPP and try again.',
-    ]);
-    exit;
-}
-
-bc_ensure_reports_archive_columns($conn);
-bc_auto_archive_expired_resolved($conn);
-
-$reportOwnerId = null;
-if ($reportMethod === 'GET' && $reportAction === 'mine') {
-    $residentCode = trim((string) ($reportSession['resident']['resident_id'] ?? ''));
-    $owner = $residentCode !== '' ? bc_resolve_resident_owner($conn, $residentCode) : null;
-    $reportOwnerId = (int) ($owner['pk'] ?? 0);
-    if ($reportOwnerId <= 0) {
-        $conn->close();
-        http_response_code(403);
-        header('Content-Type: application/json; charset=utf-8');
-        echo json_encode(['success' => false, 'error' => 'Your resident profile is not linked to your reports.']);
-        exit;
+function bc_report_archived(array $row): bool
+{
+    $status = strtolower(trim((string) ($row['status'] ?? '')));
+    if (!empty($row['archived_at']) || in_array($status, ['cancelled','canceled'], true)) return true;
+    if ($status === 'resolved' && !empty($row['resolved_at'])) {
+        $resolved = strtotime((string) $row['resolved_at']);
+        return $resolved !== false && $resolved <= time() - 86400;
     }
+    return false;
+}
+function bc_report_to_api(array $row, bool $includeAttachment = false): array
+{
+    $status = bc_report_status((string) ($row['status'] ?? '')) ?: 'Pending';
+    $out = [
+        'reportId' => (string) ($row['id'] ?? ''),
+        'title' => (string) ($row['title'] ?? ''),
+        'category' => (string) ($row['category'] ?? ''),
+        'location' => (string) ($row['location'] ?? ''),
+        'description' => (string) ($row['description'] ?? ''),
+        'status' => $status,
+        'dateSubmitted' => (string) ($row['created_at'] ?? ''),
+        'dateUpdated' => (string) ($row['updated_at'] ?? $row['created_at'] ?? ''),
+        'dateResolved' => $row['resolved_at'] ?? null,
+        'dateArchived' => $row['archived_at'] ?? null,
+        'isArchived' => bc_report_archived($row),
+    ];
+    if ($includeAttachment && !empty($row['attachment_path'])) {
+        try { $out['imageUrl'] = bc_sb_storage_signed_url('resident-private', (string) $row['attachment_path'], 300); }
+        catch (Throwable $e) { error_log('BarangayConnect report attachment URL failed: ' . $e->getMessage()); }
+    }
+    return $out;
 }
 
-$action = trim($_GET['action'] ?? '');
-$id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
-$method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+if (($_SERVER['REQUEST_METHOD'] ?? '') === 'OPTIONS') { http_response_code(204); exit; }
+$method = strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET'));
+$action = trim((string) ($_GET['action'] ?? ''));
+$id = trim((string) ($_GET['id'] ?? ''));
+try {
+    $session = bc_sb_require_role(['resident', 'admin']);
+    $role = (string) ($session['role'] ?? '');
+    $isAdmin = bc_sb_role_has_admin_access($role);
+    $residentId = trim((string) ($session['resident']['id'] ?? ''));
+    if (!$isAdmin && !preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i', $residentId)) {
+        bc_reports_reply(403, ['success'=>false,'error'=>'Your resident account is missing its linked Supabase resident record.']);
+    }
 
-if ($method === 'GET' && ($action === 'all' || $action === 'list')) {
-    header('Content-Type: application/json; charset=utf-8');
-    $res = $conn->query(bc_reports_select_sql() . ' WHERE archived_at IS NULL ORDER BY created_at DESC');
-    $out = [];
-    if ($res) {
-        while ($row = $res->fetch_assoc()) {
-            $out[] = bc_report_row_to_api($row, false);
+    $select = 'id,resident_id,title,category,location,description,status,attachment_path,admin_remarks,created_at,updated_at,resolved_at,archived_at';
+    if ($method === 'GET' && in_array($action, ['all','list','archived','mine'], true)) {
+        if ($action === 'mine' && $isAdmin) bc_reports_reply(403, ['success'=>false,'error'=>'Resident access is required.']);
+        $query = ['select'=>$select, 'order'=>'created_at.desc'];
+        if (!$isAdmin) $query['resident_id'] = 'eq.' . $residentId;
+        $response = bc_sb_rest('community_reports', 'GET', $query);
+        $rows = is_array($response['data']) ? $response['data'] : [];
+        if ($action !== 'mine') {
+            $wantArchived = $action === 'archived';
+            $rows = array_values(array_filter($rows, static fn($row) => is_array($row) && bc_report_archived($row) === $wantArchived));
         }
+        bc_reports_reply(200, array_map(static fn($row) => bc_report_to_api($row), $rows));
     }
-    $conn->close();
-    echo json_encode($out);
-    exit;
-}
 
-if ($method === 'GET' && $action === 'mine' && $reportOwnerId !== null) {
-    header('Content-Type: application/json; charset=utf-8');
-    $stmt = $conn->prepare(bc_reports_select_sql() . ' WHERE resident_user_id = ? ORDER BY created_at DESC');
-    $stmt->bind_param('i', $reportOwnerId);
-    $stmt->execute();
-    $res = $stmt->get_result();
-    $out = [];
-    if ($res) {
-        while ($row = $res->fetch_assoc()) $out[] = bc_report_row_to_api($row, false);
+    if ($method === 'GET' && $action === 'get') {
+        if (!preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i', $id)) bc_reports_reply(400, ['success'=>false,'error'=>'Invalid report ID.']);
+        $query = ['id'=>'eq.' . $id, 'select'=>$select, 'limit'=>'1'];
+        if (!$isAdmin) $query['resident_id'] = 'eq.' . $residentId;
+        $response = bc_sb_rest('community_reports', 'GET', $query);
+        $row = $response['data'][0] ?? null;
+        if (!is_array($row)) bc_reports_reply(404, ['success'=>false,'error'=>'Report not found.']);
+        bc_reports_reply(200, bc_report_to_api($row, true));
     }
-    $stmt->close();
-    $conn->close();
-    echo json_encode($out);
-    exit;
-}
 
-if ($method === 'GET' && $action === 'archived') {
-    header('Content-Type: application/json; charset=utf-8');
-    $res = $conn->query(bc_reports_select_sql() . ' WHERE archived_at IS NOT NULL ORDER BY archived_at DESC');
-    $out = [];
-    if ($res) {
-        while ($row = $res->fetch_assoc()) {
-            $out[] = bc_report_row_to_api($row, false);
+    if ($method === 'PUT' && $action === 'cancel') {
+        if ($isAdmin || !preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i', $id)) { http_response_code(400); echo 'ERROR'; exit; }
+        $query = ['id'=>'eq.' . $id, 'resident_id'=>'eq.' . $residentId, 'select'=>'id,status,archived_at,resolved_at', 'limit'=>'1'];
+        $current = bc_sb_rest('community_reports', 'GET', $query)['data'][0] ?? null;
+        if (!is_array($current) || bc_report_archived($current) || strtolower((string) ($current['status'] ?? '')) === 'resolved') { http_response_code(409); echo 'ERROR'; exit; }
+        bc_sb_rest('community_reports', 'PATCH', ['id'=>'eq.' . $id, 'resident_id'=>'eq.' . $residentId], ['status'=>'Cancelled','archived_at'=>gmdate('c'),'resolved_at'=>null,'updated_at'=>gmdate('c')], ['return=minimal']);
+        header('Content-Type: text/plain; charset=utf-8'); echo 'SUCCESS'; exit;
+    }
+
+    if ($method === 'PUT' && $action === 'status') {
+        if (!$isAdmin || !preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i', $id)) { http_response_code(403); echo 'ERROR'; exit; }
+        $newStatus = bc_report_status(trim((string) file_get_contents('php://input')));
+        if (!in_array($newStatus, ['Pending','In Progress','Resolved','Cancelled'], true)) { http_response_code(400); echo 'ERROR'; exit; }
+        $old = bc_sb_rest('community_reports', 'GET', ['id'=>'eq.' . $id,'select'=>'id,resident_id,title,status','limit'=>'1'])['data'][0] ?? null;
+        if (!is_array($old)) { http_response_code(404); echo 'ERROR'; exit; }
+        $now = gmdate('c');
+        $patch = ['status'=>$newStatus,'updated_at'=>$now,'resolved_at'=>null,'archived_at'=>null];
+        if ($newStatus === 'Resolved') $patch['resolved_at'] = $now;
+        if ($newStatus === 'Cancelled') $patch['archived_at'] = $now;
+        bc_sb_rest('community_reports', 'PATCH', ['id'=>'eq.' . $id], $patch, ['return=minimal']);
+        if (strcasecmp((string) ($old['status'] ?? ''), $newStatus) !== 0 && !empty($old['resident_id'])) {
+            $label = 'RPT-' . strtoupper(substr((string) $old['id'], 0, 8));
+            try {
+                bc_sb_rest('resident_notifications', 'POST', [], [
+                    'resident_id'=>$old['resident_id'], 'title'=>'Report status updated',
+                    'message'=>trim((string) ($old['title'] ?? 'Community report')) . ' (' . $label . ') is now ' . $newStatus . '.',
+                    'type'=>'report_update', 'priority'=>in_array($newStatus,['Resolved','Cancelled'],true)?'urgent':'normal',
+                    'link_section'=>'reports', 'is_read'=>false,
+                ], ['return=minimal']);
+            } catch (Throwable $e) { error_log('BarangayConnect report status notification failed: ' . $e->getMessage()); }
         }
+        header('Content-Type: text/plain; charset=utf-8'); echo 'SUCCESS'; exit;
     }
-    $conn->close();
-    echo json_encode($out);
-    exit;
+    bc_reports_reply(400, ['success'=>false,'error'=>'Invalid report action.']);
+} catch (Throwable $e) {
+    error_log('BarangayConnect reports API failed: ' . $e->getMessage());
+    if (in_array($method, ['PUT'], true)) { http_response_code(503); header('Content-Type: text/plain; charset=utf-8'); echo 'ERROR'; exit; }
+    $code = (int) $e->getCode();
+    $status = in_array($code, [400,401,403,404], true) ? $code : 503;
+    bc_reports_reply($status, ['success'=>false,'error'=>$status===403?'Your account is not allowed to view these reports.':'Reports are temporarily unavailable. Please try again.']);
 }
 
-if ($method === 'GET' && $action === 'get' && $id > 0) {
-    header('Content-Type: application/json; charset=utf-8');
-    $stmt = $conn->prepare(bc_reports_select_sql() . ' WHERE report_id = ? LIMIT 1');
-    $stmt->bind_param('i', $id);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $row = $result ? $result->fetch_assoc() : null;
-    $stmt->close();
-    $conn->close();
-
-    if (!$row) {
-        http_response_code(404);
-        echo json_encode(['success' => false, 'error' => 'Report not found']);
-        exit;
-    }
-
-    echo json_encode(bc_report_row_to_api($row, true));
-    exit;
-}
-
-if ($method === 'PUT' && $action === 'cancel' && $id > 0) {
-    header('Content-Type: text/plain; charset=utf-8');
-    $residentCode = trim((string) ($reportSession['resident']['resident_id'] ?? ''));
-    $owner = $residentCode !== '' ? bc_resolve_resident_owner($conn, $residentCode) : null;
-    if (!$owner || (int) ($owner['pk'] ?? 0) <= 0) {
-        $conn->close();
-        http_response_code(403);
-        echo 'ERROR';
-        exit;
-    }
-    $status = 'Cancelled';
-    $stmt = $conn->prepare(
-        "UPDATE community_reports
-         SET status = ?, archived_at = NOW(), resolved_at = NULL, updated_at = NOW()
-         WHERE report_id = ? AND resident_user_id = ? AND archived_at IS NULL AND status NOT IN ('Cancelled', 'Resolved')"
-    );
-    $ownerId = (int) $owner['pk'];
-    $stmt->bind_param('sii', $status, $id, $ownerId);
-    $ok = $stmt->execute() && $stmt->affected_rows > 0;
-    $stmt->close();
-    $conn->close();
-    echo $ok ? 'SUCCESS' : 'ERROR';
-    exit;
-}
-
-if ($method === 'PUT' && $action === 'status' && $id > 0) {
-    header('Content-Type: text/plain; charset=utf-8');
-    $raw = file_get_contents('php://input');
-    $newStatus = bc_normalize_report_status(trim((string) $raw));
-    $allowed = ['Pending', 'In Progress', 'Resolved', 'Cancelled'];
-    if (!in_array($newStatus, $allowed, true)) {
-        http_response_code(400);
-        echo 'ERROR';
-        $conn->close();
-        exit;
-    }
-
-    $prevRow = null;
-    $oldStatus = '';
-    $prevStmt = $conn->prepare(bc_reports_select_sql() . ' WHERE report_id = ? LIMIT 1');
-    $prevStmt->bind_param('i', $id);
-    $prevStmt->execute();
-    $prevResult = $prevStmt->get_result();
-    if ($prevResult) {
-        $prevRow = $prevResult->fetch_assoc() ?: null;
-        $oldStatus = $prevRow ? (string) ($prevRow['status'] ?? '') : '';
-    }
-    $prevStmt->close();
-
-    if ($newStatus === 'Cancelled') {
-        $stmt = $conn->prepare(
-            "UPDATE community_reports
-             SET status = ?, archived_at = NOW(), resolved_at = NULL, updated_at = NOW()
-             WHERE report_id = ? AND archived_at IS NULL"
-        );
-        $stmt->bind_param('si', $newStatus, $id);
-    } elseif ($newStatus === 'Resolved') {
-        $stmt = $conn->prepare(
-            "UPDATE community_reports
-             SET status = ?, resolved_at = NOW(), archived_at = NULL, updated_at = NOW()
-             WHERE report_id = ? AND archived_at IS NULL"
-        );
-        $stmt->bind_param('si', $newStatus, $id);
-    } else {
-        $stmt = $conn->prepare(
-            "UPDATE community_reports
-             SET status = ?, resolved_at = NULL, archived_at = NULL, updated_at = NOW()
-             WHERE report_id = ? AND archived_at IS NULL"
-        );
-        $stmt->bind_param('si', $newStatus, $id);
-    }
-
-    $ok = $stmt->execute();
-    $stmt->close();
-
-    if ($ok && $prevRow) {
-        bc_notify_report_update($conn, $prevRow, $newStatus, $oldStatus);
-    }
-
-    $conn->close();
-    echo $ok ? 'SUCCESS' : 'ERROR';
-    exit;
-}
-
-$conn->close();
-http_response_code(400);
-header('Content-Type: text/plain; charset=utf-8');
-echo 'ERROR';

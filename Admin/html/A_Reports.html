@@ -367,7 +367,7 @@ function loadAdminReports() {
       console.error("Fetch error:", err);
       if (tableBody) {
         tableBody.innerHTML =
-          '<div class="empty-state"><div class="empty-icon"><i class="fas fa-database"></i></div><div><div class="empty-title">Could not load reports</div><p class="empty-subtitle">Start Apache/MySQL in XAMPP, submit a report from the resident portal, then refresh.</p></div></div>';
+          '<div class="empty-state"><div class="empty-icon"><i class="fas fa-database"></i></div><div><div class="empty-title">Could not load reports</div><p class="empty-subtitle">The reports service is unavailable. Please refresh and try again.</p></div></div>';
       }
       updateStats();
     });
@@ -386,9 +386,10 @@ function escapeHtml(str) {
 }
 
 function formatReportId(id) {
-  const n = parseInt(id, 10);
-  if (!n) return "—";
-  return "RPT-" + String(n).padStart(4, "0");
+  const value = String(id || '').trim();
+  if (!value) return "—";
+  if (/^\d+$/.test(value)) return "RPT-" + value.padStart(4, "0");
+  return "RPT-" + value.replace(/-/g, '').slice(0, 8).toUpperCase();
 }
 
 function formatTableDate(iso) {
@@ -659,8 +660,8 @@ function openReportModal(row) {
 
       const imgContainer = document.getElementById('adminReportImageContainer');
       const img = document.getElementById('adminReportImage');
-      if (report.imageBase64) {
-        img.src = `data:image/jpeg;base64,${report.imageBase64}`;
+      if (report.imageUrl || report.imageBase64) {
+        img.src = report.imageUrl || `data:image/jpeg;base64,${report.imageBase64}`;
         imgContainer.hidden = false;
       } else {
         img.removeAttribute('src');
@@ -742,3 +743,4 @@ function updateReportStatus(id, newStatus) {
 }
 
 </script>
+

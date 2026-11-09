@@ -81,8 +81,9 @@ try {
     if (!$resident && $residentData) {
       $residentCode='BRGY-'.date('Y').'-'.strtoupper(bin2hex(random_bytes(4)));
       $residentRow=['user_id'=>$userId,'resident_id'=>$residentCode,'first_name'=>$residentData['first_name'],'middle_name'=>$residentData['middle_name']?:null,'last_name'=>$residentData['last_name'],'username'=>$residentData['username'],'email'=>$email,'contact_number'=>$residentData['contact_number'],'qr_token_hash'=>hash('sha256',random_bytes(32))];
-      bc_sb_rest('residents','POST',[],$residentRow,['return=minimal']);
-      $resident=['id'=>'','resident_id'=>$residentCode,'first_name'=>$residentData['first_name'],'last_name'=>$residentData['last_name']];
+      $createdResident=bc_sb_rest('residents','POST',[],$residentRow,['return=representation']);
+      $resident=$createdResident['data'][0]??null;
+      if (!is_array($resident) || empty($resident['id'])) bc_login_out(503,['success'=>false,'error'=>'Your resident record could not be linked. Please try again or contact the barangay administrator.']);
     }
     if (!$resident) bc_login_out(403,['success'=>false,'error'=>'The email and password are valid, but the resident record is incomplete. Contact the barangay administrator.']);
   }
@@ -95,3 +96,4 @@ try {
   if($authAttempted && in_array($e->getCode(),[400,401],true))bc_login_out(401,['success'=>false,'code'=>'invalid_credentials','error'=>'Incorrect username/email or password. Check your sign-in details and try again.']);
   bc_login_out(503,['success'=>false,'code'=>'login_unavailable','error'=>'Login service is unavailable. Check the Supabase server configuration.']);
 }
+
