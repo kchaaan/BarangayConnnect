@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>My Borrow Requests - BarangayConnect</title>
-  <link rel="stylesheet" href="../css/R_borrow-style.css?v=20250812">
+  <link rel="stylesheet" href="../css/R_borrow-style.css?v=20261109-request-receipts">
   <link rel="stylesheet" href="../../Shared/css/bc-reports-list-table.css?v=20250810">
   <link rel="stylesheet" href="../css/bc-resident-page-title.css?v=20250620">
   <link rel="stylesheet" href="../css/R_reports-style.css?v=20250667">
@@ -12,8 +12,7 @@
   <script src="../../Shared/js/bc-session.js"></script>
   <script src="../../Shared/js/bc-notify.js?v=20250659"></script>
   <style>* { scrollbar-width: none !important; } *::-webkit-scrollbar { display: none !important; }
-    .borrow-print-sheet{display:none;box-sizing:border-box;position:relative;isolation:isolate;width:100%;min-height:210mm;padding:12mm 14mm;overflow:hidden;color:#243329;font:10pt Arial,sans-serif}.borrow-print-sheet>:not(.watermark){position:relative;z-index:1}.borrow-print-sheet .watermark{position:fixed;z-index:0;top:50%;left:50%;width:430px;height:430px;transform:translate(-50%,-50%);object-fit:contain;opacity:.1;pointer-events:none}.borrow-print-sheet .print-header{display:flex;align-items:center;gap:12px;padding-bottom:12px;border-bottom:3px solid #5f7f58;margin-bottom:18px}.borrow-print-sheet .seal{width:56px;height:56px;flex:0 0 56px;border:1px solid #dce7d8;border-radius:50%;object-fit:cover}.borrow-print-sheet .brand{color:#5f7f58;font-weight:700;letter-spacing:.06em;text-transform:uppercase}.borrow-print-sheet .place{color:#5f6d5b;font-size:9pt}.borrow-print-sheet time{margin-left:auto;color:#5f6d5b;font-size:9pt;text-align:right;white-space:nowrap}.borrow-print-sheet h1{margin:0 0 5px;font-size:20pt}.borrow-print-sheet .print-lead{margin:0 0 16px;color:#5f6d5b;font-size:9pt}.borrow-print-sheet table{position:relative;width:100%;table-layout:fixed;border-collapse:collapse;font-size:8.5pt}.borrow-print-sheet th,.borrow-print-sheet td{border:1px solid #9ba99d;padding:5px;text-align:left;vertical-align:top;overflow-wrap:anywhere}.borrow-print-sheet th{background:#e8efe9}.borrow-print-sheet th:nth-child(1){width:18%}.borrow-print-sheet th:nth-child(2){width:19%}.borrow-print-sheet th:nth-child(3){width:8%}.borrow-print-sheet th:nth-child(4),.borrow-print-sheet th:nth-child(5),.borrow-print-sheet th:nth-child(6){width:12%}.borrow-print-sheet th:nth-child(7){width:9%}.borrow-print-sheet th:nth-child(8){width:10%}.borrow-print-sheet .signature{margin-top:18px;display:flex;justify-content:space-between;font-size:9pt}.borrow-print-sheet .print-footer{margin-top:18px;padding-top:10px;border-top:1px solid #dce7d8;color:#5f6d5b;font-size:8pt}
-    @media screen{.borrow-print-sheet{max-width:1100px;margin:20px auto;padding:42px 48px;background:#fff;border:1px solid #dce7d8}}@media print{@page{size:A4 landscape;margin:0}html,body{width:297mm;min-height:210mm;margin:0!important;padding:0!important;background:#fff!important}body>*{display:none!important}body>.reports-page{display:block!important;width:100%!important;min-height:0!important;margin:0!important;padding:0!important;box-shadow:none!important;background:#fff!important}.reports-page>*{display:none!important}.reports-page #borrowPrintSheet{display:block!important;box-sizing:border-box!important;width:297mm!important;min-height:210mm!important;margin:0!important;padding:11mm 13mm!important;color:#243329!important;font:10pt Arial,sans-serif!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}.reports-page #borrowPrintSheet *{visibility:visible!important}.reports-page #borrowPrintSheet table{break-inside:auto}.reports-page #borrowPrintSheet tr{break-inside:avoid;break-after:auto}}
+    .r-borrow-print-action{display:flex;align-items:center;justify-content:center;width:38px;height:34px;border:1px solid #d7e3d8;border-radius:9px;background:#fff;color:#527b52;cursor:pointer}.r-borrow-print-action:hover{background:#edf5ed}.r-borrow-print-action:disabled{opacity:.55;cursor:wait}
   </style>
 </head>
 <body data-r-borrow-page="my-requests">
@@ -23,11 +22,9 @@
       <p class="page-lead">Track the status of your submitted borrowing requests.</p>
     </header>
 
-    <div class="borrow-print-sheet" id="borrowPrintSheet" aria-hidden="true"></div>
     <section class="reports-history card-surface">
       <div class="reports-list__toolbar">
         <h2 class="reports-list__title">Requests List</h2>
-        <button type="button" class="btn-ghost" id="rPrintBorrowHistory"><i class="fas fa-print" aria-hidden="true"></i> Print Borrowing History</button>
         <button type="button" class="btn-ghost" id="rRefreshBorrows">
           <i class="fas fa-arrows-rotate" aria-hidden="true"></i> Refresh
         </button>
@@ -41,6 +38,7 @@
             <div class="reports-table__cell" role="columnheader">Date Needed</div>
             <div class="reports-table__cell" role="columnheader">Return Date</div>
             <div class="reports-table__cell" role="columnheader">Status</div>
+            <div class="reports-table__cell" role="columnheader">Print</div>
           </div>
           <div id="rMyBorrowList" class="reports-table__body"><p style="padding:1rem">Loading…</p></div>
         </div>
@@ -70,7 +68,7 @@
 
   <script src="../../Shared/js/bc-borrow-inventory-api.js?v=20250812"></script>
   <script src="../../Shared/js/bc-borrow-sync.js?v=20250821"></script>
-  <script src="../../Shared/js/bc-resident-borrow.js?v=20261020-borrow-print"></script>
+  <script src="../../Shared/js/bc-resident-borrow.js?v=20261109-request-receipts"></script>
   <script src="../../Shared/js/bc-nav-persist.js?v=20250812"></script>
   <script src="../../Shared/js/bc-nav-iframe-child.js"></script>
 </body>
