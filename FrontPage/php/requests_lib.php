@@ -324,7 +324,10 @@ function bc_resolve_resident_owner(mysqli $conn, string $residentRaw): ?array
     $ownerFirst = '';
     $ownerLast = '';
 
-    if (preg_match('/^RES-/i', $residentRaw)) {
+    // Resident IDs have appeared in both RES-* and BRGY-* formats. Treat any
+    // non-numeric resident code as an exact resident_id lookup so ownership
+    // checks do not silently reject valid newer IDs.
+    if (!is_numeric($residentRaw)) {
         $stmt = $conn->prepare("SELECT user_id, resident_id, first_name, last_name FROM `{$ut}` WHERE resident_id = ? LIMIT 1");
         if ($stmt) {
             $stmt->bind_param('s', $residentRaw);
