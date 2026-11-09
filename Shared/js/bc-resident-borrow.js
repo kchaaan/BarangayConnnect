@@ -567,6 +567,7 @@
           <div class="reports-table__cell" role="cell" data-label="Date Needed">${fmtDate(r.dateNeeded)}</div>
           <div class="reports-table__cell" role="cell" data-label="Return Date">${fmtDate(r.returnDate)}</div>
           <div class="reports-table__cell reports-table__cell--status" role="cell" data-label="Status">${borrowStatusBadge(r.status)}</div>
+          <div class="reports-table__cell" role="cell" data-label="Print"><button type="button" class="r-borrow-print-action" data-print-borrow="${esc(r.borrowCode)}" title="Print this submitted request" aria-label="Print request ${esc(r.borrowCode)}"><i class="fas fa-print" aria-hidden="true"></i></button></div>
         </div>`).join('');
     } catch (e) {
       body.innerHTML = '<p style="padding:1rem">Could not load your borrow requests.</p>';
@@ -649,32 +650,23 @@
       openOverlay('rBorrowFormModal');
     });
     document.getElementById('rBorrowConfirmSubmit')?.addEventListener('click', confirmBorrowSubmit);
-    document.getElementById('rBorrowPrintRequest')?.addEventListener('click', printBorrowRequest);
+    document.getElementById('rMyBorrowList')?.addEventListener('click', (event) => {
+      const button = event.target.closest('[data-print-borrow]');
+      if (!button) return;
+      printBorrowReceipt(button.dataset.printBorrow, button);
+    });
   }
 
-  async function printBorrowRequest() {
-    if (!selectedItem || !pendingBorrowSubmit) return;
-    const v = pendingBorrowSubmit;
-    const button = document.getElementById('rBorrowPrintRequest');
-    if (button) { button.disabled = true; button.dataset.oldLabel = button.innerHTML; button.innerHTML = '<i class="fas fa-spinner fa-spin" aria-hidden="true"></i> Creating PDF…'; }
+  async function printBorrowReceipt(borrowCode, button) {
+    if (!borrowCode) return;
+    if (button) { button.disabled = true; button.dataset.oldLabel = button.innerHTML; button.innerHTML = '<i class="fas fa-spinner fa-spin" aria-hidden="true"></i>'; }
     try {
       const url = new URL('../../FrontPage/php/borrow_request_pdf.php', global.location.href);
       const response = await fetch(url.href, {
         method: 'POST',
         credentials: 'same-origin',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          itemId: v.itemId,
-          quantity: v.quantity,
-          dateNeeded: v.dateNeeded,
-          returnDate: v.returnDate,
-          purpose: v.purpose,
-          event: v.event,
-          eventAt: v.eventAt,
-          location: v.location,
-          remarks: v.remarks,
-          contact: v.contact,
-        }),
+        body: JSON.stringify({ borrowCode }),
       });
       const contentType = response.headers.get('content-type') || '';
       if (!response.ok || !contentType.includes('application/pdf')) {
@@ -685,36 +677,23 @@
       const objectUrl = URL.createObjectURL(blob);
       const download = document.createElement('a');
       download.href = objectUrl;
-      download.download = `borrow-request-${new Date().toISOString().slice(0, 10)}.pdf`;
+      download.download = `borrow-request-${borrowCode}.pdf`;
       document.body.appendChild(download);
       download.click();
       download.remove();
       global.setTimeout(() => URL.revokeObjectURL(objectUrl), 30000);
-      notifySuccess('Compact borrowing request PDF downloaded.');
+      notifySuccess('Submitted borrowing request receipt downloaded.');
     } catch (error) {
       notifyError(error.message || 'Could not create the PDF.');
     } finally {
-      if (button) { button.disabled = false; button.innerHTML = button.dataset.oldLabel || '<i class="fas fa-file-pdf"></i> Download compact PDF'; }
+      if (button) { button.disabled = false; button.innerHTML = button.dataset.oldLabel || '<i class="fas fa-print" aria-hidden="true"></i>'; }
     }
-  }
-
-  function printMyBorrowHistory() {
-    const sheet = document.getElementById('borrowPrintSheet');
-    if (!sheet) return;
-    if (!myBorrowRows.length) { global.alert('No borrowing records are available to print.'); return; }
-    const first = global.localStorage.getItem('residentFirstname') || '';
-    const last = global.localStorage.getItem('residentLastname') || '';
-    const residentName = (first + ' ' + last).trim() || 'Resident';
-    const rows = myBorrowRows.map(r => `<tr><td>${esc(residentName)}</td><td>${esc(r.itemName || '')}</td><td>${esc(r.quantity || '')} ${esc(r.itemUnit || '')}</td><td>${fmtDate(r.submittedAt || '')}</td><td>${fmtDate(r.returnDate || '')}</td><td>${fmtDate(r.returnedAt || '')}</td><td>${esc(r.status || '')}</td><td>${esc(r.borrowCode || '')}</td></tr>`).join('');
-        sheet.innerHTML = `<img class="watermark" src="${esc(new URL('../../Shared/images/barangay-tambo-seal.jpg', global.location.href).href)}" alt="" aria-hidden="true"><header class="print-header"><img class="seal" src="${esc(new URL('../../Shared/images/barangay-tambo-seal.jpg', global.location.href).href)}" alt="Barangay Tambo seal"><div><div class="brand">BarangayConnect</div><div class="place">Barangay Tambo, Parañaque City</div></div><time>Printed ${esc(new Intl.DateTimeFormat('en-PH', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date()))}</time></header><h1>Borrowing History</h1><p class="print-lead">Official resident borrowing record for ${esc(residentName)}.</p><table><thead><tr><th>Resident</th><th>Item</th><th>Quantity</th><th>Date requested</th><th>Expected return</th><th>Actual return</th><th>Status</th><th>Reference</th></tr></thead><tbody>${rows}</tbody></table><div class="signature"><span>Prepared by: ____________________</span><span>Resident: ____________________</span></div><footer class="print-footer">BarangayConnect borrowing record · Please verify details with the Barangay Tambo office.</footer>`;
-    global.print();
   }
 
   function initMyRequests() {
     loadMyBorrows();
     watchBorrowSync(function () { loadMyBorrows(); });
     document.getElementById('rRefreshBorrows')?.addEventListener('click', loadMyBorrows);
-    document.getElementById('rPrintBorrowHistory')?.addEventListener('click', printMyBorrowHistory);
   }
 
   function init() {
