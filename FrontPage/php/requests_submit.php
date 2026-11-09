@@ -4,6 +4,7 @@
  * POST multipart: data (JSON blob), files[] (optional file_labels[]).
  */
 require_once __DIR__ . '/requests_lib.php';
+require_once __DIR__ . '/supabase_client.php';
 
 header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: *');
@@ -18,6 +19,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
     echo json_encode(['success' => false, 'error' => 'Method not allowed']);
+    exit;
+}
+
+$requestSession = bc_sb_require_role(['resident']);
+$authUserId = trim((string) ($requestSession['user_id'] ?? ''));
+if (!preg_match('/^[0-9a-f-]{36}$/i', $authUserId)) {
+    http_response_code(403);
+    echo json_encode(['success' => false, 'error' => 'Resident account is not linked. Please sign in again.']);
+    exit;
+}
+
+try {
+    $residentResult = bc_sb_rest('residents', 'GET', [
+        'user_id' => 'eq.' . $authUserId,
+        'select' => 'id,resident_id',
+        'limit' => '1',
+    ]);
+    $resident = $residentResult['data'][0] ?? null;
+} catch (Throwable $e) {
+    error_log('Service request resident lookup failed: ' . $e->getMessage());
+    http_response_code(503);
+    echo json_encode(['success' => false, 'error' => 'Could not verify your resident profile. Please try again.']);
+    exit;
+}
+$residentCode = is_array($resident) ? trim((string) ($resident['resident_id'] ?? '')) : '';
+if ($residentCode === '' || empty($resident['id'])) {
+    http_response_code(403);
+    echo json_encode(['success' => false, 'error' => 'Resident profile is incomplete. Contact the barangay administrator.']);
     exit;
 }
 
@@ -51,22 +80,11 @@ if ($documentType === '') {
     exit;
 }
 
-$residentIdRaw = $payload['residentId'] ?? null;
-$residentId = is_numeric($residentIdRaw) ? (int) $residentIdRaw : 0;
-if ($residentId < 0) {
-    $residentId = 0;
-}
-if ($residentId === 0 && $residentIdRaw !== null && $residentIdRaw !== '') {
-    $payload['residentIdLocal'] = (string) $residentIdRaw;
-}
-if ($residentId > 0) {
-    $payload['residentId'] = (string) $residentId;
-}
-
-$status = strtolower(trim((string) ($payload['status'] ?? 'pending')));
-if ($status === '') {
-    $status = 'pending';
-}
+// Never trust client-supplied owner IDs or status.
+$residentId = 0;
+$payload['residentId'] = $residentCode;
+unset($payload['residentIdLocal']);
+$status = 'pending';
 
 $requestType = trim((string) ($payload['requestType'] ?? 'personal_identification'));
 if ($requestType === '') {
@@ -79,12 +97,12 @@ $rowCols = bc_payload_to_row_columns($payload);
 
 $stmt = $conn->prepare(
     'INSERT INTO service_requests (
-        request_code, resident_user_id, request_type, document_type, status,
+        request_code, resident_user_id, resident_auth_id, request_type, document_type, status,
         first_name, middle_name, last_name, suffix, gender, birthdate, age,
         place_of_birth, civil_status, citizenship, religion, email, mobile,
         street, house_unit, block_lot, house_street, barangay, city, province, region,
         full_address, request_notes, payload_json
-    ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)'
+    ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)'
 );
 if (!$stmt) {
     http_response_code(500);
@@ -95,9 +113,10 @@ if (!$stmt) {
 
 $ageVal = $rowCols['age'] !== null ? (string) $rowCols['age'] : null;
 $stmt->bind_param(
-    'sisss' . str_repeat('s', 24),
+    'sissss' . str_repeat('s', 24),
     $code,
     $residentId,
+    $authUserId,
     $requestType,
     $documentType,
     $status,
@@ -152,13 +171,31 @@ $uploads = bc_parse_uploaded_files('files');
 $savedFiles = 0;
 
 foreach ($uploads as $i => $file) {
-    if ($file['error'] !== UPLOAD_ERR_OK || $file['tmp_name'] === '') {
+    if ($i >= 3 || $file['error'] !== UPLOAD_ERR_OK || $file['tmp_name'] === ''
+        || $file['size'] <= 0 || $file['size'] > 10 * 1024 * 1024) {
+        continue;
+    }
+
+    $finfo = finfo_open(FILEINFO_MIME_TYPE);
+    $detectedMime = $finfo ? finfo_file($finfo, $file['tmp_name']) : false;
+    if ($finfo) {
+        finfo_close($finfo);
+    }
+    $allowedTypes = [
+        'application/pdf' => 'pdf',
+        'image/jpeg' => 'jpg',
+        'image/png' => 'png',
+    ];
+    if (!is_string($detectedMime) || !isset($allowedTypes[$detectedMime])) {
         continue;
     }
 
     $label = $fileLabels[$i] ?? $defaultLabels[$i] ?? ('Attachment ' . ($i + 1));
     $safeName = preg_replace('/[^a-zA-Z0-9._-]/', '_', basename($file['name']));
-    $destName = ($i + 1) . '_' . $safeName;
+    if ($safeName === '' || $safeName === '.' || $safeName === '..') {
+        $safeName = 'attachment.' . $allowedTypes[$detectedMime];
+    }
+    $destName = ($i + 1) . '_' . bin2hex(random_bytes(12)) . '.' . $allowedTypes[$detectedMime];
     $destPath = $uploadBase . DIRECTORY_SEPARATOR . $destName;
 
     if (!move_uploaded_file($file['tmp_name'], $destPath)) {
@@ -171,7 +208,7 @@ foreach ($uploads as $i => $file) {
          VALUES (?,?,?,?,?)'
     );
     if ($fStmt) {
-        $fStmt->bind_param('issss', $requestPk, $label, $safeName, $file['type'], $relPath);
+        $fStmt->bind_param('issss', $requestPk, $label, $safeName, $detectedMime, $relPath);
         $fStmt->execute();
         $fStmt->close();
         $savedFiles++;

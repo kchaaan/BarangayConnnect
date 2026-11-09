@@ -44,11 +44,17 @@ function bc_upgrade_service_requests_schema(mysqli $conn): void
         }
     }
 
+    $authColumn = $conn->query("SHOW COLUMNS FROM service_requests LIKE 'resident_auth_id'");
+    if ($authColumn && $authColumn->num_rows === 0) {
+        $conn->query('ALTER TABLE service_requests ADD COLUMN resident_auth_id CHAR(36) NULL AFTER resident_user_id');
+    }
+
     $conn->query('CREATE OR REPLACE VIEW v_service_requests_detail AS
         SELECT
             request_pk,
             request_code,
             resident_user_id,
+            resident_auth_id,
             request_type,
             document_type,
             status,
@@ -193,6 +199,7 @@ function bc_ensure_requests_tables(mysqli $conn): void
         request_pk INT AUTO_INCREMENT PRIMARY KEY,
         request_code VARCHAR(32) NOT NULL UNIQUE,
         resident_user_id INT NULL,
+        resident_auth_id CHAR(36) NULL,
         request_type VARCHAR(64) NOT NULL DEFAULT 'personal_identification',
         document_type VARCHAR(128) NOT NULL,
         status VARCHAR(32) NOT NULL DEFAULT 'pending',
@@ -297,7 +304,7 @@ function bc_row_columns_to_api(array $row): array
 
 function bc_service_requests_select_sql(): string
 {
-    return 'SELECT request_pk, request_code, resident_user_id, request_type, document_type, status, remarks,
+    return 'SELECT request_pk, request_code, resident_user_id, resident_auth_id, request_type, document_type, status, remarks,
         first_name, middle_name, last_name, suffix, gender, birthdate, age, place_of_birth,
         civil_status, citizenship, religion, email, mobile, street, house_unit, block_lot,
         house_street, barangay, city, province, region, full_address, request_notes,
@@ -384,8 +391,28 @@ function bc_resolve_resident_owner(mysqli $conn, string $residentRaw): ?array
  *
  * @return list<array<string, mixed>>
  */
-function bc_fetch_service_requests_for_resident(mysqli $conn, string $residentRaw): array
+function bc_fetch_service_requests_for_resident(mysqli $conn, string $residentRaw, string $authUserId = ''): array
 {
+    if ($authUserId !== '' && preg_match('/^[0-9a-f-]{36}$/i', $authUserId)) {
+        $stmt = $conn->prepare(
+            bc_service_requests_select_sql() . ' WHERE resident_auth_id = ? ORDER BY submission_date DESC'
+        );
+        if (!$stmt) {
+            return [];
+        }
+        $stmt->bind_param('s', $authUserId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $out = [];
+        if ($result) {
+            while ($row = $result->fetch_assoc()) {
+                $out[] = bc_request_row_to_api($row);
+            }
+        }
+        $stmt->close();
+        return $out;
+    }
+
     $owner = bc_resolve_resident_owner($conn, $residentRaw);
     if (!$owner || $owner['pk'] <= 0) {
         return [];
@@ -525,7 +552,7 @@ function bc_request_row_to_api(array $row): array
 /**
  * Parse $_FILES field (supports files[] multi-upload from FormData).
  *
- * @return list<array{name: string, tmp_name: string, error: int, type: string}>
+ * @return list<array{name: string, tmp_name: string, error: int, type: string, size: int}>
  */
 function bc_parse_uploaded_files(string $field = 'files'): array
 {
@@ -544,6 +571,7 @@ function bc_parse_uploaded_files(string $field = 'files'): array
                 'tmp_name' => (string) $files['tmp_name'][$i],
                 'error' => (int) $files['error'][$i],
                 'type' => (string) ($files['type'][$i] ?? ''),
+                'size' => (int) ($files['size'][$i] ?? 0),
             ];
         }
     } elseif (($files['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_NO_FILE) {
@@ -552,6 +580,7 @@ function bc_parse_uploaded_files(string $field = 'files'): array
             'tmp_name' => (string) ($files['tmp_name'] ?? ''),
             'error' => (int) ($files['error'] ?? UPLOAD_ERR_NO_FILE),
             'type' => (string) ($files['type'] ?? ''),
+            'size' => (int) ($files['size'] ?? 0),
         ];
     }
 

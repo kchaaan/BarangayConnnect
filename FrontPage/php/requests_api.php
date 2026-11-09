@@ -29,8 +29,20 @@ if ($requestMethod === 'GET' && $requestAction === 'my') {
         echo json_encode(['success' => false, 'error' => 'You may only view your own requests.']);
         exit;
     }
+} elseif ($requestMethod === 'GET' && in_array($requestAction, ['get', 'files'], true)) {
+    $requestSession = bc_sb_current_user();
+    if (!$requestSession) {
+        http_response_code(401);
+        echo json_encode(['success' => false, 'error' => 'Authentication required']);
+        exit;
+    }
+    if (($requestSession['role'] ?? '') !== 'resident' && !bc_sb_role_has_admin_access((string) ($requestSession['role'] ?? ''))) {
+        http_response_code(403);
+        echo json_encode(['success' => false, 'error' => 'Forbidden']);
+        exit;
+    }
 } elseif ($requestMethod !== 'OPTIONS') {
-    bc_sb_require_role(['admin']);
+    $requestSession = bc_sb_require_role(['admin']);
 }
 
 $conn = bc_db_connect();
@@ -68,7 +80,11 @@ if ($method === 'GET' && $action === 'my') {
         exit;
     }
 
-    $out = bc_fetch_service_requests_for_resident($conn, $residentRaw);
+    $out = bc_fetch_service_requests_for_resident(
+        $conn,
+        $residentRaw,
+        (string) ($requestSession['user_id'] ?? '')
+    );
     $conn->close();
     echo json_encode($out);
     exit;
@@ -88,12 +104,32 @@ if ($method === 'GET' && $action === 'get' && $id > 0) {
         echo json_encode(['success' => false, 'error' => 'Request not found']);
         exit;
     }
+    if (($requestSession['role'] ?? '') === 'resident'
+        && (string) ($row['resident_auth_id'] ?? '') !== (string) ($requestSession['user_id'] ?? '')) {
+        http_response_code(404);
+        echo json_encode(['success' => false, 'error' => 'Request not found']);
+        exit;
+    }
 
     echo json_encode(bc_request_row_to_api($row));
     exit;
 }
 
 if ($method === 'GET' && $action === 'files' && $id > 0) {
+    if (($requestSession['role'] ?? '') === 'resident') {
+        $ownerStmt = $conn->prepare('SELECT resident_auth_id FROM service_requests WHERE request_pk = ? LIMIT 1');
+        $ownerStmt->bind_param('i', $id);
+        $ownerStmt->execute();
+        $ownerResult = $ownerStmt->get_result();
+        $ownerRow = $ownerResult ? $ownerResult->fetch_assoc() : null;
+        $ownerStmt->close();
+        if (!$ownerRow || (string) ($ownerRow['resident_auth_id'] ?? '') !== (string) ($requestSession['user_id'] ?? '')) {
+            $conn->close();
+            http_response_code(404);
+            echo json_encode(['success' => false, 'error' => 'Request not found']);
+            exit;
+        }
+    }
     $stmt = $conn->prepare(
         'SELECT file_label, file_name, file_type, file_path FROM service_request_files WHERE request_pk = ? ORDER BY file_id'
     );

@@ -2,7 +2,7 @@
 
 Barangay management system for Barangay Tambo, Parañaque City. The original archive uses PHP, HTML/CSS/JavaScript, and MySQL. A Supabase migration has been started in this copy.
 
-> **Migration status:** The database schema, RLS/storage policies, server-side Supabase REST helper, resident registration, unified login, server-side Turnstile verification, and portal role-session checks are included. The original data modules still contain MySQL-specific queries and are not yet migrated; requests, borrowing, inventory, transparency, emergency contacts, reports, notifications, profile management, admin management, and chatbot persistence will not work against Supabase until those modules are converted. Do not deploy this package as a complete system.
+> **Migration status:** Supabase-backed pieces include authentication and resident registration, announcements, emergency contacts/procedures, the admin resident directory, resident-owned profile reads/edits, privacy acknowledgments, and the target schema. Major MySQL modules remain for service requests, borrowing, inventory, transparency, reports, notifications, feedback, chatbot persistence, and parts of admin account management. The target schema also does not import existing MySQL data. Do not deploy this package as a complete system yet.
 
 ## Supabase preparation
 

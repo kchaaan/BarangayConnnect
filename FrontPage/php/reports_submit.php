@@ -24,6 +24,30 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 $reportSession = bc_sb_require_role(['resident']);
+$authUserId = trim((string) ($reportSession['user_id'] ?? ''));
+if (!preg_match('/^[0-9a-f-]{36}$/i', $authUserId)) {
+    http_response_code(403);
+    echo 'ERROR';
+    exit;
+}
+try {
+    $residentResult = bc_sb_rest('residents', 'GET', [
+        'user_id' => 'eq.' . $authUserId,
+        'select' => 'id,resident_id',
+        'limit' => '1',
+    ]);
+    $resident = $residentResult['data'][0] ?? null;
+} catch (Throwable $e) {
+    error_log('Community report resident lookup failed: ' . $e->getMessage());
+    http_response_code(503);
+    echo 'ERROR';
+    exit;
+}
+if (!is_array($resident) || empty($resident['id'])) {
+    http_response_code(403);
+    echo 'ERROR';
+    exit;
+}
 
 $conn = bc_db_connect();
 if (!$conn) {
@@ -34,15 +58,8 @@ if (!$conn) {
 
 bc_ensure_reports_table($conn);
 
-$residentCode = trim((string) ($reportSession['resident']['resident_id'] ?? ''));
-$reportOwner = $residentCode !== '' ? bc_resolve_resident_owner($conn, $residentCode) : null;
-$residentUserId = (int) ($reportOwner['pk'] ?? 0);
-if ($residentUserId <= 0) {
-    http_response_code(403);
-    echo 'ERROR';
-    $conn->close();
-    exit;
-}
+$residentUserId = 0;
+$residentAuthId = $authUserId;
 
 $rawData = $_POST['data'] ?? '';
 if ($rawData === '' && isset($_FILES['data'])) {
@@ -69,12 +86,37 @@ if ($title === '' || $category === '' || $location === '' || $description === ''
     exit;
 }
 
+$reportImageMime = null;
+if (isset($_FILES['image']) && ($_FILES['image']['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_NO_FILE) {
+    if ($_FILES['image']['error'] !== UPLOAD_ERR_OK || empty($_FILES['image']['tmp_name'])) {
+        http_response_code(400);
+        echo 'ERROR';
+        $conn->close();
+        exit;
+    }
+    $imageSize = (int) ($_FILES['image']['size'] ?? 0);
+    $finfo = finfo_open(FILEINFO_MIME_TYPE);
+    $imageMime = $finfo ? finfo_file($finfo, $_FILES['image']['tmp_name']) : false;
+    if ($finfo) {
+        finfo_close($finfo);
+    }
+    $imageTypes = ['image/jpeg' => 'jpg', 'image/png' => 'png', 'image/webp' => 'webp'];
+    if ($imageSize <= 0 || $imageSize > 5 * 1024 * 1024
+        || !is_string($imageMime) || !isset($imageTypes[$imageMime])) {
+        http_response_code(400);
+        echo 'ERROR';
+        $conn->close();
+        exit;
+    }
+    $reportImageMime = $imageMime;
+}
+
 $status = 'Pending';
 $stmt = $conn->prepare(
-    'INSERT INTO community_reports (title, category, location, description, status, resident_user_id)
-     VALUES (?, ?, ?, ?, ?, ?)'
+    'INSERT INTO community_reports (title, category, location, description, status, resident_user_id, resident_auth_id)
+     VALUES (?, ?, ?, ?, ?, ?, ?)'
 );
-$stmt->bind_param('sssssi', $title, $category, $location, $description, $status, $residentUserId);
+$stmt->bind_param('sssssis', $title, $category, $location, $description, $status, $residentUserId, $residentAuthId);
 
 if (!$stmt->execute()) {
     http_response_code(500);
@@ -88,15 +130,13 @@ $reportId = (int) $conn->insert_id;
 $stmt->close();
 
 $imagePath = null;
-if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK && $_FILES['image']['tmp_name'] !== '') {
+if ($reportImageMime !== null) {
+    $imageTypes = ['image/jpeg' => 'jpg', 'image/png' => 'png', 'image/webp' => 'webp'];
     $uploadBase = bc_reports_upload_dir() . DIRECTORY_SEPARATOR . $reportId;
     if (!is_dir($uploadBase)) {
         mkdir($uploadBase, 0755, true);
     }
-    $safeName = preg_replace('/[^a-zA-Z0-9._-]/', '_', basename($_FILES['image']['name']));
-    if ($safeName === '') {
-        $safeName = 'attachment.jpg';
-    }
+    $safeName = bin2hex(random_bytes(16)) . '.' . $imageTypes[$reportImageMime];
     $destPath = $uploadBase . DIRECTORY_SEPARATOR . $safeName;
     if (move_uploaded_file($_FILES['image']['tmp_name'], $destPath)) {
         $imagePath = 'reports/' . $reportId . '/' . $safeName;

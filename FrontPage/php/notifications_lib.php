@@ -9,7 +9,8 @@ function bc_ensure_resident_notifications_table(mysqli $conn): void
 {
     $conn->query("CREATE TABLE IF NOT EXISTS resident_notifications (
         notification_id INT AUTO_INCREMENT PRIMARY KEY,
-        resident_user_id INT NOT NULL,
+        resident_user_id INT NOT NULL DEFAULT 0,
+        resident_auth_id CHAR(36) NULL,
         type VARCHAR(32) NOT NULL,
         priority VARCHAR(16) NOT NULL DEFAULT 'normal',
         title VARCHAR(255) NOT NULL,
@@ -22,6 +23,11 @@ function bc_ensure_resident_notifications_table(mysqli $conn): void
         INDEX idx_rn_unread (resident_user_id, is_read),
         INDEX idx_rn_created (created_at)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+    $authColumn = $conn->query("SHOW COLUMNS FROM resident_notifications LIKE 'resident_auth_id'");
+    if ($authColumn && $authColumn->num_rows === 0) {
+        $conn->query('ALTER TABLE resident_notifications ADD COLUMN resident_auth_id CHAR(36) NULL AFTER resident_user_id');
+    }
 }
 
 /**
@@ -52,9 +58,12 @@ function bc_insert_resident_notification(
     string $title,
     string $message,
     ?string $linkSection = null,
-    ?int $referenceId = null
+    ?int $referenceId = null,
+    ?string $authUserId = null
 ): void {
-    if ($residentUserId <= 0 || $title === '' || $message === '') {
+    $authUserId = trim((string) $authUserId);
+    if (($residentUserId <= 0 && !preg_match('/^[0-9a-f-]{36}$/i', $authUserId))
+        || $title === '' || $message === '') {
         return;
     }
 
@@ -62,11 +71,11 @@ function bc_insert_resident_notification(
 
     $stmt = $conn->prepare(
         'INSERT INTO resident_notifications
-         (resident_user_id, type, priority, title, message, link_section, reference_id)
-         VALUES (?, ?, ?, ?, ?, ?, ?)'
+         (resident_user_id, resident_auth_id, type, priority, title, message, link_section, reference_id)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
     );
     $ref = $referenceId ?? 0;
-    $stmt->bind_param('isssssi', $residentUserId, $type, $priority, $title, $message, $linkSection, $ref);
+    $stmt->bind_param('issssssi', $residentUserId, $authUserId, $type, $priority, $title, $message, $linkSection, $ref);
     $stmt->execute();
     $stmt->close();
 }
@@ -94,7 +103,8 @@ function bc_notify_request_update(
     string $oldStatus
 ): void {
     $residentId = (int) ($row['resident_user_id'] ?? 0);
-    if ($residentId <= 0) {
+    $authUserId = trim((string) ($row['resident_auth_id'] ?? ''));
+    if ($residentId <= 0 && !preg_match('/^[0-9a-f-]{36}$/i', $authUserId)) {
         return;
     }
 
@@ -126,7 +136,8 @@ function bc_notify_request_update(
             $title,
             $message,
             'requests',
-            $requestPk
+            $requestPk,
+            $authUserId
         );
         return;
     }
@@ -144,7 +155,8 @@ function bc_notify_request_update(
             'Message from barangay',
             $doc . ' (' . $label . '): ' . trim($remarks),
             'requests',
-            $requestPk
+            $requestPk,
+            $authUserId
         );
     }
 }
@@ -155,7 +167,8 @@ function bc_notify_request_update(
 function bc_notify_report_update(mysqli $conn, array $row, string $newStatus, string $oldStatus): void
 {
     $residentId = (int) ($row['resident_user_id'] ?? 0);
-    if ($residentId <= 0) {
+    $authUserId = trim((string) ($row['resident_auth_id'] ?? ''));
+    if ($residentId <= 0 && !preg_match('/^[0-9a-f-]{36}$/i', $authUserId)) {
         return;
     }
 
@@ -179,7 +192,8 @@ function bc_notify_report_update(mysqli $conn, array $row, string $newStatus, st
         $title,
         $message,
         'reports',
-        $reportId
+        $reportId,
+        $authUserId
     );
 }
 
@@ -187,17 +201,28 @@ function bc_notification_exists_for_reference(
     mysqli $conn,
     int $residentId,
     string $type,
-    int $referenceId
+    int $referenceId,
+    ?string $authUserId = null
 ): bool {
-    if ($residentId <= 0 || $referenceId <= 0) {
+    if (($residentId <= 0 && !preg_match('/^[0-9a-f-]{36}$/i', (string) $authUserId)) || $referenceId <= 0) {
         return false;
     }
-    $stmt = $conn->prepare(
-        'SELECT 1 FROM resident_notifications
-         WHERE resident_user_id = ? AND type = ? AND reference_id = ?
-         LIMIT 1'
-    );
-    $stmt->bind_param('isi', $residentId, $type, $referenceId);
+    $authId = (string) ($authUserId ?? '');
+    if ($residentId > 0) {
+        $stmt = $conn->prepare(
+            'SELECT 1 FROM resident_notifications
+             WHERE (resident_user_id = ? OR resident_auth_id = ?) AND type = ? AND reference_id = ?
+             LIMIT 1'
+        );
+        $stmt->bind_param('issi', $residentId, $authId, $type, $referenceId);
+    } else {
+        $stmt = $conn->prepare(
+            'SELECT 1 FROM resident_notifications
+             WHERE resident_auth_id = ? AND type = ? AND reference_id = ?
+             LIMIT 1'
+        );
+        $stmt->bind_param('ssi', $authId, $type, $referenceId);
+    }
     $stmt->execute();
     $result = $stmt->get_result();
     $exists = $result && $result->num_rows > 0;
@@ -208,22 +233,34 @@ function bc_notification_exists_for_reference(
 /**
  * Create notifications for existing request updates that pre-date the notification system.
  */
-function bc_sync_request_notifications_for_resident(mysqli $conn, int $residentId): void
+function bc_sync_request_notifications_for_resident(mysqli $conn, int $residentId, ?string $authUserId = null): void
 {
-    if ($residentId <= 0) {
+    $authUserId = trim((string) $authUserId);
+    if ($residentId <= 0 && !preg_match('/^[0-9a-f-]{36}$/i', $authUserId)) {
         return;
     }
 
     bc_ensure_resident_notifications_table($conn);
 
-    $stmt = $conn->prepare(
-        'SELECT request_pk, request_code, resident_user_id, document_type, status, remarks
-         FROM service_requests
-         WHERE resident_user_id = ?
-         ORDER BY request_pk DESC
-         LIMIT 20'
-    );
-    $stmt->bind_param('i', $residentId);
+    if ($residentId > 0) {
+        $stmt = $conn->prepare(
+            'SELECT request_pk, request_code, resident_user_id, resident_auth_id, document_type, status, remarks
+             FROM service_requests
+             WHERE resident_user_id = ? OR resident_auth_id = ?
+             ORDER BY request_pk DESC
+             LIMIT 20'
+        );
+        $stmt->bind_param('is', $residentId, $authUserId);
+    } else {
+        $stmt = $conn->prepare(
+            'SELECT request_pk, request_code, resident_user_id, resident_auth_id, document_type, status, remarks
+             FROM service_requests
+             WHERE resident_auth_id = ?
+             ORDER BY request_pk DESC
+             LIMIT 20'
+        );
+        $stmt->bind_param('s', $authUserId);
+    }
     $stmt->execute();
     $result = $stmt->get_result();
     if (!$result) {
@@ -237,7 +274,7 @@ function bc_sync_request_notifications_for_resident(mysqli $conn, int $residentI
         if ($requestPk <= 0 || $status === '' || $status === 'pending') {
             continue;
         }
-        if (bc_notification_exists_for_reference($conn, $residentId, 'request_update', $requestPk)) {
+        if (bc_notification_exists_for_reference($conn, $residentId, 'request_update', $requestPk, $authUserId)) {
             continue;
         }
 
@@ -248,17 +285,29 @@ function bc_sync_request_notifications_for_resident(mysqli $conn, int $residentI
     $stmt->close();
 }
 
-function bc_notification_counts_for_resident(mysqli $conn, int $residentId): array
+function bc_notification_counts_for_resident(mysqli $conn, int $residentId, ?string $authUserId = null): array
 {
     bc_ensure_resident_notifications_table($conn);
-    $stmt = $conn->prepare(
-        "SELECT
-            COUNT(*) AS total_unread,
-            SUM(CASE WHEN priority = 'urgent' THEN 1 ELSE 0 END) AS urgent_unread
-         FROM resident_notifications
-         WHERE resident_user_id = ? AND is_read = 0"
-    );
-    $stmt->bind_param('i', $residentId);
+    $authId = (string) ($authUserId ?? '');
+    if ($residentId > 0) {
+        $stmt = $conn->prepare(
+            "SELECT
+                COUNT(*) AS total_unread,
+                SUM(CASE WHEN priority = 'urgent' THEN 1 ELSE 0 END) AS urgent_unread
+             FROM resident_notifications
+             WHERE (resident_user_id = ? OR resident_auth_id = ?) AND is_read = 0"
+        );
+        $stmt->bind_param('is', $residentId, $authId);
+    } else {
+        $stmt = $conn->prepare(
+            "SELECT
+                COUNT(*) AS total_unread,
+                SUM(CASE WHEN priority = 'urgent' THEN 1 ELSE 0 END) AS urgent_unread
+             FROM resident_notifications
+             WHERE resident_auth_id = ? AND is_read = 0"
+        );
+        $stmt->bind_param('s', $authId);
+    }
     $stmt->execute();
     $result = $stmt->get_result();
     $row = $result ? $result->fetch_assoc() : null;

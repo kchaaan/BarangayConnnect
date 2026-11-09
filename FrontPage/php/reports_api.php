@@ -57,18 +57,13 @@ if (!$conn) {
 bc_ensure_reports_archive_columns($conn);
 bc_auto_archive_expired_resolved($conn);
 
-$reportOwnerId = null;
-if ($reportMethod === 'GET' && $reportAction === 'mine') {
+$reportAuthId = (string) ($reportSession['user_id'] ?? '');
+$reportOwner = null;
+$reportOwnerId = 0;
+if ($reportMethod === 'GET' && $reportAction === 'mine' || $reportMethod === 'PUT' && $reportAction === 'cancel') {
     $residentCode = trim((string) ($reportSession['resident']['resident_id'] ?? ''));
-    $owner = $residentCode !== '' ? bc_resolve_resident_owner($conn, $residentCode) : null;
-    $reportOwnerId = (int) ($owner['pk'] ?? 0);
-    if ($reportOwnerId <= 0) {
-        $conn->close();
-        http_response_code(403);
-        header('Content-Type: application/json; charset=utf-8');
-        echo json_encode(['success' => false, 'error' => 'Your resident profile is not linked to your reports.']);
-        exit;
-    }
+    $reportOwner = $residentCode !== '' ? bc_resolve_resident_owner($conn, $residentCode) : null;
+    $reportOwnerId = (int) ($reportOwner['pk'] ?? 0);
 }
 
 $action = trim($_GET['action'] ?? '');
@@ -89,10 +84,19 @@ if ($method === 'GET' && ($action === 'all' || $action === 'list')) {
     exit;
 }
 
-if ($method === 'GET' && $action === 'mine' && $reportOwnerId !== null) {
+if ($method === 'GET' && $action === 'mine') {
     header('Content-Type: application/json; charset=utf-8');
-    $stmt = $conn->prepare(bc_reports_select_sql() . ' WHERE resident_user_id = ? ORDER BY created_at DESC');
-    $stmt->bind_param('i', $reportOwnerId);
+    if ($reportOwnerId > 0) {
+        $stmt = $conn->prepare(
+            bc_reports_select_sql() . ' WHERE resident_auth_id = ? OR (resident_auth_id IS NULL AND resident_user_id = ?) ORDER BY created_at DESC'
+        );
+        $stmt->bind_param('si', $reportAuthId, $reportOwnerId);
+    } else {
+        $stmt = $conn->prepare(
+            bc_reports_select_sql() . ' WHERE resident_auth_id = ? ORDER BY created_at DESC'
+        );
+        $stmt->bind_param('s', $reportAuthId);
+    }
     $stmt->execute();
     $res = $stmt->get_result();
     $out = [];
@@ -141,22 +145,25 @@ if ($method === 'GET' && $action === 'get' && $id > 0) {
 
 if ($method === 'PUT' && $action === 'cancel' && $id > 0) {
     header('Content-Type: text/plain; charset=utf-8');
-    $residentCode = trim((string) ($reportSession['resident']['resident_id'] ?? ''));
-    $owner = $residentCode !== '' ? bc_resolve_resident_owner($conn, $residentCode) : null;
-    if (!$owner || (int) ($owner['pk'] ?? 0) <= 0) {
-        $conn->close();
-        http_response_code(403);
-        echo 'ERROR';
-        exit;
-    }
     $status = 'Cancelled';
-    $stmt = $conn->prepare(
-        "UPDATE community_reports
-         SET status = ?, archived_at = NOW(), resolved_at = NULL, updated_at = NOW()
-         WHERE report_id = ? AND resident_user_id = ? AND archived_at IS NULL AND status NOT IN ('Cancelled', 'Resolved')"
-    );
-    $ownerId = (int) $owner['pk'];
-    $stmt->bind_param('sii', $status, $id, $ownerId);
+    if ($reportOwnerId > 0) {
+        $stmt = $conn->prepare(
+            "UPDATE community_reports
+             SET status = ?, archived_at = NOW(), resolved_at = NULL, updated_at = NOW()
+             WHERE report_id = ?
+               AND (resident_auth_id = ? OR (resident_auth_id IS NULL AND resident_user_id = ?))
+               AND archived_at IS NULL AND status NOT IN ('Cancelled', 'Resolved')"
+        );
+        $stmt->bind_param('sisi', $status, $id, $reportAuthId, $reportOwnerId);
+    } else {
+        $stmt = $conn->prepare(
+            "UPDATE community_reports
+             SET status = ?, archived_at = NOW(), resolved_at = NULL, updated_at = NOW()
+             WHERE report_id = ? AND resident_auth_id = ?
+               AND archived_at IS NULL AND status NOT IN ('Cancelled', 'Resolved')"
+        );
+        $stmt->bind_param('sis', $status, $id, $reportAuthId);
+    }
     $ok = $stmt->execute() && $stmt->affected_rows > 0;
     $stmt->close();
     $conn->close();
